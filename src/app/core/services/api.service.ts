@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrlBFF = 'https://rocky-atoll-88358-b10b362cee67.herokuapp.com/';
+  private baseUrlBFF = 'https://rocky-atoll-88358-b10b362cee67.herokuapp.com';
 
   constructor(private http: HttpClient) {}
 
