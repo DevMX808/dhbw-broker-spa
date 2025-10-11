@@ -11,14 +11,17 @@ import { ApiService } from './core/services/api.service';
 })
 export class AppComponent implements OnInit {
   title = 'dhbw-broker-web';
-  health = '';
+  health: string = '';
 
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
     this.apiService.getHealth().subscribe({
-      next: (response) => this.health = response,
-      error: (err) => console.error('Error:', err)
+      next: (response) => this.health = response.status,
+      error: (err) => {
+        console.error('Error:', err);
+        this.health = 'Error fetching health';
+      }
     });
   }
 }

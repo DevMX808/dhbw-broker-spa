@@ -10,7 +10,7 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  getHealth(): Observable<string> {
-    return this.http.get<string>(`${this.baseUrl}/health`);
+  getHealth(): Observable<{ status: string }> {
+    return this.http.get<{ status: string }>(`${this.baseUrl}/health`);
   }
 }
