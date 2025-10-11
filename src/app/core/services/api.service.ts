@@ -6,11 +6,11 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:8080';
+  private baseUrlBFF = 'https://rocky-atoll-88358-b10b362cee67.herokuapp.com/';
 
   constructor(private http: HttpClient) {}
 
   getHealth(): Observable<{ status: string }> {
-    return this.http.get<{ status: string }>(`${this.baseUrl}/health`);
+    return this.http.get<{ status: string }>(`${this.baseUrlBFF}/health`);
   }
 }
