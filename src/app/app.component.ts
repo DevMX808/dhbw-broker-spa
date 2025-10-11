@@ -11,17 +11,17 @@ import { ApiService } from './core/services/api.service';
 })
 export class AppComponent implements OnInit {
   title = 'dhbw-broker-web';
-  health: string = '';
 
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
-    this.apiService.getHealth().subscribe({
-      next: (response) => this.health = response.status,
-      error: (err) => {
-        console.error('Error:', err);
-        this.health = 'Error fetching health';
-      }
+    console.log('ngOnInit called');
+    this.apiService.getAllHealth().subscribe({
+      next: ([bffHealth, graphqlHealth]: [{ status: string }, { status: string }]) => {
+        console.log('BFF Health:', bffHealth.status, new Date().toISOString());
+        console.log('GraphQL Health:', graphqlHealth.status, new Date().toISOString());
+      },
+      error: (err ) => console.error('Health Fetch Error:', err)
     });
   }
 }
