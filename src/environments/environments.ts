@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:3000', // Placeholder, wird später durch BFF/GraphQL ersetzt
+  apiBaseUrl: 'http://localhost:8080', // BFF Backend URL
 };

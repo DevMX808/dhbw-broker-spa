@@ -9,6 +9,8 @@ export interface DevJwtPayload {
   roles: string[];
   iat: number;
   exp: number;
+  firstName?: string;
+  lastName?: string;
 }
 
 @Injectable({ providedIn: 'root' })
