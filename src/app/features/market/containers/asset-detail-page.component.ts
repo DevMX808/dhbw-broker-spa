@@ -1,89 +1,169 @@
-// src/app/features/market/containers/asset-detail-page.component.ts
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { MarketDataService } from '../data-access/market-data.service';
-import { switchMap, map, timer, distinctUntilChanged, tap, catchError, of } from 'rxjs';
-import { QuoteCardComponent, QuoteVM } from '../components/quote-card/quote-card.component';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MarketStore } from '../store/market.store';
+import { PriceCardComponent } from '../components/quote-card/quote-card.component';
+import { Subject, takeUntil } from 'rxjs';
 
+/**
+ * Container component for /market/:symbol route
+ * Displays detailed price information for a specific symbol
+ */
 @Component({
   standalone: true,
   selector: 'app-asset-detail-page',
-  imports: [CommonModule, QuoteCardComponent],
+  imports: [CommonModule, RouterLink, PriceCardComponent],
   template: `
-    <h1 class="h4 mb-3">Asset</h1>
+    <div class="asset-detail-page">
+      <!-- Back Link -->
+      <div class="mb-3">
+        <a routerLink="/market" class="back-link">
+          ← Zurück zur Übersicht
+        </a>
+      </div>
 
-    <div class="d-flex align-items-center mb-3">
-      <div class="mr-2 text-muted">Symbol:</div>
-      <strong class="mr-3">{{ symbol() }}</strong>
-      <button class="btn btn-outline-primary btn-sm" (click)="refresh()" [disabled]="loading()">Refresh</button>
+      <!-- Header -->
+      <div class="page-header mb-4">
+        <h1 class="page-title">
+          {{ currentSymbol() || 'Asset Details' }}
+        </h1>
+      </div>
+
+      <!-- Price Card -->
+      <app-price-card
+        [price]="currentPrice()"
+        [loading]="isLoading()"
+        [error]="priceError()"
+        (refresh)="onRefresh()">
+      </app-price-card>
+
+      <!-- Info Text -->
+      <div class="info-box mt-4">
+        <p class="text-muted small mb-0">
+          💡 <strong>Tipp:</strong> Klicken Sie auf "Aktualisieren", um die neuesten Preisdaten zu laden.
+        </p>
+      </div>
     </div>
+  `,
+  styles: [`
+    .asset-detail-page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
 
-    <div *ngIf="loading()" class="alert alert-info py-2">Lade Quote…</div>
-    <div *ngIf="error()" class="alert alert-danger py-2">{{ error() }}</div>
+    .back-link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
 
-    <app-quote-card *ngIf="quote()" [vm]="quote()"></app-quote-card>
+    .back-link:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
 
-    <p class="text-muted small mt-3 mb-0">Automatische Aktualisierung alle 60 Sekunden.</p>
-  `
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0;
+      color: #333;
+    }
+
+    .info-box {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 1rem 1.5rem;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .asset-detail-page {
+        padding: 1.5rem 1rem;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+      }
+    }
+  `]
 })
-export class AssetDetailPageComponent {
+export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
-  private api = inject(MarketDataService);
+  private router = inject(Router);
+  readonly store = inject(MarketStore);
 
-  readonly symbol = signal<string>('');
-  readonly loading = signal<boolean>(false);
-  readonly error = signal<string | null>(null);
-  readonly quote = signal<QuoteVM | null>(null);
+  private destroy$ = new Subject<void>();
 
-  private manualTick = signal<number>(0);
-  readonly pollKey = computed(() => `${this.symbol()}#${this.manualTick()}`);
+  // Computed values from store
+  readonly currentSymbol = computed(() => this.store.selectedSymbol());
+  readonly currentPrice = computed(() => this.store.selectedPrice());
+  readonly isLoading = computed(() => {
+    const symbol = this.currentSymbol();
+    return symbol ? this.store.isLoadingPrice(symbol) : false;
+  });
 
-  constructor() {
-    // Symbol aus Route lesen
+  // Local error state for price loading
+  readonly priceError = computed(() => {
+    const symbol = this.currentSymbol();
+    const price = this.currentPrice();
+    const loading = this.isLoading();
+
+    // Show error if not loading, symbol exists, but no price
+    if (!loading && symbol && !price) {
+      return `Preis für ${symbol} konnte nicht geladen werden.`;
+    }
+    return null;
+  });
+
+  ngOnInit(): void {
+    // Listen to route parameter changes
     this.route.paramMap
-      .pipe(
-        map(pm => (pm.get('symbol') ?? '').toUpperCase().trim()),
-        distinctUntilChanged(),
-        tap(sym => { this.symbol.set(sym); this.quote.set(null); this.error.set(null); })
-      )
-      .subscribe();
-
-    // Effekt: startet Polling bei Änderung von symbol() oder manualTick()
-    effect((onCleanup) => {
-      void this.pollKey();    // <-- Dependency registrieren
-      const sym = this.symbol();
-      if (!sym) return;
-
-      const sub = timer(0, 60000).pipe(
-        tap(() => this.loading.set(true)),
-        switchMap(() =>
-          this.api.getQuote(sym).pipe(
-            tap(q => {
-              this.quote.set({
-                symbol: q.symbol,
-                name: q.name,
-                priceUsd: q.priceUsd,
-                updatedAt: q.updatedAt
-              });
-              this.error.set(null);
-            }),
-            catchError(err => {
-              console.error('[AssetDetail] getQuote failed', err);
-              this.error.set('Konnte Quote nicht laden.');
-              return of(null);
-            })
-          )
-        ),
-        tap(() => this.loading.set(false))
-      ).subscribe();
-
-      // Bei erneuter Ausführung/Destroy sauber aufräumen
-      onCleanup(() => sub.unsubscribe());
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const symbol = params.get('symbol');
+        if (symbol) {
+          const upperSymbol = symbol.toUpperCase();
+          this.loadSymbolData(upperSymbol);
+        } else {
+          // No symbol provided, redirect to market list
+          this.router.navigate(['/market']);
+        }
+      });
   }
 
-  refresh() {
-    this.manualTick.set(this.manualTick() + 1);
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private async loadSymbolData(symbol: string): Promise<void> {
+    // Ensure symbols are loaded first
+    if (!this.store.hasData()) {
+      await this.store.loadSymbols();
+    }
+
+    // Verify symbol exists
+    const symbolExists = this.store.symbols().some(s => s.symbol === symbol);
+    if (!symbolExists) {
+      console.warn(`Symbol ${symbol} not found in available symbols`);
+      // Could redirect to 404 or market list here
+    }
+
+    // Select and load price
+    await this.store.selectSymbol(symbol);
+  }
+
+  async onRefresh(): Promise<void> {
+    const symbol = this.currentSymbol();
+    if (symbol) {
+      await this.store.refreshPrice(symbol);
+    }
   }
 }
+

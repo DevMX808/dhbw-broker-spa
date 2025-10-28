@@ -1,36 +1,90 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MarketStore } from '../store/market.store';
-import { MarketCardComponent } from '../components/market-card/market-card.component';
-import { RouterLink } from '@angular/router';
+import { MarketListComponent } from '../components/market-list/market-list.component';
 
+/**
+ * Container component for /market route
+ * Manages data flow between Store and MarketListComponent
+ */
 @Component({
   standalone: true,
   selector: 'app-market-page',
-  imports: [CommonModule, MarketCardComponent, RouterLink],
+  imports: [CommonModule, MarketListComponent],
   template: `
-    <h1>Market</h1>
-
-    <div *ngIf="store.loading()" class="alert alert-info py-2">Lade Symbole…</div>
-    <div *ngIf="store.error()" class="alert alert-danger py-2">{{ store.error() }}</div>
-
-    <div class="row">
-      <div class="col-12 col-sm-6 col-md-4 mb-3" *ngFor="let s of store.symbols()">
-        <a [routerLink]="['/market', s.symbol]" class="link-plain">
-          <app-market-card
-            [name]="s.name"
-            [symbol]="s.symbol"
-            [priceUsd]="store.quotes()[s.symbol]?.priceUsd ?? null"
-            [changePct]="store.quotes()[s.symbol]?.changePct">
-          </app-market-card>
-        </a>
+    <div class="market-page">
+      <!-- Header -->
+      <div class="page-header mb-4">
+        <h1 class="page-title">Markt</h1>
+        <p class="page-subtitle text-muted">
+          Handelbare Symbole und aktuelle Preise
+        </p>
       </div>
+
+      <!-- Market List -->
+      <app-market-list
+        [symbols]="store.symbols()"
+        [pricesBySymbol]="store.pricesBySymbol()"
+        [loading]="store.loading().symbols"
+        [error]="store.error()"
+        [loadingPrices]="store.loading().priceBySymbol"
+        (retry)="onRetry()">
+      </app-market-list>
     </div>
-  `
+  `,
+  styles: [`
+    .market-page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    .page-subtitle {
+      font-size: 1rem;
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 768px) {
+      .market-page {
+        padding: 1.5rem 1rem;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+      }
+    }
+  `]
 })
 export class MarketPageComponent implements OnInit {
   readonly store = inject(MarketStore);
-  ngOnInit(): void {
-    if (!this.store.hasData()) this.store.loadSymbols();
+
+  async ngOnInit(): Promise<void> {
+    // Load symbols on page init
+    if (!this.store.hasData()) {
+      await this.store.loadSymbols();
+
+      // Optionally prefetch prices for first few symbols
+      const symbolsToPreload = this.store.symbols().slice(0, 6).map(s => s.symbol);
+      if (symbolsToPreload.length > 0) {
+        this.store.prefetchPrices(symbolsToPreload);
+      }
+    }
+  }
+
+  onRetry(): void {
+    this.store.loadSymbols();
   }
 }
+
+

@@ -21,3 +21,4 @@ export function mapQuote(dto: MarketQuoteDto): MarketQuote {
     changePct: typeof change === 'number' ? change : undefined
   };
 }
+

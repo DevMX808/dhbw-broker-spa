@@ -1,0 +1,1 @@
+import{a as n}from"./chunk-AJAH6LSW.js";import{q as o}from"./chunk-GBTQ25J6.js";import{V as r}from"./chunk-GMUHQ275.js";var p=(a,c)=>{let t=r(n),i=r(o),e=t.get();if(e&&!t.isExpired(e))return!0;let u=encodeURIComponent(c.url||"/");return i.navigateByUrl(`/account?redirectUrl=${u}`),!1};export{p as a};
