@@ -4,7 +4,7 @@ import { UnauthorizedComponent } from './pages/unauthorized/unauthorized.compone
 import { ErrorComponent } from './pages/error/error.component';
 
 export const routes: Routes = [
-git   { path: '', pathMatch: 'full', redirectTo: 'account' },
+  { path: '', pathMatch: 'full', redirectTo: 'account' },
   { path: 'account', loadChildren: () => import('./features/account/routes').then(m => m.ACCOUNT_ROUTES) },
   { path: 'market',  loadChildren: () => import('./features/market/routes').then(m => m.MARKET_ROUTES) },
   { path: 'trade',   loadChildren: () => import('./features/trade/routes').then(m => m.TRADE_ROUTES) },
