@@ -1,1 +1,145 @@
-/* You can add global styles to this file, and also import other style files */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior-y: none;
+}
+
+body.theme-dark {
+  min-height: 100vh;
+  color: #e6e6e6;
+  background: radial-gradient(circle at 50% 0, #0f0f0f, #000) fixed;
+}
+
+/* App-Layout */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.app-content {
+  flex: 1 1 auto;
+}
+.app-content.container {
+  padding: 1rem;
+}
+
+.navbar-dark.bg-dark {
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card {
+  position: relative; /* Für absolute Positionierung des Masks */
+  background: rgba(255, 255, 255, 0.05); /* Semi-transparente Weiß-Tönung für Dark Mode Glassmorphism */
+  backdrop-filter: blur(10px); /* Kern des Frosted-Glass-Effekts */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Leichte, transparente Border für Tiefe */
+  border-radius: 1rem; /* Etwas weichere Ecken für modernen Look */
+  color: #eaeaea;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Sanfter Schatten für Levitation-Effekt */
+  transition: transform .15s ease, box-shadow .15s ease, backdrop-filter .15s ease, background .15s ease;
+  overflow: hidden; /* Verhindert Overflow des Glows */
+  text-decoration: none; /* Entfernt Unterstreichungen */
+}
+
+.card * {
+  text-decoration: none; /* Entfernt Unterstreichungen für alle Kinder-Elemente */
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35); /* Verstärkter Schatten auf Hover */
+  backdrop-filter: blur(15px); /* Leicht stärkerer Blur für "Focus"-Effekt */
+  background: rgba(255, 255, 255, 0.08); /* Subtiler Farbshift für mehr Kontrast */
+}
+
+.app-footer {
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding: .75rem 1rem;
+  font-size: .875rem;
+  color: #9aa0a6;
+}
+
+.text-monospace {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.border-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 1rem; /* Anpassen an Card-Radius */
+  width: 100%;
+  height: 100%;
+  padding: 1px; /* Breite des Borders */
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0) border-box;
+  mask-composite: exclude;
+  pointer-events: none; /* Verhindert Interaktion mit dem Mask */
+}
+
+.border-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 500px; /* Groß genug, um die Card zu bedecken */
+  height: 500px;
+  transform: translate(-50%, -50%);
+  transform-origin: 0 0;
+  background: conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.8) 10%, transparent 20%); /* Angepasst für sanften Glow in dark Theme */
+  animation: rotateGlow 4s linear infinite; /* 4s Dauer, anpassbar */
+  opacity: 0.7; /* Etwas transparenter für subtilen Effekt */
+  transition: opacity .15s ease; /* Für sanften Hover-Übergang */
+}
+
+.card:hover .border-glow {
+  opacity: 0.9; /* Leichte Verstärkung des Glows auf Hover */
+}
+
+@keyframes rotateGlow {
+  0% {
+    transform: rotate(0deg) translate(-50%, -50%);
+  }
+  100% {
+    transform: rotate(360deg) translate(-50%, -50%);
+  }
+}
+
+.text-gradient {
+  --gt-from: #e7fffb;
+  --gt-to: rgba(255, 255, 255, 0);
+  --gt-stop: 93%;
+  --gt-angle: 180deg;
+  --gt-fallback: #e6e6e6;
+
+  background-image: linear-gradient(var(--gt-angle), var(--gt-from), var(--gt-to) var(--gt-stop));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  will-change: background-position;
+}
+
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .text-gradient {
+    background: none !important;
+    -webkit-text-fill-color: initial;
+    color: var(--gt-fallback);
+  }
+}
+
+.link-plain,
+.link-plain:hover,
+.link-plain:focus,
+.link-plain:active,
+.link-plain:visited {
+  color: inherit !important;
+  text-decoration: none !important;
+  display: block; /* kompletter Card-Bereich klickbar */
+}
+
+/* optional: gut sichtbarer, aber dezenter Fokusrahmen für Tastatur-Nutzer */
+.link-plain:focus-visible {
+  outline: 2px solid rgba(255,255,255,.25);
+  outline-offset: 2px;
+}

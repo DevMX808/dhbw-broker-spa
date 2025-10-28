@@ -1,31 +1,16 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { inject } from '@angular/core';
-
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 import { routes } from './app.routes';
-import { AuthService } from './core/services/auth.service';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { jwtInterceptor } from './core/auth/jwt-interceptor';
+import { errorInterceptor } from './core/http/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
-    provideHttpClient(withInterceptors([
-      (req, next) => {
-        const authService = inject(AuthService);
-        const token = authService.getToken();
-        
-        if (token && authService.isAuthenticated()) {
-          const authReq = req.clone({
-            setHeaders: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-          return next(authReq);
-        }
-        
-        return next(req);
-      }
-    ]))
+    provideRouter(routes, withEnabledBlockingInitialNavigation()),
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([jwtInterceptor, errorInterceptor])
+    )
   ]
 };

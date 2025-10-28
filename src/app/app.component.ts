@@ -1,27 +1,38 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { ApiService } from './core/services/api.service';
+import { Component, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
+import { AuthService } from './core/auth/auth.service';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
-  title = 'dhbw-broker-web';
+export class AppComponent {
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
-  constructor(private apiService: ApiService) {}
+  readonly isAuth = computed(() => this.auth.isAuthenticated());
+  readonly isAdmin = computed(() => this.auth.hasRole('ADMIN'));
+  readonly email = computed(() => this.auth.user()?.email ?? '');
 
-  ngOnInit(): void {
-    console.log('ngOnInit called');
-    this.apiService.getAllHealth().subscribe({
-      next: ([bffHealth, graphqlHealth]: [{ status: string }, { status: string }]) => {
-        console.log('BFF Health:', bffHealth.status, new Date().toISOString());
-        console.log('GraphQL Health:', graphqlHealth.status, new Date().toISOString());
-      },
-      error: (err ) => console.error('Health Fetch Error:', err)
+  // Signal to track if we're on an auth route
+  readonly isAuthRoute = signal(false);
+
+  constructor() {
+    // Listen to route changes
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.isAuthRoute.set(event.url.includes('/account'));
     });
+
+    // Set initial state
+    this.isAuthRoute.set(this.router.url.includes('/account'));
   }
+
+  logout() { this.auth.signOut(); }
 }

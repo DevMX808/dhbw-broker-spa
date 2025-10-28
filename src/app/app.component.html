@@ -1,2 +1,11 @@
-<!-- DHBW Broker Trading App -->
-<router-outlet />
+<div class="app-shell" [class.app-shell--fullscreen]="isAuthRoute()">
+  <nav *ngIf="!isAuthRoute()" class="navbar navbar-expand-lg navbar-dark">
+  </nav>
+
+  <main class="app-content" [class.container]="!isAuthRoute()">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer *ngIf="!isAuthRoute()" class="app-footer text-center text-muted">
+  </footer>
+</div>
