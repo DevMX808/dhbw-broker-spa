@@ -166,10 +166,15 @@ export class SignUpPageComponent {
       this.authService.signUp(this.userData).subscribe({
         next: (response) => {
           console.log('Registration successful:', response);
-          // Navigate to homepage after successful registration
-          setTimeout(() => {
-            this.router.navigate(['/home']);
-          }, 500);
+          // Zusätzlich prüfen ob User wirklich authentifiziert ist
+          if (response && response.accessToken && this.authService.isAuthenticated()) {
+            // Navigate to market page after successful registration
+            setTimeout(() => {
+              this.router.navigate(['/market']);
+            }, 500);
+          } else {
+            console.warn('Registration response received but user not authenticated');
+          }
         },
         error: (error) => {
           console.error('Registration failed:', error);

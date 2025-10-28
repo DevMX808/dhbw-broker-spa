@@ -123,14 +123,20 @@ export class SignInPageComponent {
       this.authService.signIn(this.credentials).subscribe({
         next: (response) => {
           console.log('Login successful:', response);
-          // Navigate to homepage after successful login
-          setTimeout(() => {
-            this.router.navigate(['/home']);
-          }, 500);
+          // Zusätzlich prüfen ob User wirklich authentifiziert ist
+          if (response && response.accessToken && this.authService.isAuthenticated()) {
+            // Navigate to market page after successful login
+            setTimeout(() => {
+              this.router.navigate(['/market']);
+            }, 500);
+          } else {
+            console.warn('Login response received but user not authenticated');
+          }
         },
         error: (error) => {
           console.error('Login failed:', error);
-          // Error handling is done in AuthService
+          // Bei Fehler auf Login-Seite bleiben
+          // Error wird bereits im AuthService angezeigt
         }
       });
     }
