@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: '/api' // Placeholder
+  apiBaseUrl: 'https://rocky-atoll-88358-b10b362cee67.herokuapp.com'
 };
