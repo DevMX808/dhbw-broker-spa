@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8080', // BFF Backend URL
+  apiBaseUrl: 'https://rocky-atoll-88358-b10b362cee67.herokuapp.com', // Heroku BFF Backend
 };
