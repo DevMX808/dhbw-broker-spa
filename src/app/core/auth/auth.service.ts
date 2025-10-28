@@ -78,9 +78,6 @@ export class AuthService {
     this.error.set(null);
 
     const loginUrl = `${this.baseUrl}/auth/login`;
-    console.log('🔐 DEBUG: Login URL:', loginUrl);
-    console.log('🔐 DEBUG: Base URL from environment:', this.baseUrl);
-    console.log('🔐 DEBUG: Is production?', environment.production);
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
@@ -89,18 +86,10 @@ export class AuthService {
     return this.http.post<JwtAuthResponse>(loginUrl, credentials, { headers })
       .pipe(
         map(response => {
-          console.log('✅ Login successful:', response);
           this.handleAuthResponse(response);
           return response;
         }),
         catchError(error => {
-          console.error('❌ Login error:', {
-            status: error.status,
-            statusText: error.statusText,
-            message: error.message,
-            url: error.url,
-            name: error.name
-          });
           this.handleAuthError(error);
           return throwError(() => error);
         })
@@ -192,26 +181,5 @@ export class AuthService {
     return new HttpHeaders({
       'Content-Type': 'application/json'
     });
-  }
-
-  // Debug method to get current token
-  getCurrentToken(): string | null {
-    return this.tokens.get();
-  }
-
-  // Debug method to get decoded token payload
-  getDecodedToken(): any {
-    const token = this.tokens.get();
-    return this.tokens.parsePayload(token);
-  }
-
-  // Debug method to log token info to console
-  logTokenInfo(): void {
-    const token = this.getCurrentToken();
-    const payload = this.getDecodedToken();
-    console.log('🔐 Current JWT Token:', token);
-    console.log('📋 Decoded Payload:', payload);
-    console.log('👤 Current User:', this.user());
-    console.log('🔒 Is Authenticated:', this.isAuthenticated());
   }
 }
