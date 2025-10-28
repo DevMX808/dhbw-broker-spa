@@ -77,17 +77,30 @@ export class AuthService {
     this.loading.set(true);
     this.error.set(null);
 
+    const loginUrl = `${this.baseUrl}/auth/login`;
+    console.log('🔐 DEBUG: Login URL:', loginUrl);
+    console.log('🔐 DEBUG: Base URL from environment:', this.baseUrl);
+    console.log('🔐 DEBUG: Is production?', environment.production);
+
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
 
-    return this.http.post<JwtAuthResponse>(`${this.baseUrl}/auth/login`, credentials, { headers })
+    return this.http.post<JwtAuthResponse>(loginUrl, credentials, { headers })
       .pipe(
         map(response => {
+          console.log('✅ Login successful:', response);
           this.handleAuthResponse(response);
           return response;
         }),
         catchError(error => {
+          console.error('❌ Login error:', {
+            status: error.status,
+            statusText: error.statusText,
+            message: error.message,
+            url: error.url,
+            name: error.name
+          });
           this.handleAuthError(error);
           return throwError(() => error);
         })
