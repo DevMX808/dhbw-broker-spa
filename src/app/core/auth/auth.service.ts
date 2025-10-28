@@ -1,7 +1,7 @@
 // src/app/core/auth/auth.service.ts
 import { Injectable, computed, signal, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, throwError, map } from 'rxjs';
+import { Observable, catchError, throwError, map, switchMap, defer } from 'rxjs';
 import { TokenStorageService, DevJwtPayload } from './token-storage.service';
 import { environment } from '../../../environments/environments';
 
@@ -33,6 +33,12 @@ export interface AuthUser {
   exp: number;
 }
 
+interface QueuedRequest {
+  credentials: SignInInput;
+  resolve: (value: JwtAuthResponse) => void;
+  reject: (error: any) => void;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -43,6 +49,10 @@ export class AuthService {
   readonly isAuthenticated = computed(() => !!this.user());
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
+
+  // Queue system for concurrent login requests
+  private loginQueue: QueuedRequest[] = [];
+  private isLoginInProgress = false;
 
   constructor() {
     this.initializeFromToken();
@@ -74,11 +84,34 @@ export class AuthService {
   }
 
   signIn(credentials: SignInInput): Observable<JwtAuthResponse> {
+    return defer(() => {
+      // If a login is already in progress, queue this request
+      if (this.isLoginInProgress) {
+        return new Observable<JwtAuthResponse>(subscriber => {
+          this.loginQueue.push({
+            credentials,
+            resolve: (response) => {
+              subscriber.next(response);
+              subscriber.complete();
+            },
+            reject: (error) => {
+              subscriber.error(error);
+            }
+          });
+        });
+      }
+
+      // Execute login immediately if no other login is in progress
+      return this.executeLogin(credentials);
+    });
+  }
+
+  private executeLogin(credentials: SignInInput): Observable<JwtAuthResponse> {
+    this.isLoginInProgress = true;
     this.loading.set(true);
     this.error.set(null);
 
     const loginUrl = `${this.baseUrl}/auth/login`;
-
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
@@ -87,13 +120,31 @@ export class AuthService {
       .pipe(
         map(response => {
           this.handleAuthResponse(response);
+          this.processLoginQueue(response, null);
           return response;
         }),
         catchError(error => {
           this.handleAuthError(error);
+          this.processLoginQueue(null, error);
           return throwError(() => error);
         })
       );
+  }
+
+  private processLoginQueue(response: JwtAuthResponse | null, error: any): void {
+    this.isLoginInProgress = false;
+    
+    // Process all queued requests with the same result
+    const queue = [...this.loginQueue];
+    this.loginQueue = [];
+    
+    queue.forEach(queuedRequest => {
+      if (response) {
+        queuedRequest.resolve(response);
+      } else if (error) {
+        queuedRequest.reject(error);
+      }
+    });
   }
 
   signUp(userData: SignUpInput): Observable<JwtAuthResponse> {
@@ -156,9 +207,24 @@ export class AuthService {
   }
 
   signOut(): void {
+    // Clear any pending login requests
+    this.clearLoginQueue();
+    this.isLoginInProgress = false;
+    
     this.tokens.clear();
     this.user.set(null);
     this.error.set(null);
+    this.loading.set(false);
+  }
+
+  private clearLoginQueue(): void {
+    const queue = [...this.loginQueue];
+    this.loginQueue = [];
+    
+    // Reject all queued requests since we're signing out
+    queue.forEach(queuedRequest => {
+      queuedRequest.reject(new Error('Login cancelled due to sign out'));
+    });
   }
 
   hasRole(role: string): boolean {
