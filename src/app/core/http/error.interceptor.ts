@@ -12,8 +12,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         const status = err.status;
 
         if (status === 401) {
-          console.warn('[HTTP] 401 Unauthorized → redirect to /account/sign-in');
-          router.navigateByUrl('/account/sign-in');
+          // Nicht weiterleiten bei Login/Register-Requests
+          const isAuthRequest = req.url.includes('/auth/login') || req.url.includes('/auth/register');
+          
+          if (!isAuthRequest) {
+            console.warn('[HTTP] 401 Unauthorized → redirect to /account');
+            router.navigateByUrl('/account');
+          } else {
+            console.warn('[HTTP] 401 on auth request - staying on current page');
+          }
         } else if (status === 403) {
           console.warn('[HTTP] 403 Forbidden → redirect to /unauthorized');
           router.navigateByUrl('/unauthorized');

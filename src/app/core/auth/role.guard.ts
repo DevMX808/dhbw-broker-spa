@@ -8,7 +8,7 @@ export const RoleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const router = inject(Router);
   const token = tokens.get();
   if (!token || tokens.isExpired(token)) {
-    router.navigateByUrl('/account/sign-in');
+    router.navigateByUrl('/account');
     return false;
   }
   const payload = tokens.parsePayload(token);

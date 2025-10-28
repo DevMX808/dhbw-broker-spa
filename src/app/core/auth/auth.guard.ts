@@ -11,6 +11,6 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: R
   if (valid) return true;
 
   const redirect = encodeURIComponent(state.url || '/');
-  router.navigateByUrl(`/account/sign-in?redirectUrl=${redirect}`);
+  router.navigateByUrl(`/account?redirectUrl=${redirect}`);
   return false;
 };
