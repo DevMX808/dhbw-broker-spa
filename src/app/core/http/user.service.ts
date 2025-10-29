@@ -36,14 +36,25 @@ export interface User {
 })
 export class UserService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = environment.production 
-    ? `${environment.apiBaseUrl}/api/user`
-    : 'http://localhost:8080/api/user';
+  private readonly baseUrl = this.getBaseUrl();
 
   constructor() {
     console.log('UserService baseUrl:', this.baseUrl);
     console.log('Environment production:', environment.production);
     console.log('Environment apiBaseUrl:', environment.apiBaseUrl);
+    console.log('Window location hostname:', window.location.hostname);
+  }
+
+  private getBaseUrl(): string {
+    // Heroku-Erkennung basierend auf Hostname
+    const isHeroku = window.location.hostname.includes('herokuapp.com');
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    if (isHeroku || (!isLocalhost && environment.production)) {
+      return `${environment.apiBaseUrl}/api/user`;
+    } else {
+      return 'http://localhost:8080/api/user';
+    }
   }
 
   updateProfile(request: UpdateProfileRequest): Observable<User> {
