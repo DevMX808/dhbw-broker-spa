@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MarketSymbol, MarketPrice } from '../../data-access/market.port';
@@ -128,7 +128,7 @@ import { MarketCardComponent } from '../market-card/market-card.component';
     }
   `]
 })
-export class MarketListComponent {
+export class MarketListComponent implements OnChanges {
   @Input() symbols: MarketSymbol[] = [];
   @Input() pricesBySymbol: Record<string, MarketPrice> = {};
   @Input() loading: boolean = false;
@@ -140,11 +140,27 @@ export class MarketListComponent {
 
   readonly skeletonArray = Array(6).fill(0);
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['pricesBySymbol']) {
+      const symbols = Object.keys(this.pricesBySymbol);
+      console.log(`[MarketList] Prices updated, count: ${symbols.length}, symbols:`, symbols);
+    }
+
+    if (changes['symbols']) {
+      console.log('[MarketList] Symbols updated, count:', this.symbols.length);
+    }
+
+    if (changes['loading']) {
+      console.log('[MarketList] Loading state:', this.loading);
+    }
+  }
+
   isLoadingPrice(symbol: string): boolean {
     return this.loadingPrices[symbol] ?? false;
   }
 
   onRetry(): void {
+    console.log('[MarketList] Retry clicked');
     this.retry.emit();
   }
 }

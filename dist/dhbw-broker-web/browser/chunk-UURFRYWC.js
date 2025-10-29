@@ -1,8 +1,8 @@
 import {
   authGuard
-} from "./chunk-KEPLL5J6.js";
-import "./chunk-DFJEWIOY.js";
-import "./chunk-ZKLCJJRR.js";
+} from "./chunk-MV2NKJQE.js";
+import "./chunk-JSOLXCOT.js";
+import "./chunk-OW27TKOS.js";
 import {
   ɵsetClassDebugInfo,
   ɵɵStandaloneFeature,
@@ -10,7 +10,7 @@ import {
   ɵɵelementEnd,
   ɵɵelementStart,
   ɵɵtext
-} from "./chunk-T4LT6FP2.js";
+} from "./chunk-ASFNRD7L.js";
 
 // src/app/features/wallet/containers/wallet-page.component.ts
 var WalletPageComponent = class _WalletPageComponent {
@@ -39,4 +39,4 @@ var WALLET_ROUTES = [
 export {
   WALLET_ROUTES
 };
-//# sourceMappingURL=chunk-OORE6IYQ.js.map
+//# sourceMappingURL=chunk-UURFRYWC.js.map

@@ -5,7 +5,7 @@ import {
   ɵɵelementEnd,
   ɵɵelementStart,
   ɵɵtext
-} from "./chunk-T4LT6FP2.js";
+} from "./chunk-ASFNRD7L.js";
 
 // src/app/features/settings/containers/settings-page.component.ts
 var SettingsPageComponent = class _SettingsPageComponent {
@@ -34,4 +34,4 @@ var SETTINGS_ROUTES = [
 export {
   SETTINGS_ROUTES
 };
-//# sourceMappingURL=chunk-NOONF274.js.map
+//# sourceMappingURL=chunk-5FXY52XG.js.map

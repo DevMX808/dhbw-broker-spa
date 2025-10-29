@@ -5,7 +5,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { jwtInterceptor } from './core/auth/jwt-interceptor';
 import { errorInterceptor } from './core/http/error.interceptor';
 import { MARKET_DATA_PORT } from './features/market/data-access/market.port';
-import { MockMarketDataAdapter } from './features/market/data-access/mock-market-data.adapter';
+import { HttpMarketDataAdapter } from './features/market/data-access/http-market-data.adapter';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,7 +14,7 @@ export const appConfig: ApplicationConfig = {
       withFetch(),
       withInterceptors([jwtInterceptor, errorInterceptor])
     ),
-    // Market data adapter (easily swappable)
-    { provide: MARKET_DATA_PORT, useClass: MockMarketDataAdapter }
+    // Market data adapter - using real HTTP API
+    { provide: MARKET_DATA_PORT, useClass: HttpMarketDataAdapter }
   ]
 };

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/features/market/data-access/market.port.ts"],
-  "sourcesContent": ["import { InjectionToken } from '@angular/core';\n\n/**\n * Port (Interface) for Market Data Access\n * Defines the contract for fetching market symbols and prices.\n * Can be implemented by MockMarketDataAdapter, HttpMarketDataAdapter, etc.\n */\n\nexport interface MarketSymbol {\n  name: string;\n  symbol: string;\n}\n\nexport interface MarketPrice {\n  name: string;\n  symbol: string;\n  price: number;\n  updatedAt: string; // ISO8601 format\n  updatedAtReadable: string;\n}\n\n/**\n * Market Data Port - contract for data access\n */\nexport interface MarketDataPort {\n  fetchSymbols(): Promise<MarketSymbol[]>;\n  fetchPrice(symbol: string): Promise<MarketPrice>;\n}\n\n/**\n * Injection token for MarketDataPort\n * Use this token to provide and inject the adapter\n */\nexport const MARKET_DATA_PORT = new InjectionToken<MarketDataPort>('MarketDataPort');\n\n"],
-  "mappings": ";;;;;AAiCO,IAAM,mBAAmB,IAAI,eAA+B,gBAAgB;",
-  "names": []
-}

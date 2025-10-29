@@ -1,6 +1,6 @@
 import {
   MARKET_DATA_PORT
-} from "./chunk-JYMSJ6VK.js";
+} from "./chunk-P4DKFGY5.js";
 import {
   ActivatedRoute,
   CommonModule,
@@ -10,7 +10,7 @@ import {
   NgIf,
   Router,
   RouterLink
-} from "./chunk-ZKLCJJRR.js";
+} from "./chunk-OW27TKOS.js";
 import {
   EventEmitter,
   Subject,
@@ -22,6 +22,7 @@ import {
   signal,
   takeUntil,
   ɵsetClassDebugInfo,
+  ɵɵNgOnChangesFeature,
   ɵɵStandaloneFeature,
   ɵɵadvance,
   ɵɵclassMapInterpolate1,
@@ -44,7 +45,7 @@ import {
   ɵɵtext,
   ɵɵtextInterpolate,
   ɵɵtextInterpolate1
-} from "./chunk-T4LT6FP2.js";
+} from "./chunk-ASFNRD7L.js";
 
 // src/app/features/market/store/market.store.ts
 var MarketStore = class _MarketStore {
@@ -64,6 +65,14 @@ var MarketStore = class _MarketStore {
   // timestamp in ms
   pendingRequests = {};
   // deduplication map
+  // Auto-refresh
+  autoRefreshInterval = null;
+  initialRefreshTimeout = null;
+  autoRefreshEnabled = false;
+  AUTO_REFRESH_INTERVAL_MS = 6e4;
+  // 60 seconds
+  REFRESH_AT_SECOND = 35;
+  // Sekunde im Minutenzyklus, zu der neue Daten kommen
   // Computed
   hasData = computed(() => this.symbols().length > 0);
   selectedPrice = computed(() => {
@@ -97,17 +106,29 @@ var MarketStore = class _MarketStore {
    */
   loadPrice(symbol, forceRefresh = false) {
     return __async(this, null, function* () {
+      const now = Date.now();
+      const cached = this.isCached(symbol);
+      console.log(`[MarketStore] loadPrice(${symbol}, forceRefresh=${forceRefresh})`, {
+        cached,
+        lastFetched: this.lastFetched[symbol] ? new Date(this.lastFetched[symbol]).toISOString() : "never",
+        ageMs: this.lastFetched[symbol] ? now - this.lastFetched[symbol] : null,
+        hasPrice: !!this.pricesBySymbol()[symbol]
+      });
       if (this.loading().priceBySymbol[symbol] && !forceRefresh) {
+        console.log(`[MarketStore] ${symbol} already loading, skipping`);
         return;
       }
-      if (!forceRefresh && this.isCached(symbol)) {
+      if (!forceRefresh && cached) {
+        console.log(`[MarketStore] ${symbol} using cached price`);
         return;
       }
       const pendingRequest = this.pendingRequests[symbol];
       if (pendingRequest && !forceRefresh) {
+        console.log(`[MarketStore] ${symbol} has pending request, awaiting...`);
         yield pendingRequest;
         return;
       }
+      console.log(`[MarketStore] ${symbol} fetching fresh price from API...`);
       this.loading.update((state) => __spreadProps(__spreadValues({}, state), {
         priceBySymbol: __spreadProps(__spreadValues({}, state.priceBySymbol), { [symbol]: true })
       }));
@@ -115,6 +136,11 @@ var MarketStore = class _MarketStore {
       this.pendingRequests[symbol] = pricePromise;
       try {
         const price = yield pricePromise;
+        console.log(`[MarketStore] ${symbol} price received:`, {
+          price: price.price,
+          updatedAt: price.updatedAt,
+          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+        });
         this.pricesBySymbol.update((prices) => __spreadProps(__spreadValues({}, prices), {
           [symbol]: price
         }));
@@ -174,6 +200,73 @@ var MarketStore = class _MarketStore {
   isLoadingPrice(symbol) {
     return this.loading().priceBySymbol[symbol] ?? false;
   }
+  /**
+   * Start auto-refresh for all loaded symbols
+   * Synchronizes to refresh at second 35 of each minute (when new data arrives in DB)
+   */
+  startAutoRefresh() {
+    if (this.autoRefreshEnabled) {
+      console.log("[MarketStore] Auto-refresh already enabled");
+      return;
+    }
+    const now = /* @__PURE__ */ new Date();
+    const currentSecond = now.getSeconds();
+    console.log(`[MarketStore] Starting auto-refresh (synced to second ${this.REFRESH_AT_SECOND} of each minute)`);
+    console.log(`[MarketStore] Current time: ${now.toISOString().substring(11, 19)} (second ${currentSecond})`);
+    this.autoRefreshEnabled = true;
+    let delayUntilNextRefresh;
+    if (currentSecond < this.REFRESH_AT_SECOND) {
+      delayUntilNextRefresh = (this.REFRESH_AT_SECOND - currentSecond) * 1e3;
+    } else {
+      delayUntilNextRefresh = (60 - currentSecond + this.REFRESH_AT_SECOND) * 1e3;
+    }
+    console.log(`[MarketStore] First refresh in ${Math.round(delayUntilNextRefresh / 1e3)} seconds (at second ${this.REFRESH_AT_SECOND})`);
+    this.initialRefreshTimeout = setTimeout(() => {
+      this.performRefresh();
+      this.autoRefreshInterval = setInterval(() => {
+        this.performRefresh();
+      }, this.AUTO_REFRESH_INTERVAL_MS);
+    }, delayUntilNextRefresh);
+  }
+  /**
+   * Perform the actual refresh of all symbols
+   */
+  performRefresh() {
+    const now = /* @__PURE__ */ new Date();
+    const symbolsToRefresh = Object.keys(this.pricesBySymbol());
+    console.log(`[MarketStore] \u27F3 Auto-refresh triggered at ${now.toISOString().substring(11, 19)} for ${symbolsToRefresh.length} symbols:`, symbolsToRefresh);
+    if (symbolsToRefresh.length > 0) {
+      symbolsToRefresh.forEach((symbol) => {
+        this.loadPrice(symbol, true);
+      });
+    } else {
+      console.log("[MarketStore] Auto-refresh: no symbols to refresh");
+    }
+  }
+  /**
+   * Stop auto-refresh
+   */
+  stopAutoRefresh() {
+    if (!this.autoRefreshEnabled) {
+      return;
+    }
+    console.log("[MarketStore] Stopping auto-refresh");
+    this.autoRefreshEnabled = false;
+    if (this.initialRefreshTimeout) {
+      clearTimeout(this.initialRefreshTimeout);
+      this.initialRefreshTimeout = null;
+    }
+    if (this.autoRefreshInterval) {
+      clearInterval(this.autoRefreshInterval);
+      this.autoRefreshInterval = null;
+    }
+  }
+  /**
+   * Check if auto-refresh is enabled
+   */
+  isAutoRefreshEnabled() {
+    return this.autoRefreshEnabled;
+  }
   static \u0275fac = function MarketStore_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _MarketStore)();
   };
@@ -210,11 +303,42 @@ function MarketCardComponent_div_14_Template(rf, ctx) {
     \u0275\u0275elementEnd();
   }
 }
+function MarketCardComponent_div_15_span_1_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "span");
+    \u0275\u0275text(1, "\u2191");
+    \u0275\u0275elementEnd();
+  }
+}
+function MarketCardComponent_div_15_span_2_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "span");
+    \u0275\u0275text(1, "\u2193");
+    \u0275\u0275elementEnd();
+  }
+}
+function MarketCardComponent_div_15_span_3_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "span");
+    \u0275\u0275text(1, "\u2192");
+    \u0275\u0275elementEnd();
+  }
+}
 function MarketCardComponent_div_15_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "div", 16);
-    \u0275\u0275text(1, "\u2191");
+    \u0275\u0275template(1, MarketCardComponent_div_15_span_1_Template, 2, 0, "span", 17)(2, MarketCardComponent_div_15_span_2_Template, 2, 0, "span", 17)(3, MarketCardComponent_div_15_span_3_Template, 2, 0, "span", 17);
     \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275classProp("change-indicator--positive", ctx_r0.price.changePct > 0)("change-indicator--negative", ctx_r0.price.changePct < 0)("change-indicator--neutral", ctx_r0.price.changePct === 0);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.price.changePct > 0);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.price.changePct < 0);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", ctx_r0.price.changePct === 0);
   }
 }
 var MarketCardComponent = class _MarketCardComponent {
@@ -222,10 +346,25 @@ var MarketCardComponent = class _MarketCardComponent {
   price;
   loading = false;
   select = new EventEmitter();
+  ngOnChanges(changes) {
+    if (changes["price"] && this.price) {
+      console.log(`[MarketCard ${this.symbol.symbol}] Price updated:`, {
+        price: this.price.price,
+        changePct: this.price.changePct,
+        changeDirection: this.price.changePct === void 0 ? "unknown" : this.price.changePct > 0 ? "up \u2191" : this.price.changePct < 0 ? "down \u2193" : "neutral \u2192",
+        updatedAt: this.price.updatedAt,
+        updatedAtReadable: this.price.updatedAtReadable,
+        timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      });
+    }
+    if (changes["loading"]) {
+      console.log(`[MarketCard ${this.symbol.symbol}] Loading state:`, this.loading);
+    }
+  }
   static \u0275fac = function MarketCardComponent_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _MarketCardComponent)();
   };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _MarketCardComponent, selectors: [["app-market-card"]], inputs: { symbol: "symbol", price: "price", loading: "loading" }, outputs: { select: "select" }, standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 16, vars: 11, consts: [[1, "market-card"], [1, "header"], [1, "asset-name"], [1, "separator"], [1, "ticker"], [1, "price-section"], ["class", "skeleton-loader", 4, "ngIf"], ["class", "price-content", 4, "ngIf"], ["class", "no-price", 4, "ngIf"], ["class", "change-indicator", 4, "ngIf"], [1, "skeleton-loader"], [1, "skeleton-box", "skeleton-price"], [1, "price-content"], [1, "price-value"], [1, "price-currency"], [1, "no-price"], [1, "change-indicator"]], template: function MarketCardComponent_Template(rf, ctx) {
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _MarketCardComponent, selectors: [["app-market-card"]], inputs: { symbol: "symbol", price: "price", loading: "loading" }, outputs: { select: "select" }, standalone: true, features: [\u0275\u0275NgOnChangesFeature, \u0275\u0275StandaloneFeature], decls: 16, vars: 11, consts: [[1, "market-card"], [1, "header"], [1, "asset-name"], [1, "separator"], [1, "ticker"], [1, "price-section"], ["class", "skeleton-loader", 4, "ngIf"], ["class", "price-content", 4, "ngIf"], ["class", "no-price", 4, "ngIf"], ["class", "change-indicator", 3, "change-indicator--positive", "change-indicator--negative", "change-indicator--neutral", 4, "ngIf"], [1, "skeleton-loader"], [1, "skeleton-box", "skeleton-price"], [1, "price-content"], [1, "price-value"], [1, "price-currency"], [1, "no-price"], [1, "change-indicator"], [4, "ngIf"]], template: function MarketCardComponent_Template(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275elementStart(0, "div", 0)(1, "div", 1)(2, "div")(3, "span");
       \u0275\u0275text(4, "\u2666");
@@ -242,7 +381,7 @@ var MarketCardComponent = class _MarketCardComponent {
       \u0275\u0275elementStart(11, "div", 5);
       \u0275\u0275template(12, MarketCardComponent_div_12_Template, 2, 0, "div", 6)(13, MarketCardComponent_div_13_Template, 6, 4, "div", 7)(14, MarketCardComponent_div_14_Template, 2, 0, "div", 8);
       \u0275\u0275elementEnd();
-      \u0275\u0275template(15, MarketCardComponent_div_15_Template, 2, 0, "div", 9);
+      \u0275\u0275template(15, MarketCardComponent_div_15_Template, 4, 9, "div", 9);
       \u0275\u0275elementEnd();
     }
     if (rf & 2) {
@@ -260,9 +399,9 @@ var MarketCardComponent = class _MarketCardComponent {
       \u0275\u0275advance();
       \u0275\u0275property("ngIf", !ctx.loading && !ctx.price);
       \u0275\u0275advance();
-      \u0275\u0275property("ngIf", !ctx.loading && ctx.price);
+      \u0275\u0275property("ngIf", !ctx.loading && ctx.price && ctx.price.changePct !== void 0 && ctx.price.changePct !== null);
     }
-  }, dependencies: [CommonModule, NgIf, DecimalPipe], styles: ['\n\n[_nghost-%COMP%] {\n  display: block;\n  height: 100%;\n}\n.market-card[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n  min-height: 160px;\n  padding: 1.25rem 1rem;\n  background:\n    linear-gradient(\n      180deg,\n      #000000 0%,\n      #1a1a1a 50%,\n      #0d0d0d 100%);\n  border-radius: 0.75rem;\n  cursor: pointer;\n  transition: all 0.15s ease-out;\n  color: white;\n  font-family:\n    "Inter",\n    -apple-system,\n    BlinkMacSystemFont,\n    "Segoe UI",\n    Roboto,\n    sans-serif;\n  position: relative;\n}\n.market-card[_ngcontent-%COMP%]:hover {\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);\n  transform: translateY(-2px);\n}\n.market-card--loading[_ngcontent-%COMP%] {\n  opacity: 0.85;\n}\n.header[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  margin-bottom: 0.5rem;\n}\n.symbol-icon[_ngcontent-%COMP%] {\n  width: 1.5rem;\n  height: 1.5rem;\n  border-radius: 50%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 1rem;\n  flex-shrink: 0;\n  margin-right: 0.5rem;\n}\n.icon-xag[_ngcontent-%COMP%] {\n  background: #c0c0c0;\n  color: #1f2937;\n}\n.icon-xau[_ngcontent-%COMP%] {\n  background: #ffd700;\n  color: #1f2937;\n}\n.icon-btc[_ngcontent-%COMP%] {\n  background: #f7931a;\n  color: #1f2937;\n}\n.icon-eth[_ngcontent-%COMP%] {\n  background: #627eea;\n  color: white;\n}\n.icon-xpd[_ngcontent-%COMP%] {\n  background: #e5e4e2;\n  color: #1f2937;\n}\n.icon-hg[_ngcontent-%COMP%] {\n  background: #b87333;\n  color: white;\n}\n.asset-name[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  font-weight: 600;\n  line-height: 1;\n  color: white;\n  margin-right: 0.25rem;\n}\n.separator[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  font-weight: 400;\n  color: #9ca3af;\n  margin-right: 0.25rem;\n}\n.ticker[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  font-weight: 300;\n  line-height: 1;\n  color: #9ca3af;\n}\n.price-section[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  margin-top: auto;\n}\n.price-content[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n}\n.price-value[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  font-weight: 500;\n  line-height: 1;\n  color: white;\n}\n.price-currency[_ngcontent-%COMP%] {\n  font-size: 1rem;\n  font-weight: 300;\n  color: #9ca3af;\n  margin-left: 0.25rem;\n}\n.no-price[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  color: #6b7280;\n  font-weight: 500;\n}\n.change-indicator[_ngcontent-%COMP%] {\n  position: absolute;\n  bottom: 1rem;\n  right: 1rem;\n  font-size: 1.5rem;\n  color: #22c55e;\n}\n.skeleton-loader[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n}\n.skeleton-box[_ngcontent-%COMP%] {\n  background: #1f2937;\n  border-radius: 0.25rem;\n  animation: _ngcontent-%COMP%_pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n.skeleton-price[_ngcontent-%COMP%] {\n  height: 2rem;\n  width: 45%;\n}\n@keyframes _ngcontent-%COMP%_pulse {\n  0%, 100% {\n    opacity: 1;\n  }\n  50% {\n    opacity: 0.5;\n  }\n}\n/*# sourceMappingURL=market-card.component.css.map */'] });
+  }, dependencies: [CommonModule, NgIf, DecimalPipe], styles: ['@charset "UTF-8";\n\n\n\n[_nghost-%COMP%] {\n  display: block;\n  height: 100%;\n}\n.market-card[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  justify-content: space-between;\n  min-height: 160px;\n  padding: 1.25rem 1rem;\n  background:\n    linear-gradient(\n      180deg,\n      #000000 0%,\n      #1a1a1a 50%,\n      #0d0d0d 100%);\n  border-radius: 0.75rem;\n  cursor: pointer;\n  transition: all 0.15s ease-out;\n  color: white;\n  font-family:\n    "Inter",\n    -apple-system,\n    BlinkMacSystemFont,\n    "Segoe UI",\n    Roboto,\n    sans-serif;\n  position: relative;\n}\n.market-card[_ngcontent-%COMP%]:hover {\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);\n  transform: translateY(-2px);\n}\n.market-card--loading[_ngcontent-%COMP%] {\n  opacity: 0.85;\n}\n.header[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  margin-bottom: 0.5rem;\n}\n.symbol-icon[_ngcontent-%COMP%] {\n  width: 1.5rem;\n  height: 1.5rem;\n  border-radius: 50%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  font-size: 1rem;\n  flex-shrink: 0;\n  margin-right: 0.5rem;\n}\n.icon-xag[_ngcontent-%COMP%] {\n  background: #c0c0c0;\n  color: #1f2937;\n}\n.icon-xau[_ngcontent-%COMP%] {\n  background: #ffd700;\n  color: #1f2937;\n}\n.icon-btc[_ngcontent-%COMP%] {\n  background: #f7931a;\n  color: #1f2937;\n}\n.icon-eth[_ngcontent-%COMP%] {\n  background: #627eea;\n  color: white;\n}\n.icon-xpd[_ngcontent-%COMP%] {\n  background: #e5e4e2;\n  color: #1f2937;\n}\n.icon-hg[_ngcontent-%COMP%] {\n  background: #b87333;\n  color: white;\n}\n.asset-name[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  font-weight: 600;\n  line-height: 1;\n  color: white;\n  margin-right: 0.25rem;\n}\n.separator[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  font-weight: 400;\n  color: #9ca3af;\n  margin-right: 0.25rem;\n}\n.ticker[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  font-weight: 300;\n  line-height: 1;\n  color: #9ca3af;\n}\n.price-section[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  margin-top: auto;\n}\n.price-content[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n}\n.price-value[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  font-weight: 500;\n  line-height: 1;\n  color: white;\n}\n.price-currency[_ngcontent-%COMP%] {\n  font-size: 1rem;\n  font-weight: 300;\n  color: #9ca3af;\n  margin-left: 0.25rem;\n}\n.no-price[_ngcontent-%COMP%] {\n  font-size: 1.625rem;\n  color: #6b7280;\n  font-weight: 500;\n}\n.change-indicator[_ngcontent-%COMP%] {\n  position: absolute;\n  bottom: 1rem;\n  right: 1rem;\n  font-size: 1.5rem;\n  font-weight: bold;\n  transition: color 0.3s ease;\n}\n.change-indicator--positive[_ngcontent-%COMP%] {\n  color: #22c55e;\n}\n.change-indicator--negative[_ngcontent-%COMP%] {\n  color: #ef4444;\n}\n.change-indicator--neutral[_ngcontent-%COMP%] {\n  color: #9ca3af;\n}\n.skeleton-loader[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n}\n.skeleton-box[_ngcontent-%COMP%] {\n  background: #1f2937;\n  border-radius: 0.25rem;\n  animation: _ngcontent-%COMP%_pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n.skeleton-price[_ngcontent-%COMP%] {\n  height: 2rem;\n  width: 45%;\n}\n@keyframes _ngcontent-%COMP%_pulse {\n  0%, 100% {\n    opacity: 1;\n  }\n  50% {\n    opacity: 0.5;\n  }\n}\n/*# sourceMappingURL=market-card.component.css.map */'] });
 };
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(MarketCardComponent, { className: "MarketCardComponent" });
@@ -361,16 +500,29 @@ var MarketListComponent = class _MarketListComponent {
   selectSymbol = new EventEmitter();
   retry = new EventEmitter();
   skeletonArray = Array(6).fill(0);
+  ngOnChanges(changes) {
+    if (changes["pricesBySymbol"]) {
+      const symbols = Object.keys(this.pricesBySymbol);
+      console.log(`[MarketList] Prices updated, count: ${symbols.length}, symbols:`, symbols);
+    }
+    if (changes["symbols"]) {
+      console.log("[MarketList] Symbols updated, count:", this.symbols.length);
+    }
+    if (changes["loading"]) {
+      console.log("[MarketList] Loading state:", this.loading);
+    }
+  }
   isLoadingPrice(symbol) {
     return this.loadingPrices[symbol] ?? false;
   }
   onRetry() {
+    console.log("[MarketList] Retry clicked");
     this.retry.emit();
   }
   static \u0275fac = function MarketListComponent_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _MarketListComponent)();
   };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _MarketListComponent, selectors: [["app-market-list"]], inputs: { symbols: "symbols", pricesBySymbol: "pricesBySymbol", loading: "loading", error: "error", loadingPrices: "loadingPrices" }, outputs: { selectSymbol: "selectSymbol", retry: "retry" }, standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 4, vars: 4, consts: [["class", "market-grid", 4, "ngIf"], ["class", "alert alert-danger d-flex align-items-center justify-content-between", 4, "ngIf"], ["class", "empty-state", 4, "ngIf"], [1, "market-grid"], ["class", "market-grid-item", 4, "ngFor", "ngForOf"], [1, "market-grid-item"], [1, "card", "h-100"], [1, "card-body"], [1, "skeleton-box", "mb-2", 2, "height", "24px", "width", "70%"], [1, "skeleton-box", "mb-3", 2, "height", "16px", "width", "40%"], [1, "skeleton-box", 2, "height", "32px", "width", "50%"], [1, "alert", "alert-danger", "d-flex", "align-items-center", "justify-content-between"], [1, "btn", "btn-outline-danger", "btn-sm", 3, "click"], [1, "empty-state"], [1, "empty-icon"], [1, "text-muted"], [1, "card-link", 3, "routerLink"], [3, "symbol", "price", "loading"]], template: function MarketListComponent_Template(rf, ctx) {
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _MarketListComponent, selectors: [["app-market-list"]], inputs: { symbols: "symbols", pricesBySymbol: "pricesBySymbol", loading: "loading", error: "error", loadingPrices: "loadingPrices" }, outputs: { selectSymbol: "selectSymbol", retry: "retry" }, standalone: true, features: [\u0275\u0275NgOnChangesFeature, \u0275\u0275StandaloneFeature], decls: 4, vars: 4, consts: [["class", "market-grid", 4, "ngIf"], ["class", "alert alert-danger d-flex align-items-center justify-content-between", 4, "ngIf"], ["class", "empty-state", 4, "ngIf"], [1, "market-grid"], ["class", "market-grid-item", 4, "ngFor", "ngForOf"], [1, "market-grid-item"], [1, "card", "h-100"], [1, "card-body"], [1, "skeleton-box", "mb-2", 2, "height", "24px", "width", "70%"], [1, "skeleton-box", "mb-3", 2, "height", "16px", "width", "40%"], [1, "skeleton-box", 2, "height", "32px", "width", "50%"], [1, "alert", "alert-danger", "d-flex", "align-items-center", "justify-content-between"], [1, "btn", "btn-outline-danger", "btn-sm", 3, "click"], [1, "empty-state"], [1, "empty-icon"], [1, "text-muted"], [1, "card-link", 3, "routerLink"], [3, "symbol", "price", "loading"]], template: function MarketListComponent_Template(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275template(0, MarketListComponent_div_0_Template, 2, 1, "div", 0)(1, MarketListComponent_div_1_Template, 7, 1, "div", 1)(2, MarketListComponent_div_2_Template, 7, 0, "div", 2)(3, MarketListComponent_div_3_Template, 2, 1, "div", 0);
     }
@@ -394,40 +546,57 @@ var MarketPageComponent = class _MarketPageComponent {
   store = inject(MarketStore);
   ngOnInit() {
     return __async(this, null, function* () {
+      console.log("[MarketPage] Initializing...");
       if (!this.store.hasData()) {
+        console.log("[MarketPage] No data yet, loading symbols...");
         yield this.store.loadSymbols();
         const symbolsToPreload = this.store.symbols().slice(0, 6).map((s) => s.symbol);
         if (symbolsToPreload.length > 0) {
+          console.log("[MarketPage] Prefetching prices for symbols:", symbolsToPreload);
           this.store.prefetchPrices(symbolsToPreload);
         }
+      } else {
+        console.log("[MarketPage] Data already loaded, symbols count:", this.store.symbols().length);
       }
+      console.log("[MarketPage] Starting auto-refresh...");
+      this.store.startAutoRefresh();
     });
   }
+  ngOnDestroy() {
+    console.log("[MarketPage] Destroying, stopping auto-refresh...");
+    this.store.stopAutoRefresh();
+  }
   onRetry() {
+    console.log("[MarketPage] Retry clicked, reloading symbols...");
     this.store.loadSymbols();
   }
   static \u0275fac = function MarketPageComponent_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _MarketPageComponent)();
   };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _MarketPageComponent, selectors: [["app-market-page"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 7, vars: 5, consts: [[1, "market-page"], [1, "page-header", "mb-4"], [1, "page-title"], [1, "page-subtitle", "text-muted"], [3, "retry", "symbols", "pricesBySymbol", "loading", "error", "loadingPrices"]], template: function MarketPageComponent_Template(rf, ctx) {
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _MarketPageComponent, selectors: [["app-market-page"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 11, vars: 5, consts: [[1, "market-page"], [1, "page-header", "mb-4"], [1, "page-title"], [1, "page-subtitle", "text-muted"], [1, "auto-refresh-indicator"], [1, "indicator-dot"], [1, "indicator-text"], [3, "retry", "symbols", "pricesBySymbol", "loading", "error", "loadingPrices"]], template: function MarketPageComponent_Template(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275elementStart(0, "div", 0)(1, "div", 1)(2, "h1", 2);
       \u0275\u0275text(3, "Markt");
       \u0275\u0275elementEnd();
       \u0275\u0275elementStart(4, "p", 3);
       \u0275\u0275text(5, " Handelbare Symbole und aktuelle Preise ");
-      \u0275\u0275elementEnd()();
-      \u0275\u0275elementStart(6, "app-market-list", 4);
-      \u0275\u0275listener("retry", function MarketPageComponent_Template_app_market_list_retry_6_listener() {
+      \u0275\u0275elementEnd();
+      \u0275\u0275elementStart(6, "div", 4);
+      \u0275\u0275element(7, "span", 5);
+      \u0275\u0275elementStart(8, "span", 6);
+      \u0275\u0275text(9, "Preise werden automatisch zur Sekunde :35 jeder Minute aktualisiert");
+      \u0275\u0275elementEnd()()();
+      \u0275\u0275elementStart(10, "app-market-list", 7);
+      \u0275\u0275listener("retry", function MarketPageComponent_Template_app_market_list_retry_10_listener() {
         return ctx.onRetry();
       });
       \u0275\u0275elementEnd()();
     }
     if (rf & 2) {
-      \u0275\u0275advance(6);
+      \u0275\u0275advance(10);
       \u0275\u0275property("symbols", ctx.store.symbols())("pricesBySymbol", ctx.store.pricesBySymbol())("loading", ctx.store.loading().symbols)("error", ctx.store.error())("loadingPrices", ctx.store.loading().priceBySymbol);
     }
-  }, dependencies: [CommonModule, MarketListComponent], styles: ["\n\n.market-page[_ngcontent-%COMP%] {\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 2rem 1rem;\n}\n.page-header[_ngcontent-%COMP%] {\n  margin-bottom: 2rem;\n}\n.page-title[_ngcontent-%COMP%] {\n  font-size: 2rem;\n  font-weight: 700;\n  margin-bottom: 0.5rem;\n  color: #333;\n}\n.page-subtitle[_ngcontent-%COMP%] {\n  font-size: 1rem;\n  margin-bottom: 0;\n}\n@media (max-width: 768px) {\n  .market-page[_ngcontent-%COMP%] {\n    padding: 1.5rem 1rem;\n  }\n  .page-title[_ngcontent-%COMP%] {\n    font-size: 1.5rem;\n  }\n}\n/*# sourceMappingURL=market-page.component.css.map */"] });
+  }, dependencies: [CommonModule, MarketListComponent], styles: ["\n\n.market-page[_ngcontent-%COMP%] {\n  max-width: 1400px;\n  margin: 0 auto;\n  padding: 2rem 1rem;\n}\n.page-header[_ngcontent-%COMP%] {\n  margin-bottom: 2rem;\n}\n.page-title[_ngcontent-%COMP%] {\n  font-size: 2rem;\n  font-weight: 700;\n  margin-bottom: 0.5rem;\n  color: #e6e6e6;\n}\n.page-subtitle[_ngcontent-%COMP%] {\n  font-size: 1rem;\n  margin-bottom: 1rem;\n  color: #9aa0a6;\n}\n.auto-refresh-indicator[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  gap: 0.5rem;\n  padding: 0.5rem 0.75rem;\n  background: rgba(34, 197, 94, 0.1);\n  border: 1px solid rgba(34, 197, 94, 0.3);\n  border-radius: 0.5rem;\n  margin-top: 0.75rem;\n  width: fit-content;\n}\n.indicator-dot[_ngcontent-%COMP%] {\n  width: 8px;\n  height: 8px;\n  background: #22c55e;\n  border-radius: 50%;\n  animation: _ngcontent-%COMP%_pulse-dot 2s ease-in-out infinite;\n}\n@keyframes _ngcontent-%COMP%_pulse-dot {\n  0%, 100% {\n    opacity: 1;\n    transform: scale(1);\n  }\n  50% {\n    opacity: 0.6;\n    transform: scale(1.2);\n  }\n}\n.indicator-text[_ngcontent-%COMP%] {\n  font-size: 0.875rem;\n  color: #22c55e;\n  font-weight: 500;\n}\n@media (max-width: 768px) {\n  .market-page[_ngcontent-%COMP%] {\n    padding: 1.5rem 1rem;\n  }\n  .page-title[_ngcontent-%COMP%] {\n    font-size: 1.5rem;\n  }\n  .auto-refresh-indicator[_ngcontent-%COMP%] {\n    font-size: 0.8rem;\n  }\n  .indicator-text[_ngcontent-%COMP%] {\n    font-size: 0.75rem;\n  }\n}\n/*# sourceMappingURL=market-page.component.css.map */"] });
 };
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(MarketPageComponent, { className: "MarketPageComponent" });
@@ -662,4 +831,4 @@ var MARKET_ROUTES = [
 export {
   MARKET_ROUTES
 };
-//# sourceMappingURL=chunk-IJKZASJZ.js.map
+//# sourceMappingURL=chunk-2SASQIRC.js.map

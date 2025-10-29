@@ -1,8 +1,8 @@
 import {
   authGuard
-} from "./chunk-KEPLL5J6.js";
-import "./chunk-DFJEWIOY.js";
-import "./chunk-ZKLCJJRR.js";
+} from "./chunk-MV2NKJQE.js";
+import "./chunk-JSOLXCOT.js";
+import "./chunk-OW27TKOS.js";
 import {
   ɵsetClassDebugInfo,
   ɵɵStandaloneFeature,
@@ -10,7 +10,7 @@ import {
   ɵɵelementEnd,
   ɵɵelementStart,
   ɵɵtext
-} from "./chunk-T4LT6FP2.js";
+} from "./chunk-ASFNRD7L.js";
 
 // src/app/features/trade/containers/trade-page.component.ts
 var TradePageComponent = class _TradePageComponent {
@@ -39,4 +39,4 @@ var TRADE_ROUTES = [
 export {
   TRADE_ROUTES
 };
-//# sourceMappingURL=chunk-6QA6LUSL.js.map
+//# sourceMappingURL=chunk-BCDJ2HOC.js.map

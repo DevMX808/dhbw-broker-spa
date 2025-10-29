@@ -1,14 +1,16 @@
 import {
-  AuthService
-} from "./chunk-TR4LX764.js";
+  AuthService,
+  environment
+} from "./chunk-O2R6TYRU.js";
 import {
   MARKET_DATA_PORT
-} from "./chunk-JYMSJ6VK.js";
+} from "./chunk-P4DKFGY5.js";
 import {
   TokenStorageService
-} from "./chunk-DFJEWIOY.js";
+} from "./chunk-JSOLXCOT.js";
 import {
   CommonModule,
+  HttpClient,
   HttpErrorResponse,
   NavigationEnd,
   Router,
@@ -19,14 +21,13 @@ import {
   withEnabledBlockingInitialNavigation,
   withFetch,
   withInterceptors
-} from "./chunk-ZKLCJJRR.js";
+} from "./chunk-OW27TKOS.js";
 import {
   __async,
-  __spreadProps,
-  __spreadValues,
   catchError,
   computed,
   filter,
+  firstValueFrom,
   inject,
   signal,
   throwError,
@@ -40,7 +41,7 @@ import {
   ɵɵelementEnd,
   ɵɵelementStart,
   ɵɵtext
-} from "./chunk-T4LT6FP2.js";
+} from "./chunk-ASFNRD7L.js";
 
 // src/app/pages/not-found/not-found.component.ts
 var NotFoundComponent = class _NotFoundComponent {
@@ -105,13 +106,13 @@ var ErrorComponent = class _ErrorComponent {
 // src/app/app.routes.ts
 var routes = [
   { path: "", pathMatch: "full", redirectTo: "account" },
-  { path: "account", loadChildren: () => import("./chunk-67O4KZ63.js").then((m) => m.ACCOUNT_ROUTES) },
-  { path: "market", loadChildren: () => import("./chunk-IJKZASJZ.js").then((m) => m.MARKET_ROUTES) },
-  { path: "trade", loadChildren: () => import("./chunk-6QA6LUSL.js").then((m) => m.TRADE_ROUTES) },
-  { path: "portfolio", loadChildren: () => import("./chunk-FSHLRJLJ.js").then((m) => m.PORTFOLIO_ROUTES) },
-  { path: "wallet", loadChildren: () => import("./chunk-OORE6IYQ.js").then((m) => m.WALLET_ROUTES) },
-  { path: "settings", loadChildren: () => import("./chunk-NOONF274.js").then((m) => m.SETTINGS_ROUTES) },
-  { path: "admin", loadChildren: () => import("./chunk-SVLTQWP3.js").then((m) => m.ADMIN_ROUTES) },
+  { path: "account", loadChildren: () => import("./chunk-DLVK5QIE.js").then((m) => m.ACCOUNT_ROUTES) },
+  { path: "market", loadChildren: () => import("./chunk-2SASQIRC.js").then((m) => m.MARKET_ROUTES) },
+  { path: "trade", loadChildren: () => import("./chunk-BCDJ2HOC.js").then((m) => m.TRADE_ROUTES) },
+  { path: "portfolio", loadChildren: () => import("./chunk-UALTYOBA.js").then((m) => m.PORTFOLIO_ROUTES) },
+  { path: "wallet", loadChildren: () => import("./chunk-UURFRYWC.js").then((m) => m.WALLET_ROUTES) },
+  { path: "settings", loadChildren: () => import("./chunk-5FXY52XG.js").then((m) => m.SETTINGS_ROUTES) },
+  { path: "admin", loadChildren: () => import("./chunk-RMTEO5S6.js").then((m) => m.ADMIN_ROUTES) },
   { path: "unauthorized", component: UnauthorizedComponent, title: "Unauthorized" },
   { path: "error", component: ErrorComponent, title: "Error" },
   { path: "**", component: NotFoundComponent, title: "Not Found" }
@@ -172,77 +173,111 @@ var errorInterceptor = (req, next) => {
   }));
 };
 
-// src/app/features/market/data-access/mock-market-data.adapter.ts
-var MockMarketDataAdapter = class _MockMarketDataAdapter {
-  mockSymbols = [
-    { name: "Silver", symbol: "XAG" },
-    { name: "Gold", symbol: "XAU" },
-    { name: "Bitcoin", symbol: "BTC" },
-    { name: "Ethereum", symbol: "ETH" },
-    { name: "Palladium", symbol: "XPD" },
-    { name: "Copper", symbol: "HG" }
-  ];
-  mockPrices = {
-    XAG: { name: "Silver", symbol: "XAG", price: 34.52 },
-    XAU: { name: "Gold", symbol: "XAU", price: 3952.699951 },
-    BTC: { name: "Bitcoin", symbol: "BTC", price: 67234.89 },
-    ETH: { name: "Ethereum", symbol: "ETH", price: 2845.32 },
-    XPD: { name: "Palladium", symbol: "XPD", price: 1087.45 },
-    HG: { name: "Copper", symbol: "HG", price: 4.23 }
-  };
-  /**
-   * Simulates network delay (configurable)
-   */
-  delay(ms = 300) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+// src/app/features/market/data-access/http-market-data.adapter.ts
+var HttpMarketDataAdapter = class _HttpMarketDataAdapter {
+  http = inject(HttpClient);
+  // Always use the Heroku API URL directly
+  baseUrl = `${environment.apiBaseUrl}/api/price`;
+  constructor() {
+    console.log("[HttpMarketDataAdapter] Initialized with baseUrl:", this.baseUrl);
   }
   /**
-   * Fetch all tradable symbols
+   * Fetch all tradable symbols from the backend
    */
   fetchSymbols() {
     return __async(this, null, function* () {
-      yield this.delay(400);
-      return [...this.mockSymbols];
+      try {
+        console.log("[HttpMarketDataAdapter] Fetching symbols from:", `${this.baseUrl}/symbols`);
+        const response = yield firstValueFrom(this.http.get(`${this.baseUrl}/symbols`));
+        console.log("[HttpMarketDataAdapter] Symbols received:", response);
+        return response.map((dto) => this.mapSymbol(dto));
+      } catch (error) {
+        console.error("[HttpMarketDataAdapter] fetchSymbols failed:", error);
+        throw error;
+      }
     });
   }
   /**
-   * Fetch current price for a specific symbol
+   * Fetch current price for a specific symbol from the backend
    */
   fetchPrice(symbol) {
     return __async(this, null, function* () {
-      yield this.delay(300);
-      const mockData = this.mockPrices[symbol];
-      if (!mockData) {
-        throw new Error(`Symbol "${symbol}" not found`);
+      try {
+        console.log("[HttpMarketDataAdapter] Fetching price for:", symbol, "from:", `${this.baseUrl}/quote/${symbol}`);
+        const response = yield firstValueFrom(this.http.get(`${this.baseUrl}/quote/${symbol}`));
+        console.log("[HttpMarketDataAdapter] \u26A0\uFE0F RAW RESPONSE for", symbol, ":", response);
+        console.log("[HttpMarketDataAdapter] Available fields:", Object.keys(response));
+        console.log("[HttpMarketDataAdapter] changePct:", response.changePct);
+        console.log("[HttpMarketDataAdapter] change1mPct:", response.change1mPct);
+        console.log("[HttpMarketDataAdapter] Full response object:", JSON.stringify(response, null, 2));
+        return this.mapPrice(response);
+      } catch (error) {
+        console.error("[HttpMarketDataAdapter] fetchPrice failed for", symbol, ":", error);
+        throw error;
       }
-      const now = /* @__PURE__ */ new Date();
-      const updatedAt = now.toISOString();
-      const updatedAtReadable = this.getReadableTimestamp(now);
-      return __spreadProps(__spreadValues({}, mockData), {
-        updatedAt,
-        updatedAtReadable
-      });
     });
   }
   /**
-   * Helper to generate human-readable timestamp
+   * Map backend DTO to domain model
    */
-  getReadableTimestamp(date) {
-    const secondsAgo = Math.floor((Date.now() - date.getTime()) / 1e3);
-    if (secondsAgo < 10)
-      return "a few seconds ago";
-    if (secondsAgo < 60)
-      return `${secondsAgo} seconds ago`;
-    const minutesAgo = Math.floor(secondsAgo / 60);
-    if (minutesAgo < 60)
-      return `${minutesAgo} minute${minutesAgo > 1 ? "s" : ""} ago`;
-    const hoursAgo = Math.floor(minutesAgo / 60);
-    return `${hoursAgo} hour${hoursAgo > 1 ? "s" : ""} ago`;
+  mapSymbol(dto) {
+    return {
+      name: dto.name,
+      symbol: dto.symbol
+    };
   }
-  static \u0275fac = function MockMarketDataAdapter_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MockMarketDataAdapter)();
+  /**
+   * Map backend price DTO to domain model
+   */
+  mapPrice(dto) {
+    const changePct = dto.changePct ?? dto.change1mPct ?? dto.priceChange ?? dto.percentChange ?? dto.change ?? void 0;
+    console.log("[HttpMarketDataAdapter] mapPrice() - dto object:", dto);
+    console.log("[HttpMarketDataAdapter] mapPrice() - dto.changePct:", dto.changePct);
+    console.log("[HttpMarketDataAdapter] mapPrice() - dto.change1mPct:", dto.change1mPct);
+    console.log("[HttpMarketDataAdapter] mapPrice() - dto.priceChange:", dto.priceChange);
+    console.log("[HttpMarketDataAdapter] mapPrice() - dto.percentChange:", dto.percentChange);
+    console.log("[HttpMarketDataAdapter] mapPrice() - dto.change:", dto.change);
+    console.log("[HttpMarketDataAdapter] mapPrice() - resolved changePct:", changePct);
+    console.log("[HttpMarketDataAdapter] mapPrice() - typeof changePct:", typeof changePct);
+    const result = {
+      name: dto.name,
+      symbol: dto.symbol,
+      price: dto.price,
+      updatedAt: dto.updatedAt,
+      updatedAtReadable: dto.updatedAtReadable || this.getReadableTimestamp(dto.updatedAt),
+      changePct
+    };
+    console.log("[HttpMarketDataAdapter] mapPrice() - result:", result);
+    return result;
+  }
+  /**
+   * Generate human-readable timestamp if not provided by backend
+   */
+  getReadableTimestamp(isoString) {
+    try {
+      const date = new Date(isoString);
+      const secondsAgo = Math.floor((Date.now() - date.getTime()) / 1e3);
+      if (secondsAgo < 10)
+        return "gerade eben";
+      if (secondsAgo < 60)
+        return `vor ${secondsAgo} Sekunden`;
+      const minutesAgo = Math.floor(secondsAgo / 60);
+      if (minutesAgo < 60)
+        return `vor ${minutesAgo} Minute${minutesAgo > 1 ? "n" : ""}`;
+      const hoursAgo = Math.floor(minutesAgo / 60);
+      if (hoursAgo < 24)
+        return `vor ${hoursAgo} Stunde${hoursAgo > 1 ? "n" : ""}`;
+      const daysAgo = Math.floor(hoursAgo / 24);
+      return `vor ${daysAgo} Tag${daysAgo > 1 ? "en" : ""}`;
+    } catch (error) {
+      console.warn("[HttpMarketDataAdapter] Failed to parse timestamp:", isoString, error);
+      return "k\xFCrzlich";
+    }
+  }
+  static \u0275fac = function HttpMarketDataAdapter_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _HttpMarketDataAdapter)();
   };
-  static \u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _MockMarketDataAdapter, factory: _MockMarketDataAdapter.\u0275fac });
+  static \u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _HttpMarketDataAdapter, factory: _HttpMarketDataAdapter.\u0275fac });
 };
 
 // src/app/app.config.ts
@@ -250,8 +285,8 @@ var appConfig = {
   providers: [
     provideRouter(routes, withEnabledBlockingInitialNavigation()),
     provideHttpClient(withFetch(), withInterceptors([jwtInterceptor, errorInterceptor])),
-    // Market data adapter (easily swappable)
-    { provide: MARKET_DATA_PORT, useClass: MockMarketDataAdapter }
+    // Market data adapter - using real HTTP API
+    { provide: MARKET_DATA_PORT, useClass: HttpMarketDataAdapter }
   ]
 };
 

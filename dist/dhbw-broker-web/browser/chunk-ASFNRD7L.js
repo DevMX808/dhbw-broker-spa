@@ -1355,6 +1355,28 @@ var EmptyError = createErrorClass((_super) => function EmptyErrorImpl() {
   this.message = "no elements in sequence";
 });
 
+// node_modules/rxjs/dist/esm/internal/firstValueFrom.js
+function firstValueFrom(source, config2) {
+  const hasConfig = typeof config2 === "object";
+  return new Promise((resolve, reject) => {
+    const subscriber = new SafeSubscriber({
+      next: (value) => {
+        resolve(value);
+        subscriber.unsubscribe();
+      },
+      error: reject,
+      complete: () => {
+        if (hasConfig) {
+          resolve(config2.defaultValue);
+        } else {
+          reject(new EmptyError());
+        }
+      }
+    });
+    source.subscribe(subscriber);
+  });
+}
+
 // node_modules/rxjs/dist/esm/internal/operators/map.js
 function map(project, thisArg) {
   return operate((source, subscriber) => {
@@ -21670,6 +21692,7 @@ export {
   throwError,
   isObservable,
   EmptyError,
+  firstValueFrom,
   map,
   combineLatest,
   mergeMap,
@@ -21901,4 +21924,4 @@ export {
    * found in the LICENSE file at https://angular.dev/license
    *)
 */
-//# sourceMappingURL=chunk-T4LT6FP2.js.map
+//# sourceMappingURL=chunk-ASFNRD7L.js.map

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MarketSymbol, MarketPrice } from '../../data-access/market.port';
 
@@ -43,7 +43,15 @@ import { MarketSymbol, MarketPrice } from '../../data-access/market.port';
       </div>
 
       <!-- Change Indicator -->
-      <div *ngIf="!loading && price" class="change-indicator">↑</div>
+      <div *ngIf="!loading && price && price.changePct !== undefined && price.changePct !== null"
+           class="change-indicator"
+           [class.change-indicator--positive]="price.changePct > 0"
+           [class.change-indicator--negative]="price.changePct < 0"
+           [class.change-indicator--neutral]="price.changePct === 0">
+        <span *ngIf="price.changePct > 0">↑</span>
+        <span *ngIf="price.changePct < 0">↓</span>
+        <span *ngIf="price.changePct === 0">→</span>
+      </div>
     </div>
   `,
   styles: [`
@@ -182,7 +190,20 @@ import { MarketSymbol, MarketPrice } from '../../data-access/market.port';
       bottom: 1rem;
       right: 1rem;
       font-size: 1.5rem;
-      color: #22c55e; /* green */
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+
+    .change-indicator--positive {
+      color: #22c55e; /* green - Preis gestiegen */
+    }
+
+    .change-indicator--negative {
+      color: #ef4444; /* red - Preis gefallen */
+    }
+
+    .change-indicator--neutral {
+      color: #9ca3af; /* gray - keine Änderung */
     }
 
     .skeleton-loader {
@@ -207,9 +228,29 @@ import { MarketSymbol, MarketPrice } from '../../data-access/market.port';
     }
   `]
 })
-export class MarketCardComponent {
+export class MarketCardComponent implements OnChanges {
   @Input() symbol!: MarketSymbol;
   @Input() price?: MarketPrice;
   @Input() loading: boolean = false;
   @Output() select = new EventEmitter<string>();
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['price'] && this.price) {
+      console.log(`[MarketCard ${this.symbol.symbol}] Price updated:`, {
+        price: this.price.price,
+        changePct: this.price.changePct,
+        changeDirection: this.price.changePct === undefined ? 'unknown' :
+                         this.price.changePct > 0 ? 'up ↑' :
+                         this.price.changePct < 0 ? 'down ↓' :
+                         'neutral →',
+        updatedAt: this.price.updatedAt,
+        updatedAtReadable: this.price.updatedAtReadable,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (changes['loading']) {
+      console.log(`[MarketCard ${this.symbol.symbol}] Loading state:`, this.loading);
+    }
+  }
 }

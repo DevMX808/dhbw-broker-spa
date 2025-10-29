@@ -29,6 +29,13 @@ export class MarketStore {
   private lastFetched: Record<string, number> = {}; // timestamp in ms
   private pendingRequests: Record<string, Promise<MarketPrice> | undefined> = {}; // deduplication map
 
+  // Auto-refresh
+  private autoRefreshInterval: any = null;
+  private initialRefreshTimeout: any = null;
+  private autoRefreshEnabled = false;
+  private readonly AUTO_REFRESH_INTERVAL_MS = 60_000; // 60 seconds
+  private readonly REFRESH_AT_SECOND = 35; // Sekunde im Minutenzyklus, zu der neue Daten kommen
+
   // Computed
   readonly hasData = computed(() => this.symbols().length > 0);
   readonly selectedPrice = computed(() => {
@@ -63,22 +70,37 @@ export class MarketStore {
    * Implements deduplication and basic caching
    */
   async loadPrice(symbol: string, forceRefresh: boolean = false): Promise<void> {
+    const now = Date.now();
+    const cached = this.isCached(symbol);
+
+    console.log(`[MarketStore] loadPrice(${symbol}, forceRefresh=${forceRefresh})`, {
+      cached,
+      lastFetched: this.lastFetched[symbol] ? new Date(this.lastFetched[symbol]).toISOString() : 'never',
+      ageMs: this.lastFetched[symbol] ? now - this.lastFetched[symbol] : null,
+      hasPrice: !!this.pricesBySymbol()[symbol]
+    });
+
     // Check if already loading (dedupe)
     if (this.loading().priceBySymbol[symbol] && !forceRefresh) {
+      console.log(`[MarketStore] ${symbol} already loading, skipping`);
       return;
     }
 
     // Check cache (if not forcing refresh)
-    if (!forceRefresh && this.isCached(symbol)) {
+    if (!forceRefresh && cached) {
+      console.log(`[MarketStore] ${symbol} using cached price`);
       return;
     }
 
     // Dedupe: if request is pending, return existing promise
     const pendingRequest = this.pendingRequests[symbol];
     if (pendingRequest && !forceRefresh) {
+      console.log(`[MarketStore] ${symbol} has pending request, awaiting...`);
       await pendingRequest;
       return;
     }
+
+    console.log(`[MarketStore] ${symbol} fetching fresh price from API...`);
 
     // Start loading
     this.loading.update(state => ({
@@ -92,6 +114,12 @@ export class MarketStore {
 
     try {
       const price = await pricePromise;
+
+      console.log(`[MarketStore] ${symbol} price received:`, {
+        price: price.price,
+        updatedAt: price.updatedAt,
+        timestamp: new Date().toISOString()
+      });
 
       // Update state
       this.pricesBySymbol.update(prices => ({
@@ -156,5 +184,93 @@ export class MarketStore {
    */
   isLoadingPrice(symbol: string): boolean {
     return this.loading().priceBySymbol[symbol] ?? false;
+  }
+
+  /**
+   * Start auto-refresh for all loaded symbols
+   * Synchronizes to refresh at second 35 of each minute (when new data arrives in DB)
+   */
+  startAutoRefresh(): void {
+    if (this.autoRefreshEnabled) {
+      console.log('[MarketStore] Auto-refresh already enabled');
+      return;
+    }
+
+    const now = new Date();
+    const currentSecond = now.getSeconds();
+
+    console.log(`[MarketStore] Starting auto-refresh (synced to second ${this.REFRESH_AT_SECOND} of each minute)`);
+    console.log(`[MarketStore] Current time: ${now.toISOString().substring(11, 19)} (second ${currentSecond})`);
+
+    this.autoRefreshEnabled = true;
+
+    // Calculate delay until next second 35
+    let delayUntilNextRefresh: number;
+    if (currentSecond < this.REFRESH_AT_SECOND) {
+      // Next refresh is in this minute
+      delayUntilNextRefresh = (this.REFRESH_AT_SECOND - currentSecond) * 1000;
+    } else {
+      // Next refresh is in next minute
+      delayUntilNextRefresh = (60 - currentSecond + this.REFRESH_AT_SECOND) * 1000;
+    }
+
+    console.log(`[MarketStore] First refresh in ${Math.round(delayUntilNextRefresh / 1000)} seconds (at second ${this.REFRESH_AT_SECOND})`);
+
+    // Schedule first refresh at the next second 35
+    this.initialRefreshTimeout = setTimeout(() => {
+      this.performRefresh();
+
+      // Then set up recurring refresh every 60 seconds
+      this.autoRefreshInterval = setInterval(() => {
+        this.performRefresh();
+      }, this.AUTO_REFRESH_INTERVAL_MS);
+    }, delayUntilNextRefresh);
+  }
+
+  /**
+   * Perform the actual refresh of all symbols
+   */
+  private performRefresh(): void {
+    const now = new Date();
+    const symbolsToRefresh = Object.keys(this.pricesBySymbol());
+
+    console.log(`[MarketStore] ⟳ Auto-refresh triggered at ${now.toISOString().substring(11, 19)} for ${symbolsToRefresh.length} symbols:`, symbolsToRefresh);
+
+    if (symbolsToRefresh.length > 0) {
+      symbolsToRefresh.forEach(symbol => {
+        this.loadPrice(symbol, true); // force refresh
+      });
+    } else {
+      console.log('[MarketStore] Auto-refresh: no symbols to refresh');
+    }
+  }
+
+  /**
+   * Stop auto-refresh
+   */
+  stopAutoRefresh(): void {
+    if (!this.autoRefreshEnabled) {
+      return;
+    }
+
+    console.log('[MarketStore] Stopping auto-refresh');
+    this.autoRefreshEnabled = false;
+
+    if (this.initialRefreshTimeout) {
+      clearTimeout(this.initialRefreshTimeout);
+      this.initialRefreshTimeout = null;
+    }
+
+    if (this.autoRefreshInterval) {
+      clearInterval(this.autoRefreshInterval);
+      this.autoRefreshInterval = null;
+    }
+  }
+
+  /**
+   * Check if auto-refresh is enabled
+   */
+  isAutoRefreshEnabled(): boolean {
+    return this.autoRefreshEnabled;
   }
 }

@@ -1,10 +1,10 @@
 import {
   TokenStorageService
-} from "./chunk-DFJEWIOY.js";
+} from "./chunk-JSOLXCOT.js";
 import {
   HttpClient,
   HttpHeaders
-} from "./chunk-ZKLCJJRR.js";
+} from "./chunk-OW27TKOS.js";
 import {
   Observable,
   catchError,
@@ -15,7 +15,7 @@ import {
   signal,
   throwError,
   ɵɵdefineInjectable
-} from "./chunk-T4LT6FP2.js";
+} from "./chunk-ASFNRD7L.js";
 
 // src/environments/environments.ts
 var environment = {
@@ -197,6 +197,7 @@ var AuthService = class _AuthService {
 };
 
 export {
+  environment,
   AuthService
 };
-//# sourceMappingURL=chunk-TR4LX764.js.map
+//# sourceMappingURL=chunk-O2R6TYRU.js.map
