@@ -3,6 +3,9 @@ import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { UnauthorizedComponent } from './pages/unauthorized/unauthorized.component';
 import { ErrorComponent } from './pages/error/error.component';
 
+import { AssetsPageComponent } from './features/assets/containers/assets-page.component';
+import { SETTINGS_ROUTES } from './features/settings/routes';
+
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'account' },
   { path: 'account', loadChildren: () => import('./features/account/routes').then(m => m.ACCOUNT_ROUTES) },
@@ -15,5 +18,15 @@ export const routes: Routes = [
 
   { path: 'unauthorized', component: UnauthorizedComponent, title: 'Unauthorized' },
   { path: 'error', component: ErrorComponent, title: 'Error' },
-  { path: '**', component: NotFoundComponent, title: 'Not Found' }
+  { path: '**', component: NotFoundComponent, title: 'Not Found' },
+
+   { path: '', redirectTo: 'settings', pathMatch: 'full' },
+  {
+    path: 'settings',
+    children: SETTINGS_ROUTES
+  },
+  { path: 'assets', component: AssetsPageComponent, title: 'Meine Assets' },
+  { path: '**', redirectTo: 'settings' }
 ];
+
+

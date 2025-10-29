@@ -3,13 +3,20 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 import { filter } from 'rxjs';
+import { NavbarComponent } from './core/navbar/navbar.component'; // Pfad anpassen
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    NavbarComponent // Navbar importieren
+  ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss'] // kleine Korrektur
 })
 export class AppComponent {
   private auth = inject(AuthService);

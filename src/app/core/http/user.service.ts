@@ -75,4 +75,11 @@ export class UserService {
   deleteAccount(request: DeleteAccountRequest): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/account`, { body: request });
   }
+
+  getCurrentUser() {
+  const url = `${this.baseUrl}/me`;
+  console.log('Fetching current user from:', url);
+  return this.http.get<User>(url);
+}
+
 }

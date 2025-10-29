@@ -1,4 +1,5 @@
 <div class="app-shell" [class.app-shell--fullscreen]="isAuthRoute()">
+  <app-navbar></app-navbar> <!-- Navbar hier einfügen -->
   <main class="app-content" [class.container]="!isAuthRoute()">
     <router-outlet></router-outlet>
   </main>

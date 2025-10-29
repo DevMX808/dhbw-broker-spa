@@ -1,120 +1,133 @@
-import { Component, inject } from '@angular/core';
+
+
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../core/http/user.service';
-
+import { HeaderComponent } from '../../../features/header/header.component';
 @Component({
   standalone: true,
   selector: 'app-settings-page',
-  imports: [FormsModule],
+  imports: [FormsModule, HeaderComponent],
   template: `
-    <h1 class="h4">Settings</h1>
-    
-    <!-- Profile Update -->
-    <div class="card mb-3">
-      <div class="card-header">Profil ändern</div>
-      <div class="card-body">
-        <form (ngSubmit)="updateProfile()" #profileForm="ngForm">
-          <div class="mb-2">
-            <label class="form-label">Vorname</label>
-            <input type="text" class="form-control" [(ngModel)]="profile.firstName" name="firstName" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Nachname</label>
-            <input type="text" class="form-control" [(ngModel)]="profile.lastName" name="lastName" required>
-          </div>
-          <button type="submit" class="btn btn-primary" [disabled]="!profileForm.valid">Speichern</button>
-        </form>
-      </div>
-    </div>
+    <!-- Header -->
+    <app-header [firstName]="profile.firstName" [lastName]="profile.lastName"></app-header>
 
-    <!-- Password Change -->
-    <div class="card mb-3">
-      <div class="card-header">Passwort ändern</div>
-      <div class="card-body">
-        <form (ngSubmit)="changePassword()" #passwordForm="ngForm">
-          <div class="mb-2">
-            <label class="form-label">Aktuelles Passwort</label>
-            <input type="password" class="form-control" [(ngModel)]="password.current" name="current" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Neues Passwort</label>
-            <input type="password" class="form-control" [(ngModel)]="password.new" name="new" required minlength="8">
-          </div>
-          <button type="submit" class="btn btn-primary" [disabled]="!passwordForm.valid">Passwort ändern</button>
-        </form>
-      </div>
-    </div>
+    <!-- Hauptinhalt -->
+    <div class="container mt-4">
+      <h1 class="h4">Settings</h1>
 
-    <!-- Email Change -->
-    <div class="card mb-3">
-      <div class="card-header">E-Mail ändern</div>
-      <div class="card-body">
-        <form (ngSubmit)="changeEmail()" #emailForm="ngForm">
-          <div class="mb-2">
-            <label class="form-label">Neue E-Mail</label>
-            <input type="email" class="form-control" [(ngModel)]="email.new" name="newEmail" required>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Passwort bestätigen</label>
-            <input type="password" class="form-control" [(ngModel)]="email.password" name="password" required>
-          </div>
-          <button type="submit" class="btn btn-primary" [disabled]="!emailForm.valid">E-Mail ändern</button>
-        </form>
+      <!-- Profil ändern -->
+      <div class="card mb-3">
+        <div class="card-header">Profil ändern</div>
+        <div class="card-body">
+          <form (ngSubmit)="updateProfile()" #profileForm="ngForm">
+            <div class="mb-2">
+              <label class="form-label">Vorname</label>
+              <input type="text" class="form-control" [(ngModel)]="profile.firstName" name="firstName" required>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Nachname</label>
+              <input type="text" class="form-control" [(ngModel)]="profile.lastName" name="lastName" required>
+            </div>
+            <button type="submit" class="btn btn-primary" [disabled]="!profileForm.valid">Speichern</button>
+          </form>
+        </div>
       </div>
-    </div>
 
-    <!-- Account Delete -->
-    <div class="card mb-3">
-      <div class="card-header text-danger">Konto löschen</div>
-      <div class="card-body">
-        <form (ngSubmit)="deleteAccount()" #deleteForm="ngForm">
-          <div class="mb-2">
-            <label class="form-label">Passwort bestätigen</label>
-            <input type="password" class="form-control" [(ngModel)]="deletePassword" name="deletePassword" required>
-          </div>
-          <button type="submit" class="btn btn-danger" [disabled]="!deleteForm.valid">Konto unwiderruflich löschen</button>
-        </form>
+      <!-- Passwort ändern -->
+      <div class="card mb-3">
+        <div class="card-header">Passwort ändern</div>
+        <div class="card-body">
+          <form (ngSubmit)="changePassword()" #passwordForm="ngForm">
+            <div class="mb-2">
+              <label class="form-label">Aktuelles Passwort</label>
+              <input type="password" class="form-control" [(ngModel)]="password.current" name="current" required>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Neues Passwort</label>
+              <input type="password" class="form-control" [(ngModel)]="password.new" name="new" required minlength="8">
+            </div>
+            <button type="submit" class="btn btn-primary" [disabled]="!passwordForm.valid">Passwort ändern</button>
+          </form>
+        </div>
       </div>
-    </div>
 
-    @if (message) {
-      <div class="alert" [class]="'alert-' + (isError ? 'danger' : 'success')">{{ message }}</div>
-    }
+      <!-- E-Mail ändern -->
+      <div class="card mb-3">
+        <div class="card-header">E-Mail ändern</div>
+        <div class="card-body">
+          <form (ngSubmit)="changeEmail()" #emailForm="ngForm">
+            <div class="mb-2">
+              <label class="form-label">Neue E-Mail</label>
+              <input type="email" class="form-control" [(ngModel)]="email.new" name="newEmail" required>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Passwort bestätigen</label>
+              <input type="password" class="form-control" [(ngModel)]="email.password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" [disabled]="!emailForm.valid">E-Mail ändern</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Konto löschen -->
+      <div class="card mb-3">
+        <div class="card-header text-danger">Konto löschen</div>
+        <div class="card-body">
+          <form (ngSubmit)="deleteAccount()" #deleteForm="ngForm">
+            <div class="mb-2">
+              <label class="form-label">Passwort bestätigen</label>
+              <input type="password" class="form-control" [(ngModel)]="deletePassword" name="deletePassword" required>
+            </div>
+            <button type="submit" class="btn btn-danger" [disabled]="!deleteForm.valid">
+              Konto unwiderruflich löschen
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Meldung -->
+      @if (message) {
+        <div class="alert mt-3" [class]="'alert-' + (isError ? 'danger' : 'success')">{{ message }}</div>
+      }
+    </div>
   `
 })
-export class SettingsPageComponent {
+export class SettingsPageComponent implements OnInit {
   private userService = inject(UserService);
 
   profile = { firstName: '', lastName: '' };
   password = { current: '', new: '' };
   email = { new: '', password: '' };
   deletePassword = '';
-  
+
   message = '';
   isError = false;
 
-  updateProfile() {
-    console.log('Sending profile update:', this.profile);
-    this.userService.updateProfile(this.profile).subscribe({
-      next: (response) => {
-        console.log('Profile update success:', response);
-        this.showMessage('Profil erfolgreich aktualisiert', false);
-        this.profile = { firstName: '', lastName: '' };
+  ngOnInit() {
+    // Aktuell eingeloggten User laden
+    this.userService.getCurrentUser().subscribe({
+      next: (user) => {
+        this.profile.firstName = user.firstName;
+        this.profile.lastName = user.lastName;
       },
-      error: (error) => {
-        console.error('Profile update failed:', error);
-        console.error('Error status:', error.status);
-        console.error('Error message:', error.message);
-        console.error('Error details:', error.error);
-        this.showMessage('Fehler beim Aktualisieren des Profils', true);
-      }
+      error: (err) => console.error('Fehler beim Laden des Benutzers:', err)
+    });
+  }
+
+  updateProfile() {
+    this.userService.updateProfile(this.profile).subscribe({
+      next: () => {
+        this.showMessage('Profil erfolgreich aktualisiert', false);
+      },
+      error: () => this.showMessage('Fehler beim Aktualisieren des Profils', true)
     });
   }
 
   changePassword() {
-    this.userService.changePassword({ 
-      currentPassword: this.password.current, 
-      newPassword: this.password.new 
+    this.userService.changePassword({
+      currentPassword: this.password.current,
+      newPassword: this.password.new
     }).subscribe({
       next: () => {
         this.showMessage('Passwort erfolgreich geändert', false);
@@ -125,9 +138,9 @@ export class SettingsPageComponent {
   }
 
   changeEmail() {
-    this.userService.changeEmail({ 
-      newEmail: this.email.new, 
-      password: this.email.password 
+    this.userService.changeEmail({
+      newEmail: this.email.new,
+      password: this.email.password
     }).subscribe({
       next: () => {
         this.showMessage('E-Mail erfolgreich geändert', false);
@@ -140,10 +153,7 @@ export class SettingsPageComponent {
   deleteAccount() {
     if (confirm('Sind Sie sicher, dass Sie Ihr Konto löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.')) {
       this.userService.deleteAccount({ password: this.deletePassword }).subscribe({
-        next: () => {
-          this.showMessage('Konto wurde gelöscht', false);
-          // Redirect to login or logout user
-        },
+        next: () => this.showMessage('Konto wurde gelöscht', false),
         error: () => this.showMessage('Fehler beim Löschen des Kontos', true)
       });
     }
