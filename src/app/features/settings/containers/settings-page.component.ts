@@ -94,12 +94,20 @@ export class SettingsPageComponent {
   isError = false;
 
   updateProfile() {
+    console.log('Sending profile update:', this.profile);
     this.userService.updateProfile(this.profile).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('Profile update success:', response);
         this.showMessage('Profil erfolgreich aktualisiert', false);
         this.profile = { firstName: '', lastName: '' };
       },
-      error: () => this.showMessage('Fehler beim Aktualisieren des Profils', true)
+      error: (error) => {
+        console.error('Profile update failed:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
+        console.error('Error details:', error.error);
+        this.showMessage('Fehler beim Aktualisieren des Profils', true);
+      }
     });
   }
 

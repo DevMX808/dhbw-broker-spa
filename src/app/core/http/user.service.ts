@@ -40,8 +40,17 @@ export class UserService {
     ? `${environment.apiBaseUrl}/api/user`
     : 'http://localhost:8080/api/user';
 
+  constructor() {
+    console.log('UserService baseUrl:', this.baseUrl);
+    console.log('Environment production:', environment.production);
+    console.log('Environment apiBaseUrl:', environment.apiBaseUrl);
+  }
+
   updateProfile(request: UpdateProfileRequest): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}/profile`, request);
+    const url = `${this.baseUrl}/profile`;
+    console.log('Making PUT request to:', url);
+    console.log('Request payload:', request);
+    return this.http.put<User>(url, request);
   }
 
   changePassword(request: ChangePasswordRequest): Observable<void> {
