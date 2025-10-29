@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["sign-up-page.component.ts"],
+  "sourcesContent": ["\n    .error-message {\n      background-color: #ffebee;\n      color: #c62828;\n      padding: 10px;\n      border-radius: 4px;\n      margin-bottom: 15px;\n      border: 1px solid #ffcdd2;\n      font-size: 14px;\n    }\n    \n    .field-error {\n      color: #c62828;\n      font-size: 12px;\n      margin-top: 5px;\n      margin-bottom: 10px;\n    }\n    \n    input.error {\n      border-color: #c62828 !important;\n      background-color: #ffebee;\n    }\n    \n    button:disabled {\n      opacity: 0.6;\n      cursor: not-allowed;\n    }\n  "],
+  "mappings": ";AACI,CAAA;AACE,oBAAA;AACA,SAAA;AACA,WAAA;AACA,iBAAA;AACA,iBAAA;AACA,UAAA,IAAA,MAAA;AACA,aAAA;;AAGF,CAAA;AACE,SAAA;AACA,aAAA;AACA,cAAA;AACA,iBAAA;;AAGF,KAAA,CAAA;AACE,gBAAA;AACA,oBAAA;;AAGF,MAAA;AACE,WAAA;AACA,UAAA;;",
+  "names": []
+}

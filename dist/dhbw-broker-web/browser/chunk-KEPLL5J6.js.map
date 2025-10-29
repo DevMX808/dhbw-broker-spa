@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/core/auth/auth.guard.ts"],
+  "sourcesContent": ["import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';\nimport { inject } from '@angular/core';\nimport { TokenStorageService } from './token-storage.service';\n\nexport const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {\n  const tokens = inject(TokenStorageService);\n  const router = inject(Router);\n\n  const token = tokens.get();\n  const valid = token && !tokens.isExpired(token);\n  if (valid) return true;\n\n  const redirect = encodeURIComponent(state.url || '/');\n  router.navigateByUrl(`/account?redirectUrl=${redirect}`);\n  return false;\n};\n"],
+  "mappings": ";;;;;;;;;;;AAIO,IAAM,YAA2B,CAAC,OAA+B,UAA8B;AACpG,QAAM,SAAS,OAAO,mBAAmB;AACzC,QAAM,SAAS,OAAO,MAAM;AAE5B,QAAM,QAAQ,OAAO,IAAG;AACxB,QAAM,QAAQ,SAAS,CAAC,OAAO,UAAU,KAAK;AAC9C,MAAI;AAAO,WAAO;AAElB,QAAM,WAAW,mBAAmB,MAAM,OAAO,GAAG;AACpD,SAAO,cAAc,wBAAwB,QAAQ,EAAE;AACvD,SAAO;AACT;",
+  "names": []
+}

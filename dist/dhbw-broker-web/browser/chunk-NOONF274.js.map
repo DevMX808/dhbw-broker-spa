@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/settings/containers/settings-page.component.ts", "src/app/features/settings/routes.ts"],
+  "sourcesContent": ["import { Component } from '@angular/core';\n\n@Component({\n  standalone: true,\n  selector: 'app-settings-page',\n  template: `<h1 class=\"h4\">Settings</h1><p class=\"text-muted\">—</p>`\n})\nexport class SettingsPageComponent {}\n", "import { Routes } from '@angular/router';\nimport { SettingsPageComponent } from './containers/settings-page.component';\n\nexport const SETTINGS_ROUTES: Routes = [\n  { path: '', component: SettingsPageComponent, title: 'Settings' }\n];\n"],
+  "mappings": ";;;;;;;;;;AAOM,IAAO,wBAAP,MAAO,uBAAqB;;qCAArB,wBAAqB;EAAA;yEAArB,wBAAqB,WAAA,CAAA,CAAA,mBAAA,CAAA,GAAA,YAAA,MAAA,UAAA,CAAA,6BAAA,GAAA,OAAA,GAAA,MAAA,GAAA,QAAA,CAAA,CAAA,GAAA,IAAA,GAAA,CAAA,GAAA,YAAA,CAAA,GAAA,UAAA,SAAA,+BAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;AAFrB,MAAA,yBAAA,GAAA,MAAA,CAAA;AAAe,MAAA,iBAAA,GAAA,UAAA;AAAQ,MAAA,uBAAA;AAAK,MAAA,yBAAA,GAAA,KAAA,CAAA;AAAsB,MAAA,iBAAA,GAAA,QAAA;AAAC,MAAA,uBAAA;;;;;6EAEnD,uBAAqB,EAAA,WAAA,wBAAA,CAAA;AAAA,GAAA;;;ACJ3B,IAAM,kBAA0B;EACrC,EAAE,MAAM,IAAI,WAAW,uBAAuB,OAAO,WAAU;;",
+  "names": []
+}

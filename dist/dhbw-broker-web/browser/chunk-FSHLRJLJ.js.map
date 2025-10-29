@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/portfolio/containers/portfolio-page.component.ts", "src/app/features/portfolio/routes.ts"],
+  "sourcesContent": ["import { Component } from '@angular/core';\n\n@Component({\n  standalone: true,\n  selector: 'app-portfolio-page',\n  template: `<h1 class=\"h4\">Portfolio</h1><p class=\"text-muted\">—</p>`\n})\nexport class PortfolioPageComponent {}\n", "import { Routes } from '@angular/router';\nimport { PortfolioPageComponent } from './containers/portfolio-page.component';\nimport { authGuard } from '../../core/auth/auth.guard';\n\nexport const PORTFOLIO_ROUTES: Routes = [\n  { path: '', component: PortfolioPageComponent, title: 'Portfolio', canActivate: [authGuard] }\n];\n"],
+  "mappings": ";;;;;;;;;;;;;;;AAOM,IAAO,yBAAP,MAAO,wBAAsB;;qCAAtB,yBAAsB;EAAA;yEAAtB,yBAAsB,WAAA,CAAA,CAAA,oBAAA,CAAA,GAAA,YAAA,MAAA,UAAA,CAAA,6BAAA,GAAA,OAAA,GAAA,MAAA,GAAA,QAAA,CAAA,CAAA,GAAA,IAAA,GAAA,CAAA,GAAA,YAAA,CAAA,GAAA,UAAA,SAAA,gCAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;AAFtB,MAAA,yBAAA,GAAA,MAAA,CAAA;AAAe,MAAA,iBAAA,GAAA,WAAA;AAAS,MAAA,uBAAA;AAAK,MAAA,yBAAA,GAAA,KAAA,CAAA;AAAsB,MAAA,iBAAA,GAAA,QAAA;AAAC,MAAA,uBAAA;;;;;6EAEpD,wBAAsB,EAAA,WAAA,yBAAA,CAAA;AAAA,GAAA;;;ACH5B,IAAM,mBAA2B;EACtC,EAAE,MAAM,IAAI,WAAW,wBAAwB,OAAO,aAAa,aAAa,CAAC,SAAS,EAAC;;",
+  "names": []
+}

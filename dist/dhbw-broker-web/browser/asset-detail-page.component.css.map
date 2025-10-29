@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["asset-detail-page.component.ts"],
+  "sourcesContent": ["\n    .asset-detail-page {\n      max-width: 900px;\n      margin: 0 auto;\n      padding: 2rem 1rem;\n    }\n\n    .back-link {\n      color: #667eea;\n      text-decoration: none;\n      font-weight: 500;\n      transition: color 0.2s;\n    }\n\n    .back-link:hover {\n      color: #764ba2;\n      text-decoration: underline;\n    }\n\n    .page-header {\n      margin-bottom: 2rem;\n    }\n\n    .page-title {\n      font-size: 2rem;\n      font-weight: 700;\n      margin-bottom: 0;\n      color: #333;\n    }\n\n    .info-box {\n      background: #f8f9fa;\n      border-left: 4px solid #667eea;\n      padding: 1rem 1.5rem;\n      border-radius: 4px;\n    }\n\n    @media (max-width: 768px) {\n      .asset-detail-page {\n        padding: 1.5rem 1rem;\n      }\n\n      .page-title {\n        font-size: 1.5rem;\n      }\n    }\n  "],
+  "mappings": ";AACI,CAAA;AACE,aAAA;AACA,UAAA,EAAA;AACA,WAAA,KAAA;;AAGF,CAAA;AACE,SAAA;AACA,mBAAA;AACA,eAAA;AACA,cAAA,MAAA;;AAGF,CAPA,SAOA;AACE,SAAA;AACA,mBAAA;;AAGF,CAAA;AACE,iBAAA;;AAGF,CAAA;AACE,aAAA;AACA,eAAA;AACA,iBAAA;AACA,SAAA;;AAGF,CAAA;AACE,cAAA;AACA,eAAA,IAAA,MAAA;AACA,WAAA,KAAA;AACA,iBAAA;;AAGF,OAAA,CAAA,SAAA,EAAA;AACE,GArCF;AAsCI,aAAA,OAAA;;AAGF,GAnBF;AAoBI,eAAA;;;",
+  "names": []
+}

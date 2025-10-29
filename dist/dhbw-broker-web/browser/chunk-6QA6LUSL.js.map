@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/trade/containers/trade-page.component.ts", "src/app/features/trade/routes.ts"],
+  "sourcesContent": ["import { Component } from '@angular/core';\n\n@Component({\n  standalone: true,\n  selector: 'app-trade-page',\n  template: `<h1 class=\"h4\">Trade</h1><p class=\"text-muted\">—</p>`\n})\nexport class TradePageComponent {}\n", "import { Routes } from '@angular/router';\nimport { TradePageComponent } from './containers/trade-page.component';\nimport { authGuard } from '../../core/auth/auth.guard';\n\nexport const TRADE_ROUTES: Routes = [\n  { path: '', component: TradePageComponent, title: 'Trade', canActivate: [authGuard] }\n];\n"],
+  "mappings": ";;;;;;;;;;;;;;;AAOM,IAAO,qBAAP,MAAO,oBAAkB;;qCAAlB,qBAAkB;EAAA;yEAAlB,qBAAkB,WAAA,CAAA,CAAA,gBAAA,CAAA,GAAA,YAAA,MAAA,UAAA,CAAA,6BAAA,GAAA,OAAA,GAAA,MAAA,GAAA,QAAA,CAAA,CAAA,GAAA,IAAA,GAAA,CAAA,GAAA,YAAA,CAAA,GAAA,UAAA,SAAA,4BAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;AAFlB,MAAA,yBAAA,GAAA,MAAA,CAAA;AAAe,MAAA,iBAAA,GAAA,OAAA;AAAK,MAAA,uBAAA;AAAK,MAAA,yBAAA,GAAA,KAAA,CAAA;AAAsB,MAAA,iBAAA,GAAA,QAAA;AAAC,MAAA,uBAAA;;;;;6EAEhD,oBAAkB,EAAA,WAAA,qBAAA,CAAA;AAAA,GAAA;;;ACHxB,IAAM,eAAuB;EAClC,EAAE,MAAM,IAAI,WAAW,oBAAoB,OAAO,SAAS,aAAa,CAAC,SAAS,EAAC;;",
+  "names": []
+}

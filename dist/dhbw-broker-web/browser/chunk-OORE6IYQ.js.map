@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/wallet/containers/wallet-page.component.ts", "src/app/features/wallet/routes.ts"],
+  "sourcesContent": ["import { Component } from '@angular/core';\n\n@Component({\n  standalone: true,\n  selector: 'app-wallet-page',\n  template: `<h1 class=\"h4\">Wallet</h1><p class=\"text-muted\">—</p>`\n})\nexport class WalletPageComponent {}\n", "import { Routes } from '@angular/router';\nimport { WalletPageComponent } from './containers/wallet-page.component';\nimport { authGuard } from '../../core/auth/auth.guard';\n\nexport const WALLET_ROUTES: Routes = [\n  { path: '', component: WalletPageComponent, title: 'Wallet', canActivate: [authGuard] }\n];\n"],
+  "mappings": ";;;;;;;;;;;;;;;AAOM,IAAO,sBAAP,MAAO,qBAAmB;;qCAAnB,sBAAmB;EAAA;yEAAnB,sBAAmB,WAAA,CAAA,CAAA,iBAAA,CAAA,GAAA,YAAA,MAAA,UAAA,CAAA,6BAAA,GAAA,OAAA,GAAA,MAAA,GAAA,QAAA,CAAA,CAAA,GAAA,IAAA,GAAA,CAAA,GAAA,YAAA,CAAA,GAAA,UAAA,SAAA,6BAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;AAFnB,MAAA,yBAAA,GAAA,MAAA,CAAA;AAAe,MAAA,iBAAA,GAAA,QAAA;AAAM,MAAA,uBAAA;AAAK,MAAA,yBAAA,GAAA,KAAA,CAAA;AAAsB,MAAA,iBAAA,GAAA,QAAA;AAAC,MAAA,uBAAA;;;;;6EAEjD,qBAAmB,EAAA,WAAA,sBAAA,CAAA;AAAA,GAAA;;;ACHzB,IAAM,gBAAwB;EACnC,EAAE,MAAM,IAAI,WAAW,qBAAqB,OAAO,UAAU,aAAa,CAAC,SAAS,EAAC;;",
+  "names": []
+}

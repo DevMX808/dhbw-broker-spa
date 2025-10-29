@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["quote-card.component.ts"],
+  "sourcesContent": ["\n    .skeleton-box {\n      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);\n      background-size: 200% 100%;\n      animation: loading 1.5s infinite;\n      border-radius: 4px;\n    }\n\n    @keyframes loading {\n      0% { background-position: 200% 0; }\n      100% { background-position: -200% 0; }\n    }\n\n    .price-display {\n      font-size: 2.5rem;\n      font-weight: 300;\n      line-height: 1.2;\n    }\n\n    .price-value {\n      font-family: 'Courier New', monospace;\n    }\n\n    .price-currency {\n      font-size: 1.5rem;\n      vertical-align: baseline;\n    }\n\n    .card {\n      box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n      border: none;\n    }\n\n    @media (max-width: 576px) {\n      .price-display {\n        font-size: 2rem;\n      }\n      .price-currency {\n        font-size: 1.2rem;\n      }\n    }\n  "],
+  "mappings": ";AACI,CAAA;AACE;IAAA;MAAA,KAAA;MAAA,QAAA,GAAA;MAAA,QAAA,GAAA;MAAA,QAAA;AACA,mBAAA,KAAA;AACA,aAAA,QAAA,KAAA;AACA,iBAAA;;AAGF,WAJE;AAKA;AAAK,yBAAA,KAAA;;AACL;AAAO,yBAAA,MAAA;;;AAGT,CAAA;AACE,aAAA;AACA,eAAA;AACA,eAAA;;AAGF,CAAA;AACE,eAAA,aAAA,EAAA;;AAGF,CAAA;AACE,aAAA;AACA,kBAAA;;AAGF,CAAA;AACE,cAAA,EAAA,IAAA,IAAA,KAAA,CAAA,EAAA,CAAA,EAAA,CAAA,EAAA;AACA,UAAA;;AAGF,OAAA,CAAA,SAAA,EAAA;AACE,GArBF;AAsBI,eAAA;;AAEF,GAdF;AAeI,eAAA;;;",
+  "names": []
+}
