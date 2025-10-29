@@ -5,18 +5,18 @@ import { MarketQuote, MarketQuoteDto, MarketSymbol, MarketSymbolDto, mapQuote, m
 
 @Injectable({ providedIn: 'root' })
 export class MarketDataService {
-  private readonly base = 'dev-api/market';
+  private readonly baseUrl = 'http://localhost:8080/api/price';
 
   constructor(private http: HttpClient) {}
 
   getSymbols(): Observable<MarketSymbol[]> {
-    return this.http.get<MarketSymbolDto[]>(`${this.base}/symbols.json`).pipe(
+    return this.http.get<MarketSymbolDto[]>(`${this.baseUrl}/symbols`).pipe(
       map(list => list.map(mapSymbol))
     );
   }
 
   getQuote(symbol: string): Observable<MarketQuote> {
-    return this.http.get<MarketQuoteDto>(`${this.base}/price_${symbol}.json`).pipe(
+    return this.http.get<MarketQuoteDto>(`${this.baseUrl}/quote/${symbol}`).pipe(
       map(mapQuote)
     );
   }
