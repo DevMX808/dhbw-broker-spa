@@ -11,9 +11,6 @@ Chart.register(...registerables);
   imports: [CommonModule],
   template: `
     <div class="chart-container">
-      <div class="chart-header">
-        <h6 class="chart-title mb-0">{{ chartData?.symbol }} - Letzten 60 Minuten</h6>
-      </div>
       <div class="chart-wrapper">
         <canvas #chartCanvas></canvas>
       </div>
@@ -33,9 +30,6 @@ Chart.register(...registerables);
       margin-bottom: 1.5rem;
     }
 
-    .chart-header {
-      margin-bottom: 1rem;
-    }
 
     .chart-title {
       color: #333;
@@ -93,13 +87,13 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
         datasets: [{
           label: 'Preis USD',
           data: [],
-          borderColor: '#667eea',
-          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderColor: '#000000ff',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
           borderWidth: 2,
           fill: true,
           tension: 0.1,
-          pointRadius: 1,
-          pointHoverRadius: 4
+          pointRadius: 0,
+          pointHoverRadius: 0
         }]
       },
       options: {
