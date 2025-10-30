@@ -18,7 +18,13 @@ export class PortfolioService {
     return this.http.post<HeldTrade>(`${this.baseUrl}/buy`, trade);
   }
 
-  sellTrade(tradeId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/sell/${tradeId}`);
+  sellAsset(assetSymbol: string, quantity: number): Observable<any> {
+    const tradeRequest = {
+      assetSymbol: assetSymbol,
+      side: 'SELL',
+      quantity: quantity
+    };
+    
+    return this.http.post<any>(`${environment.apiBaseUrl}/api/trades`, tradeRequest);
   }
 }

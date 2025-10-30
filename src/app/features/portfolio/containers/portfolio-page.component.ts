@@ -33,8 +33,8 @@ import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';  // WICHT
           <td>{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
           <td>{{ trade.createdAt | date:'short' }}</td>
           <td>
-            <button class="btn btn-sm btn-danger" (click)="sell(trade.tradeId)">
-              Verkaufen
+            <button class="btn btn-sm btn-danger" (click)="sell(trade)">
+              Alles verkaufen
             </button>
           </td>
         </tr>
@@ -85,15 +85,27 @@ export class PortfolioPageComponent implements OnInit {
     });
   }
 
-  sell(tradeId: number): void {
-    if (!confirm('Wollen Sie diesen Trade wirklich verkaufen?')) {
+  sell(trade: HeldTrade): void {
+    if (!confirm(`Wollen Sie wirklich ${trade.quantity} ${trade.assetSymbol} verkaufen?`)) {
       return;
     }
-    this.portfolioService.sellTrade(tradeId).subscribe({
-      next: () => this.loadPortfolio(),
+    
+    console.log('Selling:', {
+      assetSymbol: trade.assetSymbol,
+      quantity: trade.quantity,
+      side: 'SELL'
+    });
+    
+    this.portfolioService.sellAsset(trade.assetSymbol, trade.quantity).subscribe({
+      next: (response) => {
+        console.log('Verkauf erfolgreich:', response);
+        alert(`${trade.quantity} ${trade.assetSymbol} erfolgreich verkauft!`);
+        this.loadPortfolio(); // Portfolio neu laden
+      },
       error: (err) => {
-        alert('Verkauf fehlgeschlagen!');
-        console.error(err);
+        console.error('Verkauf fehlgeschlagen:', err);
+        console.error('Error details:', err.error);
+        alert(`Verkauf fehlgeschlagen: ${err.error || err.message}`);
       }
     });
   }
