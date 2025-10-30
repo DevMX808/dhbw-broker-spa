@@ -1,14 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../data-access/portfolio.service';
 import { HeldTrade } from '../models/held-trade.model';
-import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';  // WICHTIG
+import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms'; 
+
 
 @Component({
   selector: 'app-portfolio-page',
   standalone: true,
-  imports: [CommonModule, DecimalPipe, DatePipe],   // <--- hier eintragen
+  imports: [CommonModule, DecimalPipe, DatePipe, FormsModule],
   template: `
-    <h1 class="h4 mb-4">Mein Portfolio</h1>
+    <h1 class="h4 mb-4 text-white">Mein Portfolio</h1>
 
     <div *ngIf="isLoading" class="text-muted">Lade Portfolio...</div>
 
@@ -16,26 +18,45 @@ import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';  // WICHT
       Fehler beim Laden: {{ error }}
     </div>
 
-    <table *ngIf="heldTrades.length > 0" class="table table-striped">
-      <thead>
+    <table *ngIf="heldTrades.length > 0" class="table table-hover align-middle text-white">
+      <thead class="table-dark">
         <tr>
           <th>Asset</th>
           <th>Menge</th>
           <th>Kaufpreis (USD)</th>
           <th>Kaufdatum</th>
-          <th>Aktionen</th>
+          <th>Verkauf</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let trade of heldTrades">
-          <td>{{ trade.assetSymbol }}</td>
+          <td class="fw-semibold">{{ trade.assetSymbol }}</td>
           <td>{{ trade.quantity }}</td>
           <td>{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
           <td>{{ trade.createdAt | date:'short' }}</td>
           <td>
-            <button class="btn btn-sm btn-danger" (click)="sell(trade)">
-              Alles verkaufen
-            </button>
+            <div class="d-flex align-items-center gap-2">
+              <input
+                type="number"
+                min="0"
+                step="any"
+                [(ngModel)]="trade.sellQuantity"
+                [max]="trade.quantity"
+                class="form-control form-control-sm"
+                placeholder="Menge"
+                style="width: 90px;"
+              />
+              <button
+                class="btn btn-sm btn-danger"
+                [disabled]="!isValidSellAmount(trade)"
+                (click)="sell(trade)"
+              >
+                Verkaufen
+              </button>
+            </div>
+            <div *ngIf="trade.sellQuantity && trade.sellQuantity > trade.quantity" class="text-danger small mt-1">
+              Menge zu hoch!
+            </div>
           </td>
         </tr>
       </tbody>
@@ -46,19 +67,29 @@ import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';  // WICHT
     </div>
   `,
   styles: [`
-    h1 {
-      color: #ffffffff;
-    }
     table {
       width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.05);
     }
-    .btn {
-      min-width: 80px;
+    th, td {
+      color: #f8f9fa;
+    }
+    .form-control {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .form-control:focus {
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      border-color: #007bff;
     }
   `]
 })
 export class PortfolioPageComponent implements OnInit {
-  heldTrades: HeldTrade[] = [];
+  heldTrades: (HeldTrade & { sellQuantity?: number })[] = [];
   isLoading = false;
   error: string | null = null;
 
@@ -74,7 +105,8 @@ export class PortfolioPageComponent implements OnInit {
 
     this.portfolioService.getHeldTrades().subscribe({
       next: (data) => {
-        this.heldTrades = data;
+        // sellQuantity hinzufügen für Eingabefeld
+        this.heldTrades = data.map(t => ({ ...t, sellQuantity: 0 }));
         this.isLoading = false;
       },
       error: (err) => {
@@ -85,27 +117,36 @@ export class PortfolioPageComponent implements OnInit {
     });
   }
 
-  sell(trade: HeldTrade): void {
-    if (!confirm(`Wollen Sie wirklich ${trade.quantity} ${trade.assetSymbol} verkaufen?`)) {
+  isValidSellAmount(trade: HeldTrade & { sellQuantity?: number }): boolean {
+    return !!trade.sellQuantity && trade.sellQuantity > 0 && trade.sellQuantity <= trade.quantity;
+  }
+
+  sell(trade: HeldTrade & { sellQuantity?: number }): void {
+    const amount = trade.sellQuantity ?? 0;
+
+    if (amount <= 0) {
+      alert('Bitte eine gültige Menge eingeben.');
       return;
     }
-    
-    console.log('Selling:', {
-      assetSymbol: trade.assetSymbol,
-      quantity: trade.quantity,
-      side: 'SELL'
-    });
-    
-    this.portfolioService.sellAsset(trade.assetSymbol, trade.quantity).subscribe({
+
+    if (amount > trade.quantity) {
+      alert('Sie können nicht mehr verkaufen, als Sie besitzen.');
+      return;
+    }
+
+    if (!confirm(`Wollen Sie wirklich ${amount} ${trade.assetSymbol} verkaufen?`)) {
+      return;
+    }
+
+    this.portfolioService.sellAsset(trade.assetSymbol, amount).subscribe({
       next: (response) => {
         console.log('Verkauf erfolgreich:', response);
-        alert(`${trade.quantity} ${trade.assetSymbol} erfolgreich verkauft!`);
-        this.loadPortfolio(); // Portfolio neu laden
+        alert(`${amount} ${trade.assetSymbol} erfolgreich verkauft!`);
+        this.loadPortfolio();
       },
       error: (err) => {
         console.error('Verkauf fehlgeschlagen:', err);
-        console.error('Error details:', err.error);
-        alert(`Verkauf fehlgeschlagen: ${err.error || err.message}`);
+        alert(`Verkauf fehlgeschlagen: ${err.error?.message || err.message}`);
       }
     });
   }
