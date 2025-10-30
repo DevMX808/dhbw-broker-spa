@@ -1,0 +1,45 @@
+.market-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-greeting {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #e6e6e6;
+  span {
+    color: #c1121f;
+  }
+}
+
+.auto-refresh-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 0.5rem;
+  margin-top: 0.75rem;
+  width: fit-content;
+}
+
+@media (max-width: 768px) {
+  .market-page {
+    padding: 1.5rem 1rem;
+  }
+
+  .page-greeting {
+    font-size: 1.5rem;
+  }
+
+  .auto-refresh-indicator {
+    font-size: 0.8rem;
+  }
+}

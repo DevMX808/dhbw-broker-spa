@@ -31,13 +31,11 @@ import { TradeService } from '../../../core/http/trade.service';
         </h1>
       </div>
 
-      <!-- Minute Chart -->
       <app-minute-chart
         [chartData]="chartData()"
         [loading]="chartLoading()">
       </app-minute-chart>
 
-      <!-- Kaufbereich -->
       <div class="mt-6 p-4 border rounded-md bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
         <input type="number" [(ngModel)]="quantity"
                min="0.0001" step="0.0001"

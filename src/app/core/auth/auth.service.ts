@@ -42,7 +42,7 @@ interface QueuedRequest {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly tokens = inject(TokenStorageService);
-  private readonly router = inject(Router);  // Neu: Inject Router für Redirect
+  private readonly router = inject(Router);
   private readonly baseUrl = environment.apiBaseUrl;
 
   readonly user = signal<AuthUser | null>(null);

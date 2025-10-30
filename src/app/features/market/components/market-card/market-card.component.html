@@ -1,0 +1,44 @@
+<div class="market-card" [class.market-card--loading]="loading">
+  <!-- Indicator Dot in der rechten oberen Ecke -->
+  <span *ngIf="!loading" class="indicator-dot"></span>
+
+  <!-- Header: Icon + Name | Symbol -->
+  <div class="header">
+    <div class="symbol-icon icon-{{symbol.symbol.toLowerCase()}}">
+      <span>♦</span>
+    </div>
+    <span class="asset-name">{{ symbol.name }}</span>
+    <span class="separator">|</span>
+    <span class="ticker">{{ symbol.symbol }}</span>
+  </div>
+
+  <!-- Price Section -->
+  <div class="price-section">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="skeleton-loader">
+      <div class="skeleton-box skeleton-price"></div>
+    </div>
+
+    <!-- Price Available -->
+    <div *ngIf="!loading && price" class="price-content">
+      <div class="price-value">
+        {{ price.price | number:'1.2-2' }}
+        <span class="price-currency">USD</span>
+      </div>
+    </div>
+
+    <!-- No Price -->
+    <div *ngIf="!loading && !price" class="no-price">—</div>
+  </div>
+
+  <!-- Change Indicator -->
+  <div *ngIf="!loading && price && price.changePct !== undefined && price.changePct !== null"
+       class="change-indicator"
+       [class.change-indicator--positive]="price.changePct > 0"
+       [class.change-indicator--negative]="price.changePct < 0"
+       [class.change-indicator--neutral]="price.changePct === 0">
+    <span *ngIf="price.changePct > 0">↑</span>
+    <span *ngIf="price.changePct < 0">↓</span>
+    <span *ngIf="price.changePct === 0">→</span>
+  </div>
+</div>

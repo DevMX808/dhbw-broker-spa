@@ -1,0 +1,12 @@
+<div class="market-page">
+  <div class="page-header mb-4">
+    <h1 class="page-greeting">Hallo, {{ firstName }} {{ lastName }}.</h1>
+  <app-market-list
+    [symbols]="store.symbols()"
+    [pricesBySymbol]="store.pricesBySymbol()"
+    [loading]="store.loading().symbols"
+    [error]="store.error()"
+    [loadingPrices]="store.loading().priceBySymbol"
+    (retry)="onRetry()">
+  </app-market-list>
+</div>
