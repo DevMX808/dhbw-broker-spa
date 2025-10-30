@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environments';
 import { MinuteChartData, ChartDataPoint } from './chart-data.models';
 
@@ -18,51 +19,60 @@ export class ChartDataService {
   private getBaseUrl(): string {
     const isHeroku = window.location.hostname.includes('herokuapp.com');
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    
+
+    // Use the BFF price endpoints
     if (isHeroku || (!isLocalhost && environment.production)) {
-      return `${environment.apiBaseUrl}/api/chart`;
+      return `${environment.apiBaseUrl}/api/price`;
     } else {
-      return 'http://localhost:8080/api/chart';
+      return 'http://localhost:8080/api/price';
     }
   }
 
+  /**
+   * Holt reale Chart-Daten aus dem BFF: GET /api/price/24h/{symbol}
+   * Konvertiert die Antwort in das MinuteChartData-Format und liefert
+   * die letzten 60 Minuten (sofern vorhanden).
+   */
   getMinuteChart(symbol: string): Observable<MinuteChartData> {
-    // Erstelle Mock-Daten für 60 Minuten
-    return this.generateMockMinuteData(symbol);
-  }
+    const url = `${this.baseUrl}/24h/${encodeURIComponent(symbol)}`;
+    return this.http.get<any[]>(url).pipe(
+      map((items) => {
+        if (!Array.isArray(items)) {
+          // Wenn die API etwas anderes zurückgibt, dann safe-fallback
+          return { symbol, dataPoints: [] } as MinuteChartData;
+        }
 
-  private generateMockMinuteData(symbol: string): Observable<MinuteChartData> {
-    const now = new Date();
-    const dataPoints: ChartDataPoint[] = [];
-    const basePrice = this.getBasePriceForSymbol(symbol);
-    
-    // Generiere Daten für die letzten 60 Minuten
-    for (let i = 60; i >= 0; i--) {
-      const timestamp = new Date(now.getTime() - (i * 60000)); // 60000ms = 1 minute
-      const variation = (Math.random() - 0.5) * 0.02; // ±1% Variation
-      const price = basePrice * (1 + variation);
-      
-      dataPoints.push({
-        timestamp: timestamp.toISOString(),
-        price: Math.round(price * 100) / 100
-      });
-    }
+        // Versuche verschiedene mögliche Feldnamen zu mappen
+        const parsed: ChartDataPoint[] = items
+          .map((it: any) => {
+            const tsRaw = it.timestamp ?? it.time ?? it.t ?? it.date ?? it.updatedAt ?? it.updatedAtReadable;
+            const priceRaw = it.price ?? it.value ?? it.p ?? it.close ?? it.lastPrice;
 
-    return of({
-      symbol,
-      dataPoints
-    });
-  }
+            const timestamp = tsRaw ? new Date(tsRaw).toISOString() : null;
+            const price = priceRaw != null ? Number(priceRaw) : null;
 
-  private getBasePriceForSymbol(symbol: string): number {
-    const basePrices: { [key: string]: number } = {
-      'BTC': 45000,
-      'ETH': 2800,
-      'ADA': 0.35,
-      'DOT': 8.50,
-      'LINK': 12.00,
-      'SOL': 85.00
-    };
-    return basePrices[symbol] || 100;
+            if (!timestamp || price == null || Number.isNaN(price)) return null;
+
+            return { timestamp, price } as ChartDataPoint;
+          })
+          .filter(Boolean) as ChartDataPoint[];
+
+        // Sortiere nach Zeit
+        parsed.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+        // Wähle die letzten 60 Minuten / Punkte
+        const now = Date.now();
+        const sixtyMinAgo = now - 60 * 60 * 1000;
+        const last60 = parsed.filter(p => new Date(p.timestamp).getTime() >= sixtyMinAgo);
+
+        // Falls weniger als 60 Punkte vorhanden, nimm die letzten bis zu 60
+        const resultPoints = last60.length >= 60 ? last60.slice(-60) : parsed.slice(-60);
+
+        return {
+          symbol,
+          dataPoints: resultPoints
+        } as MinuteChartData;
+      })
+    );
   }
 }
