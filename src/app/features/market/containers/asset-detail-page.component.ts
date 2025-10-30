@@ -1,35 +1,29 @@
-import { Component, OnInit, OnDestroy, inject, computed, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { MarketStore } from '../store/market.store';
 import { PriceCardComponent } from '../components/quote-card/quote-card.component';
 import { MinuteChartComponent } from '../components/minute-chart/minute-chart.component';
 import { ChartDataService } from '../data-access/chart-data.service';
 import { MinuteChartData } from '../data-access/chart-data.models';
-import { Subject, takeUntil } from 'rxjs';
 
-/**
- * Container component for /market/:symbol route
- * Displays detailed price information for a specific symbol
- */
 @Component({
   standalone: true,
   selector: 'app-asset-detail-page',
-  imports: [CommonModule, RouterLink, PriceCardComponent, MinuteChartComponent],
+  imports: [CommonModule, RouterLink, PriceCardComponent, MinuteChartComponent, FormsModule],
   template: `
     <div class="asset-detail-page">
       <!-- Back Link -->
       <div class="mb-3">
-        <a routerLink="/market" class="back-link">
-          ← Zurück zur Übersicht
-        </a>
+        <a routerLink="/market" class="back-link">← Zurück zur Übersicht</a>
       </div>
 
       <!-- Header -->
       <div class="page-header mb-4">
-        <h1 class="page-title">
-          {{ currentSymbol() || 'Asset Details' }}
-        </h1>
+        <h1 class="page-title">{{ currentSymbol() || 'Asset Details' }}</h1>
       </div>
 
       <!-- Minute Chart -->
@@ -46,6 +40,20 @@ import { Subject, takeUntil } from 'rxjs';
         (refresh)="onRefresh()">
       </app-price-card>
 
+      <!-- Kaufbereich -->
+      <div class="mt-6 p-4 border rounded-md bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+        <input type="number" [(ngModel)]="quantity"
+               min="0.0001" step="0.0001"
+               class="border rounded-md px-3 py-2 w-full sm:w-32 mb-2 sm:mb-0"
+               placeholder="Menge" />
+
+        <button (click)="buyAsset()"
+                [disabled]="buying || !quantity || !currentSymbol()"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ buying ? 'Kaufe...' : 'Kaufen' }}
+        </button>
+      </div>
+
       <!-- Info Text -->
       <div class="info-box mt-4">
         <p class="text-muted small mb-0">
@@ -54,57 +62,11 @@ import { Subject, takeUntil } from 'rxjs';
       </div>
     </div>
   `,
-  styles: [`
-    .asset-detail-page {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-
-    .back-link {
-      color: #667eea;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .back-link:hover {
-      color: #764ba2;
-      text-decoration: underline;
-    }
-
-    .page-header {
-      margin-bottom: 2rem;
-    }
-
-    .page-title {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0;
-      color: #333;
-    }
-
-    .info-box {
-      background: #f8f9fa;
-      border-left: 4px solid #667eea;
-      padding: 1rem 1.5rem;
-      border-radius: 4px;
-    }
-
-    @media (max-width: 768px) {
-      .asset-detail-page {
-        padding: 1.5rem 1rem;
-      }
-
-      .page-title {
-        font-size: 1.5rem;
-      }
-    }
-  `]
 })
 export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private http = inject(HttpClient);
   readonly store = inject(MarketStore);
   private chartService = inject(ChartDataService);
 
@@ -127,28 +89,25 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     const symbol = this.currentSymbol();
     const price = this.currentPrice();
     const loading = this.isLoading();
-
-    // Show error if not loading, symbol exists, but no price
     if (!loading && symbol && !price) {
       return `Preis für ${symbol} konnte nicht geladen werden.`;
     }
     return null;
   });
 
+  // Kauf-Logik
+  quantity: number | null = null;
+  buying = false;
+
   ngOnInit(): void {
-    // Listen to route parameter changes
-    this.route.paramMap
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        const symbol = params.get('symbol');
-        if (symbol) {
-          const upperSymbol = symbol.toUpperCase();
-          this.loadSymbolData(upperSymbol);
-        } else {
-          // No symbol provided, redirect to market list
-          this.router.navigate(['/market']);
-        }
-      });
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      const symbol = params.get('symbol');
+      if (symbol) {
+        this.loadSymbolData(symbol.toUpperCase());
+      } else {
+        this.router.navigate(['/market']);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -157,50 +116,53 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   }
 
   private async loadSymbolData(symbol: string): Promise<void> {
-    // Ensure symbols are loaded first
     if (!this.store.hasData()) {
       await this.store.loadSymbols();
     }
-
-    // Verify symbol exists
-    const symbolExists = this.store.symbols().some(s => s.symbol === symbol);
-    if (!symbolExists) {
-      console.warn(`Symbol ${symbol} not found in available symbols`);
-      // Could redirect to 404 or market list here
+    const exists = this.store.symbols().some(s => s.symbol === symbol);
+    if (!exists) {
+      console.warn(`Symbol ${symbol} nicht gefunden`);
     }
-
-    // Select and load price
     await this.store.selectSymbol(symbol);
-
-    // Load chart data
     this.loadChartData(symbol);
   }
 
   private loadChartData(symbol: string): void {
     this.chartLoading.set(true);
-    
-    this.chartService.getMinuteChart(symbol)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.chartData.set(data);
-          this.chartLoading.set(false);
-        },
-        error: (error) => {
-          console.error('Fehler beim Laden der Chart-Daten:', error);
-          this.chartData.set(null);
-          this.chartLoading.set(false);
-        }
-      });
+    this.chartService.getMinuteChart(symbol).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data) => { this.chartData.set(data); this.chartLoading.set(false); },
+      error: () => { this.chartData.set(null); this.chartLoading.set(false); },
+    });
   }
 
   async onRefresh(): Promise<void> {
     const symbol = this.currentSymbol();
     if (symbol) {
       await this.store.refreshPrice(symbol);
-      // Chart-Daten auch aktualisieren
       this.loadChartData(symbol);
     }
   }
-}
 
+  async buyAsset(): Promise<void> {
+    if (!this.currentSymbol() || !this.quantity) return;
+
+    this.buying = true;
+
+    try {
+      const payload = {
+        assetSymbol: this.currentSymbol(),
+        side: 'BUY',
+        quantity: this.quantity
+      };
+
+      await this.http.post('/api/trades', payload).toPromise();
+      alert(`Erfolgreich ${this.quantity} ${this.currentSymbol()} gekauft!`);
+      this.quantity = null;
+    } catch (error) {
+      console.error(error);
+      alert('Fehler beim Kauf des Assets.');
+    } finally {
+      this.buying = false;
+    }
+  }
+}
