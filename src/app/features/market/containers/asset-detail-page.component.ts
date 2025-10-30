@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
@@ -9,6 +8,7 @@ import { PriceCardComponent } from '../components/quote-card/quote-card.componen
 import { MinuteChartComponent } from '../components/minute-chart/minute-chart.component';
 import { ChartDataService } from '../data-access/chart-data.service';
 import { MinuteChartData } from '../data-access/chart-data.models';
+import { TradeService } from '../../../core/http/trade.service';
 
 @Component({
   standalone: true,
@@ -66,7 +66,7 @@ import { MinuteChartData } from '../data-access/chart-data.models';
 export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private http = inject(HttpClient);
+  private tradeService = inject(TradeService);
   readonly store = inject(MarketStore);
   private chartService = inject(ChartDataService);
 
@@ -149,18 +149,19 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     this.buying = true;
 
     try {
-      const payload = {
-        assetSymbol: this.currentSymbol(),
-        side: 'BUY',
+      const request = {
+        assetSymbol: this.currentSymbol()!,
+        side: 'BUY' as const,
         quantity: this.quantity
       };
 
-      await this.http.post('/api/trades', payload).toPromise();
+      const result = await this.tradeService.executeTrade(request).toPromise();
+      console.log('Trade executed successfully:', result);
       alert(`Erfolgreich ${this.quantity} ${this.currentSymbol()} gekauft!`);
       this.quantity = null;
     } catch (error) {
-      console.error(error);
-      alert('Fehler beim Kauf des Assets.');
+      console.error('Trade execution failed:', error);
+      alert('Fehler beim Kauf des Assets. Bitte prüfen Sie die Konsole für Details.');
     } finally {
       this.buying = false;
     }
