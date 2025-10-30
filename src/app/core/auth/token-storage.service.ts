@@ -11,6 +11,8 @@ export interface DevJwtPayload {
   exp: number;
   firstName?: string;
   lastName?: string;
+  given_name?: string;
+  family_name?: string;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,11 +1,9 @@
-// src/app/core/auth/auth.service.ts
 import { Injectable, computed, signal, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, throwError, map, switchMap, defer } from 'rxjs';
 import { TokenStorageService, DevJwtPayload } from './token-storage.service';
 import { environment } from '../../../environments/environments';
 
-// Authentication models matching backend DTOs
 export interface SignInInput {
   email: string;
   password: string;
@@ -21,7 +19,7 @@ export interface SignUpInput {
 export interface JwtAuthResponse {
   accessToken: string;
   tokenType: string;
-  expiresAt: string; // ISO string format from backend
+  expiresAt: string;
 }
 
 export interface AuthUser {
@@ -50,7 +48,6 @@ export class AuthService {
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
 
-  // Queue system for concurrent login requests
   private loginQueue: QueuedRequest[] = [];
   private isLoginInProgress = false;
 
@@ -66,8 +63,8 @@ export class AuthService {
         this.user.set({
           id: payload.sub,
           email: payload.email,
-          firstName: payload.firstName,
-          lastName: payload.lastName,
+          firstName: payload.given_name,
+          lastName: payload.family_name,
           roles: payload.roles || [],
           exp: payload.exp
         });
@@ -85,7 +82,6 @@ export class AuthService {
 
   signIn(credentials: SignInInput): Observable<JwtAuthResponse> {
     return defer(() => {
-      // If a login is already in progress, queue this request
       if (this.isLoginInProgress) {
         return new Observable<JwtAuthResponse>(subscriber => {
           this.loginQueue.push({
@@ -101,7 +97,6 @@ export class AuthService {
         });
       }
 
-      // Execute login immediately if no other login is in progress
       return this.executeLogin(credentials);
     });
   }
@@ -133,11 +128,10 @@ export class AuthService {
 
   private processLoginQueue(response: JwtAuthResponse | null, error: any): void {
     this.isLoginInProgress = false;
-    
-    // Process all queued requests with the same result
+
     const queue = [...this.loginQueue];
     this.loginQueue = [];
-    
+
     queue.forEach(queuedRequest => {
       if (response) {
         queuedRequest.resolve(response);
@@ -170,17 +164,18 @@ export class AuthService {
 
   private handleAuthResponse(response: JwtAuthResponse): void {
     this.loading.set(false);
-    
+
     if (response.accessToken) {
       this.tokens.set(response.accessToken);
       const payload = this.tokens.parsePayload(response.accessToken);
-      
+      console.log(payload);
+
       if (payload && this.isValidPayload(payload)) {
         this.user.set({
           id: payload.sub,
           email: payload.email,
-          firstName: payload.firstName,
-          lastName: payload.lastName,
+          firstName: payload.given_name,
+          lastName: payload.family_name,
           roles: payload.roles || [],
           exp: payload.exp
         });
@@ -190,9 +185,9 @@ export class AuthService {
 
   private handleAuthError(error: any): void {
     this.loading.set(false);
-    
+
     let errorMessage = 'Ein Fehler ist aufgetreten';
-    
+
     if (error.status === 401) {
       errorMessage = 'Ungültige Anmeldedaten';
     } else if (error.status === 409) {
@@ -202,15 +197,14 @@ export class AuthService {
     } else if (error.error?.message) {
       errorMessage = error.error.message;
     }
-    
+
     this.error.set(errorMessage);
   }
 
   signOut(): void {
-    // Clear any pending login requests
     this.clearLoginQueue();
     this.isLoginInProgress = false;
-    
+
     this.tokens.clear();
     this.user.set(null);
     this.error.set(null);
@@ -220,8 +214,7 @@ export class AuthService {
   private clearLoginQueue(): void {
     const queue = [...this.loginQueue];
     this.loginQueue = [];
-    
-    // Reject all queued requests since we're signing out
+
     queue.forEach(queuedRequest => {
       queuedRequest.reject(new Error('Login cancelled due to sign out'));
     });
@@ -235,7 +228,6 @@ export class AuthService {
     this.error.set(null);
   }
 
-  // Helper method to get authorization headers for API calls
   getAuthHeaders(): HttpHeaders {
     const token = this.tokens.get();
     if (token) {
