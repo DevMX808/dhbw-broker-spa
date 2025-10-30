@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environments';
@@ -35,18 +35,24 @@ export class ChartDataService {
    */
   getMinuteChart(symbol: string): Observable<MinuteChartData> {
     const url = `${this.baseUrl}/24h/${encodeURIComponent(symbol)}`;
-    return this.http.get<any[]>(url).pipe(
+    
+    // JWT Token aus localStorage holen (falls vorhanden)
+    const token = localStorage.getItem('token');
+    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
+    
+    return this.http.get<any[]>(url, { headers }).pipe(
       map((items) => {
         if (!Array.isArray(items)) {
           // Wenn die API etwas anderes zurückgibt, dann safe-fallback
           return { symbol, dataPoints: [] } as MinuteChartData;
         }
 
-        // Versuche verschiedene mögliche Feldnamen zu mappen
+        // Mappe die GraphQL-Response-Felder auf ChartDataPoint
         const parsed: ChartDataPoint[] = items
           .map((it: any) => {
-            const tsRaw = it.timestamp ?? it.time ?? it.t ?? it.date ?? it.updatedAt ?? it.updatedAtReadable;
-            const priceRaw = it.price ?? it.value ?? it.p ?? it.close ?? it.lastPrice;
+            // GraphQL Response hat: sourceTsUtc, ingestedTsUtc, priceUsd
+            const tsRaw = it.sourceTsUtc ?? it.ingestedTsUtc ?? it.timestamp ?? it.time ?? it.date;
+            const priceRaw = it.priceUsd ?? it.price ?? it.value;
 
             const timestamp = tsRaw ? new Date(tsRaw).toISOString() : null;
             const price = priceRaw != null ? Number(priceRaw) : null;
