@@ -4,6 +4,10 @@ import { HeldTrade } from '../models/held-trade.model';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 
+interface HeldTradeWithPrice extends HeldTrade {
+  sellQuantity?: number;
+  currentPriceUsd: number;  // aktueller Preis
+}
 
 @Component({
   selector: 'app-portfolio-page',
@@ -24,6 +28,8 @@ import { FormsModule } from '@angular/forms';
           <th>Asset</th>
           <th>Menge</th>
           <th>Kaufpreis (USD)</th>
+          <th>Aktueller Preis (USD)</th>
+          <th>Gewinn / Verlust</th>
           <th>Kaufdatum</th>
           <th>Verkauf</th>
         </tr>
@@ -33,6 +39,10 @@ import { FormsModule } from '@angular/forms';
           <td class="fw-semibold">{{ trade.assetSymbol }}</td>
           <td>{{ trade.quantity }}</td>
           <td>{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
+          <td>{{ trade.currentPriceUsd | number:'1.2-2' }}</td>
+          <td [ngClass]="{'text-success': trade.currentPriceUsd > trade.buyPriceUsd, 'text-danger': trade.currentPriceUsd < trade.buyPriceUsd}">
+            {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.quantity) | number:'1.2-2' }}
+          </td>
           <td>{{ trade.createdAt | date:'short' }}</td>
           <td>
             <div class="d-flex align-items-center gap-2">
@@ -89,7 +99,7 @@ import { FormsModule } from '@angular/forms';
   `]
 })
 export class PortfolioPageComponent implements OnInit {
-  heldTrades: (HeldTrade & { sellQuantity?: number })[] = [];
+  heldTrades: HeldTradeWithPrice[] = [];
   isLoading = false;
   error: string | null = null;
 
@@ -105,8 +115,12 @@ export class PortfolioPageComponent implements OnInit {
 
     this.portfolioService.getHeldTrades().subscribe({
       next: (data) => {
-        // sellQuantity hinzufügen für Eingabefeld
-        this.heldTrades = data.map(t => ({ ...t, sellQuantity: 0 }));
+        // sellQuantity hinzufügen und aktuelle Preise simulieren
+        this.heldTrades = data.map(t => ({
+          ...t,
+          sellQuantity: 0,
+          currentPriceUsd: t.buyPriceUsd * (1 + Math.random() * 0.2 - 0.1) // ±10% Testwert
+        }));
         this.isLoading = false;
       },
       error: (err) => {
@@ -117,11 +131,11 @@ export class PortfolioPageComponent implements OnInit {
     });
   }
 
-  isValidSellAmount(trade: HeldTrade & { sellQuantity?: number }): boolean {
+  isValidSellAmount(trade: HeldTradeWithPrice): boolean {
     return !!trade.sellQuantity && trade.sellQuantity > 0 && trade.sellQuantity <= trade.quantity;
   }
 
-  sell(trade: HeldTrade & { sellQuantity?: number }): void {
+  sell(trade: HeldTradeWithPrice): void {
     const amount = trade.sellQuantity ?? 0;
 
     if (amount <= 0) {
