@@ -1,8 +1,11 @@
-import { Component, OnInit, OnDestroy, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarketStore } from '../store/market.store';
 import { PriceCardComponent } from '../components/quote-card/quote-card.component';
+import { MinuteChartComponent } from '../components/minute-chart/minute-chart.component';
+import { ChartDataService } from '../data-access/chart-data.service';
+import { MinuteChartData } from '../data-access/chart-data.models';
 import { Subject, takeUntil } from 'rxjs';
 
 /**
@@ -12,7 +15,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   standalone: true,
   selector: 'app-asset-detail-page',
-  imports: [CommonModule, RouterLink, PriceCardComponent],
+  imports: [CommonModule, RouterLink, PriceCardComponent, MinuteChartComponent],
   template: `
     <div class="asset-detail-page">
       <!-- Back Link -->
@@ -28,6 +31,12 @@ import { Subject, takeUntil } from 'rxjs';
           {{ currentSymbol() || 'Asset Details' }}
         </h1>
       </div>
+
+      <!-- Minute Chart -->
+      <app-minute-chart
+        [chartData]="chartData()"
+        [loading]="chartLoading()">
+      </app-minute-chart>
 
       <!-- Price Card -->
       <app-price-card
@@ -97,8 +106,13 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   readonly store = inject(MarketStore);
+  private chartService = inject(ChartDataService);
 
   private destroy$ = new Subject<void>();
+
+  // Chart data signals
+  readonly chartData = signal<MinuteChartData | null>(null);
+  readonly chartLoading = signal(false);
 
   // Computed values from store
   readonly currentSymbol = computed(() => this.store.selectedSymbol());
@@ -157,12 +171,35 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
 
     // Select and load price
     await this.store.selectSymbol(symbol);
+
+    // Load chart data
+    this.loadChartData(symbol);
+  }
+
+  private loadChartData(symbol: string): void {
+    this.chartLoading.set(true);
+    
+    this.chartService.getMinuteChart(symbol)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.chartData.set(data);
+          this.chartLoading.set(false);
+        },
+        error: (error) => {
+          console.error('Fehler beim Laden der Chart-Daten:', error);
+          this.chartData.set(null);
+          this.chartLoading.set(false);
+        }
+      });
   }
 
   async onRefresh(): Promise<void> {
     const symbol = this.currentSymbol();
     if (symbol) {
       await this.store.refreshPrice(symbol);
+      // Chart-Daten auch aktualisieren
+      this.loadChartData(symbol);
     }
   }
 }
