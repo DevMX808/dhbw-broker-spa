@@ -4,7 +4,6 @@ import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { MarketStore } from '../store/market.store';
-import { PriceCardComponent } from '../components/quote-card/quote-card.component';
 import { MinuteChartComponent } from '../components/minute-chart/minute-chart.component';
 import { ChartDataService } from '../data-access/chart-data.service';
 import { MinuteChartData } from '../data-access/chart-data.models';
@@ -13,7 +12,7 @@ import { TradeService } from '../../../core/http/trade.service';
 @Component({
   standalone: true,
   selector: 'app-asset-detail-page',
-  imports: [CommonModule, RouterLink, PriceCardComponent, MinuteChartComponent, FormsModule],
+  imports: [CommonModule, RouterLink, MinuteChartComponent, FormsModule],
   template: `
     <div class="asset-detail-page">
       <!-- Back Link -->
@@ -21,9 +20,15 @@ import { TradeService } from '../../../core/http/trade.service';
         <a routerLink="/market" class="back-link">← Zurück zur Übersicht</a>
       </div>
 
-      <!-- Header -->
+      <!-- Header with Price -->
       <div class="page-header mb-4">
-        <h1 class="page-title">{{ currentSymbol() || 'Asset Details' }}</h1>
+        <h1 class="page-title">
+          {{ currentSymbol() || 'Asset Details' }}
+          <span *ngIf="currentPrice() && !isLoading()" class="text-muted ml-2">
+            (\${{ currentPrice()?.price | number:'1.2-4' }} USD)
+          </span>
+          <span *ngIf="isLoading()" class="text-muted ml-2">(Laden...)</span>
+        </h1>
       </div>
 
       <!-- Minute Chart -->
@@ -31,14 +36,6 @@ import { TradeService } from '../../../core/http/trade.service';
         [chartData]="chartData()"
         [loading]="chartLoading()">
       </app-minute-chart>
-
-      <!-- Price Card -->
-      <app-price-card
-        [price]="currentPrice()"
-        [loading]="isLoading()"
-        [error]="priceError()"
-        (refresh)="onRefresh()">
-      </app-price-card>
 
       <!-- Kaufbereich -->
       <div class="mt-6 p-4 border rounded-md bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
@@ -52,13 +49,6 @@ import { TradeService } from '../../../core/http/trade.service';
                 class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed">
           {{ buying ? 'Kaufe...' : 'Kaufen' }}
         </button>
-      </div>
-
-      <!-- Info Text -->
-      <div class="info-box mt-4">
-        <p class="text-muted small mb-0">
-          💡 <strong>Tipp:</strong> Klicken Sie auf "Aktualisieren", um die neuesten Preisdaten zu laden.
-        </p>
       </div>
     </div>
   `,
@@ -133,14 +123,6 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
       next: (data) => { this.chartData.set(data); this.chartLoading.set(false); },
       error: () => { this.chartData.set(null); this.chartLoading.set(false); },
     });
-  }
-
-  async onRefresh(): Promise<void> {
-    const symbol = this.currentSymbol();
-    if (symbol) {
-      await this.store.refreshPrice(symbol);
-      this.loadChartData(symbol);
-    }
   }
 
   async buyAsset(): Promise<void> {
