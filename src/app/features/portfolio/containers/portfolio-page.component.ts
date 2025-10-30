@@ -54,6 +54,7 @@ interface HeldTradeWithPrice extends HeldTrade {
               <td class="text-muted">–</td>
             </ng-template>
 
+      
             <td *ngIf="trade.currentPriceUsd" class="gain-loss-cell">
               <span [ngClass]="{
                 'text-success': trade.currentPriceUsd > trade.buyPriceUsd,
@@ -64,7 +65,18 @@ interface HeldTradeWithPrice extends HeldTrade {
                      'bi-arrow-up-right': trade.currentPriceUsd > trade.buyPriceUsd,
                      'bi-arrow-down-right': trade.currentPriceUsd < trade.buyPriceUsd
                    }"></i>
-                {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.quantity) | number:'1.2-2' }}
+
+               
+                {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.quantity) | number:'1.2-2' }} USD
+
+                ({{ ((trade.currentPriceUsd - trade.buyPriceUsd) / trade.buyPriceUsd * 100) | number:'1.2-2' }}%)
+
+                <!-- Dynamischer Gewinn/Verlust für eingegebene Menge -->
+                <ng-container *ngIf="trade.sellQuantity && trade.sellQuantity > 0">
+                  <br>
+                  Verkaufen von {{ trade.sellQuantity }}: 
+                  {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) | number:'1.2-2' }} USD
+                </ng-container>
               </span>
             </td>
 
@@ -109,6 +121,7 @@ interface HeldTradeWithPrice extends HeldTrade {
       box-shadow: 0 0 20px rgba(0,0,0,0.3);
       color: #f8f9fa;
       animation: fadeIn 0.8s ease;
+      min-height: 100vh;
     }
 
     .page-title {
@@ -122,6 +135,7 @@ interface HeldTradeWithPrice extends HeldTrade {
       background: rgba(255, 255, 255, 0.05);
       border-radius: 10px;
       overflow: hidden;
+      width: 100%;
     }
 
     th {
