@@ -143,15 +143,12 @@ export class MarketListComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['pricesBySymbol']) {
       const symbols = Object.keys(this.pricesBySymbol);
-      console.log(`[MarketList] Prices updated, count: ${symbols.length}, symbols:`, symbols);
     }
 
     if (changes['symbols']) {
-      console.log('[MarketList] Symbols updated, count:', this.symbols.length);
     }
 
     if (changes['loading']) {
-      console.log('[MarketList] Loading state:', this.loading);
     }
   }
 
@@ -160,7 +157,6 @@ export class MarketListComponent implements OnChanges {
   }
 
   onRetry(): void {
-    console.log('[MarketList] Retry clicked');
     this.retry.emit();
   }
 }

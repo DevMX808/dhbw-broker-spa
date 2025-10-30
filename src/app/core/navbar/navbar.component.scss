@@ -18,7 +18,6 @@
     gap: 12px;
     font-weight: 600;
     font-size: 1rem;
-
   }
 
   .navbar-center {
@@ -51,6 +50,10 @@
   }
 
   .navbar-right {
+    display: flex;  // Neu: Flex für Alignment von Buttons
+    align-items: center;
+    gap: 1rem;  // Neu: Abstand zwischen Settings und Logout
+
     a.settings-button {
       color: #ccc;
       display: flex;
@@ -66,5 +69,37 @@
         height: 24px;
       }
     }
+
+    // Neu: Style für Logout-Button
+    .logout-button {
+      background-color: transparent;
+      border: 1px solid #ccc;
+      color: #ccc;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: #f44336;  // Rot für "Logout"-Gefahr
+        color: #f44336;
+      }
+    }
+  }
+
+  // Neu: Für zentriertes Logo
+  .navbar-logo-centered {
+    display: flex;
+    justify-content: center;  // Zentriert horizontal
+    align-items: center;
+    width: 100%;  // Full-width für Zentrierung
+  }
+
+  .logo-text {
+    font-size: 1.5rem;  // Größer für Logo-Feel
+    font-weight: bold;
+    color: #4caf50;  // Deine Grün-Akzentfarbe für Branding
+    text-transform: uppercase;  // Optional: Für Logo-Look
   }
 }

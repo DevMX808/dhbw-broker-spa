@@ -1,15 +1,26 @@
 <nav class="navbar">
-  <div class="navbar-left">
-    <span class="greeting">Hallo, {{ firstName }} {{ lastName }}</span>
-  </div>
+  <!-- Normale Navbar für eingeloggte User oder andere Seiten -->
+  @if (!isLoggedOutOnAccount) {
+    <div class="navbar-left">
+      <span class="greeting">Hallo, {{ firstName }} {{ lastName }}</span>
+    </div>
 
-  <div class="navbar-center">
-    <a routerLink="/assets" routerLinkActive="active-link" class="nav-link">Meine Assets</a>
-    <a routerLink="/market" routerLinkActive="active-link" class="nav-link">Markt</a>
-    <a routerLink="/portfolio" routerLinkActive="active-link" class="nav-link">Portfolio</a>
-  </div>
+    <div class="navbar-center">
+      <a routerLink="/assets" routerLinkActive="active-link" class="nav-link">Meine Assets</a>
+      <a routerLink="/market" routerLinkActive="active-link" class="nav-link">Markt</a>
+      <a routerLink="/portfolio" routerLinkActive="active-link" class="nav-link">Portfolio</a>
+    </div>
 
-  <div class="navbar-right">
-    <a routerLink="/settings" title="Einstellungen" class="settings-button" aria-label="Einstellungen"></a>
-  </div>
+    <div class="navbar-right">
+      <a routerLink="/settings" title="Einstellungen" class="settings-button" aria-label="Einstellungen"></a>
+      <!-- Neu: Logout-Button, nur bei eingeloggt -->
+      <button class="logout-button" (click)="logout()" title="Abmelden" aria-label="Abmelden">Abmelden</button>
+    </div>
+  }
+
+  @if (isLoggedOutOnAccount) {
+    <div class="navbar-logo-centered">
+      <span class="logo-text">LEDGERO</span>
+    </div>
+  }
 </nav>

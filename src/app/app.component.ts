@@ -40,6 +40,4 @@ export class AppComponent {
     // Set initial state
     this.isAuthRoute.set(this.router.url.includes('/account'));
   }
-
-  logout() { this.auth.signOut(); }
 }

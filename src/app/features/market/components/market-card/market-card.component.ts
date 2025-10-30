@@ -236,21 +236,9 @@ export class MarketCardComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['price'] && this.price) {
-      console.log(`[MarketCard ${this.symbol.symbol}] Price updated:`, {
-        price: this.price.price,
-        changePct: this.price.changePct,
-        changeDirection: this.price.changePct === undefined ? 'unknown' :
-                         this.price.changePct > 0 ? 'up ↑' :
-                         this.price.changePct < 0 ? 'down ↓' :
-                         'neutral →',
-        updatedAt: this.price.updatedAt,
-        updatedAtReadable: this.price.updatedAtReadable,
-        timestamp: new Date().toISOString()
-      });
     }
 
     if (changes['loading']) {
-      console.log(`[MarketCard ${this.symbol.symbol}] Loading state:`, this.loading);
     }
   }
 }

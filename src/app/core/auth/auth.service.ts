@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, throwError, map, switchMap, defer } from 'rxjs';
 import { TokenStorageService, DevJwtPayload } from './token-storage.service';
 import { environment } from '../../../environments/environments';
+import { Router } from '@angular/router';  // Neu: Für Redirect nach Logout
 
 export interface SignInInput {
   email: string;
@@ -41,6 +42,7 @@ interface QueuedRequest {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly tokens = inject(TokenStorageService);
+  private readonly router = inject(Router);  // Neu: Inject Router für Redirect
   private readonly baseUrl = environment.apiBaseUrl;
 
   readonly user = signal<AuthUser | null>(null);
@@ -209,6 +211,8 @@ export class AuthService {
     this.user.set(null);
     this.error.set(null);
     this.loading.set(false);
+
+    this.router.navigate(['/account']);
   }
 
   private clearLoginQueue(): void {

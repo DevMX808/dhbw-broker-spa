@@ -120,35 +120,27 @@ export class MarketPageComponent implements OnInit, OnDestroy {
   readonly store = inject(MarketStore);
 
   async ngOnInit(): Promise<void> {
-    console.log('[MarketPage] Initializing...');
 
     // Load symbols on page init
     if (!this.store.hasData()) {
-      console.log('[MarketPage] No data yet, loading symbols...');
       await this.store.loadSymbols();
 
       // Optionally prefetch prices for first few symbols
       const symbolsToPreload = this.store.symbols().slice(0, 6).map(s => s.symbol);
       if (symbolsToPreload.length > 0) {
-        console.log('[MarketPage] Prefetching prices for symbols:', symbolsToPreload);
         this.store.prefetchPrices(symbolsToPreload);
       }
-    } else {
-      console.log('[MarketPage] Data already loaded, symbols count:', this.store.symbols().length);
     }
 
     // Start auto-refresh for price updates every 60 seconds
-    console.log('[MarketPage] Starting auto-refresh...');
     this.store.startAutoRefresh();
   }
 
   ngOnDestroy(): void {
-    console.log('[MarketPage] Destroying, stopping auto-refresh...');
     this.store.stopAutoRefresh();
   }
 
   onRetry(): void {
-    console.log('[MarketPage] Retry clicked, reloading symbols...');
     this.store.loadSymbols();
   }
 }

@@ -13,7 +13,6 @@ export class ChartDataService {
   private readonly baseUrl = this.getBaseUrl();
 
   constructor() {
-    console.log('ChartDataService baseUrl:', this.baseUrl);
   }
 
   private getBaseUrl(): string {
@@ -35,11 +34,11 @@ export class ChartDataService {
    */
   getMinuteChart(symbol: string): Observable<MinuteChartData> {
     const url = `${this.baseUrl}/24h/${encodeURIComponent(symbol)}`;
-    
+
     // JWT Token aus localStorage holen (falls vorhanden)
     const token = localStorage.getItem('token');
     const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : new HttpHeaders();
-    
+
     return this.http.get<any[]>(url, { headers }).pipe(
       map((items) => {
         if (!Array.isArray(items)) {

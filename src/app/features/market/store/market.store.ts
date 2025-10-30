@@ -58,7 +58,6 @@ export class MarketStore {
       this.symbols.set(symbols);
       this.error.set(null);
     } catch (err) {
-      console.error('[MarketStore] loadSymbols failed', err);
       this.error.set('Symbols konnten nicht geladen werden.');
     } finally {
       this.loading.update(state => ({ ...state, symbols: false }));
@@ -73,34 +72,23 @@ export class MarketStore {
     const now = Date.now();
     const cached = this.isCached(symbol);
 
-    console.log(`[MarketStore] loadPrice(${symbol}, forceRefresh=${forceRefresh})`, {
-      cached,
-      lastFetched: this.lastFetched[symbol] ? new Date(this.lastFetched[symbol]).toISOString() : 'never',
-      ageMs: this.lastFetched[symbol] ? now - this.lastFetched[symbol] : null,
-      hasPrice: !!this.pricesBySymbol()[symbol]
-    });
-
     // Check if already loading (dedupe)
     if (this.loading().priceBySymbol[symbol] && !forceRefresh) {
-      console.log(`[MarketStore] ${symbol} already loading, skipping`);
       return;
     }
 
     // Check cache (if not forcing refresh)
     if (!forceRefresh && cached) {
-      console.log(`[MarketStore] ${symbol} using cached price`);
       return;
     }
 
     // Dedupe: if request is pending, return existing promise
     const pendingRequest = this.pendingRequests[symbol];
     if (pendingRequest && !forceRefresh) {
-      console.log(`[MarketStore] ${symbol} has pending request, awaiting...`);
       await pendingRequest;
       return;
     }
 
-    console.log(`[MarketStore] ${symbol} fetching fresh price from API...`);
 
     // Start loading
     this.loading.update(state => ({
@@ -115,12 +103,6 @@ export class MarketStore {
     try {
       const price = await pricePromise;
 
-      console.log(`[MarketStore] ${symbol} price received:`, {
-        price: price.price,
-        updatedAt: price.updatedAt,
-        timestamp: new Date().toISOString()
-      });
-
       // Update state
       this.pricesBySymbol.update(prices => ({
         ...prices,
@@ -130,7 +112,6 @@ export class MarketStore {
       // Update cache timestamp
       this.lastFetched[symbol] = Date.now();
     } catch (err) {
-      console.error(`[MarketStore] loadPrice failed for ${symbol}`, err);
       // Don't set global error, just log it
     } finally {
       // Clean up
@@ -192,15 +173,11 @@ export class MarketStore {
    */
   startAutoRefresh(): void {
     if (this.autoRefreshEnabled) {
-      console.log('[MarketStore] Auto-refresh already enabled');
       return;
     }
 
     const now = new Date();
     const currentSecond = now.getSeconds();
-
-    console.log(`[MarketStore] Starting auto-refresh (synced to second ${this.REFRESH_AT_SECOND} of each minute)`);
-    console.log(`[MarketStore] Current time: ${now.toISOString().substring(11, 19)} (second ${currentSecond})`);
 
     this.autoRefreshEnabled = true;
 
@@ -213,8 +190,6 @@ export class MarketStore {
       // Next refresh is in next minute
       delayUntilNextRefresh = (60 - currentSecond + this.REFRESH_AT_SECOND) * 1000;
     }
-
-    console.log(`[MarketStore] First refresh in ${Math.round(delayUntilNextRefresh / 1000)} seconds (at second ${this.REFRESH_AT_SECOND})`);
 
     // Schedule first refresh at the next second 35
     this.initialRefreshTimeout = setTimeout(() => {
@@ -234,14 +209,11 @@ export class MarketStore {
     const now = new Date();
     const symbolsToRefresh = Object.keys(this.pricesBySymbol());
 
-    console.log(`[MarketStore] ⟳ Auto-refresh triggered at ${now.toISOString().substring(11, 19)} for ${symbolsToRefresh.length} symbols:`, symbolsToRefresh);
-
     if (symbolsToRefresh.length > 0) {
       symbolsToRefresh.forEach(symbol => {
         this.loadPrice(symbol, true); // force refresh
       });
     } else {
-      console.log('[MarketStore] Auto-refresh: no symbols to refresh');
     }
   }
 
@@ -253,7 +225,6 @@ export class MarketStore {
       return;
     }
 
-    console.log('[MarketStore] Stopping auto-refresh');
     this.autoRefreshEnabled = false;
 
     if (this.initialRefreshTimeout) {

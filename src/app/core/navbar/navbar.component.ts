@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
-import { AuthService } from '../auth/auth.service';  // Passe den Pfad an (z. B. aus core/auth)
+import { AuthService } from '../auth/auth.service';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -12,6 +12,12 @@ import { RouterModule } from '@angular/router';
 })
 export class NavbarComponent {
   private authService = inject(AuthService);
+  private router = inject(Router);
+
+  get isLoggedOutOnAccount(): boolean {
+    const isOnAccount = this.router.url.startsWith('/account');
+    return !this.authService.isAuthenticated() && isOnAccount;
+  }
 
   get firstName(): string {
     return this.authService.user()?.firstName || '';
@@ -21,8 +27,7 @@ export class NavbarComponent {
     return this.authService.user()?.lastName || '';
   }
 
-  get initials(): string {
-    return ((this.firstName[0] || '') + (this.lastName[0] || '')).toUpperCase();
+  logout(): void {
+    this.authService.signOut();
   }
-
 }
