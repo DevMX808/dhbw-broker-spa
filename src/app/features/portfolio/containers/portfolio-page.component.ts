@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { PortfolioService } from '../data-access/portfolio.service';
 import { HeldTrade } from '../models/held-trade.model';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
@@ -8,6 +8,7 @@ import { forkJoin } from 'rxjs';
 interface HeldTradeWithPrice extends HeldTrade {
   sellQuantity?: number;
   currentPriceUsd?: number;
+  isSelling?: boolean;
 }
 
 @Component({
@@ -15,101 +16,175 @@ interface HeldTradeWithPrice extends HeldTrade {
   standalone: true,
   imports: [CommonModule, DecimalPipe, DatePipe, FormsModule],
   template: `
-    <h1 class="h4 mb-4 text-white">Mein Portfolio</h1>
+    <div class="portfolio-container">
+      <h1 class="page-title">💼 Mein Portfolio</h1>
 
-    <div *ngIf="isLoading" class="text-muted">Lade Portfolio...</div>
+      <div *ngIf="isLoading" class="loading-spinner">
+        <div class="spinner-border text-light" role="status"></div>
+        <p>Portfolio wird geladen...</p>
+      </div>
 
-    <div *ngIf="error" class="alert alert-danger">
-      Fehler beim Laden: {{ error }}
-    </div>
+      <div *ngIf="error" class="alert alert-danger text-center mt-3">
+        {{ error }}
+      </div>
 
-    <table *ngIf="heldTrades.length > 0" class="table table-hover align-middle text-white">
-      <thead class="table-dark">
-        <tr>
-          <th>Asset</th>
-          <th>Menge</th>
-          <th>Kaufpreis (USD)</th>
-          <th>Aktueller Preis (USD)</th>
-          <th>Gewinn / Verlust</th>
-          <th>Kaufdatum</th>
-          <th>Verkauf</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let trade of heldTrades">
-          <td class="fw-semibold">{{ trade.assetSymbol }}</td>
-          <td>{{ trade.quantity }}</td>
-          <td>{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
+      <table *ngIf="!isLoading && heldTrades.length > 0" class="table table-hover align-middle portfolio-table">
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Menge</th>
+            <th>Kaufpreis (USD)</th>
+            <th>Aktueller Preis (USD)</th>
+            <th>Gewinn / Verlust</th>
+            <th>Kaufdatum</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
 
-          <td *ngIf="trade.currentPriceUsd; else loadingPrice">
-            {{ trade.currentPriceUsd | number:'1.2-2' }}
-          </td>
-          <ng-template #loadingPrice>
-            <td class="text-muted">–</td>
-          </ng-template>
+        <tbody>
+          <tr *ngFor="let trade of heldTrades">
+            <td class="fw-semibold">{{ trade.assetSymbol }}</td>
+            <td>{{ trade.quantity }}</td>
+            <td>{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
 
-          <td *ngIf="trade.currentPriceUsd"
-              [ngClass]="{
+            <td *ngIf="trade.currentPriceUsd; else loadingPrice">
+              {{ trade.currentPriceUsd | number:'1.2-2' }}
+            </td>
+            <ng-template #loadingPrice>
+              <td class="text-muted">–</td>
+            </ng-template>
+
+            <td *ngIf="trade.currentPriceUsd" class="gain-loss-cell">
+              <span [ngClass]="{
                 'text-success': trade.currentPriceUsd > trade.buyPriceUsd,
                 'text-danger': trade.currentPriceUsd < trade.buyPriceUsd
               }">
-            {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.quantity) | number:'1.2-2' }}
-          </td>
-          <td *ngIf="!trade.currentPriceUsd" class="text-muted">–</td>
+                <i class="bi"
+                   [ngClass]="{
+                     'bi-arrow-up-right': trade.currentPriceUsd > trade.buyPriceUsd,
+                     'bi-arrow-down-right': trade.currentPriceUsd < trade.buyPriceUsd
+                   }"></i>
+                {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.quantity) | number:'1.2-2' }}
+              </span>
+            </td>
 
-          <td>{{ trade.createdAt | date:'short' }}</td>
+            <td>{{ trade.createdAt | date:'short' }}</td>
 
-          <td>
-            <div class="d-flex align-items-center gap-2">
-              <input
-                type="number"
-                min="0"
-                step="any"
-                [(ngModel)]="trade.sellQuantity"
-                [max]="trade.quantity"
-                class="form-control form-control-sm"
-                placeholder="Menge"
-                style="width: 90px;"
-              />
-              <button
-                class="btn btn-sm btn-danger"
-                [disabled]="!isValidSellAmount(trade)"
-                (click)="sell(trade)"
-              >
-                Verkaufen
-              </button>
-            </div>
-            <div *ngIf="trade.sellQuantity && trade.sellQuantity > trade.quantity" class="text-danger small mt-1">
-              Menge zu hoch!
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  [(ngModel)]="trade.sellQuantity"
+                  [max]="trade.quantity"
+                  class="form-control form-control-sm quantity-input"
+                  placeholder="Menge"
+                />
 
-    <div *ngIf="heldTrades.length === 0 && !isLoading" class="text-muted">
-      Keine gehaltenen Assets vorhanden.
+                <button
+                  class="btn btn-sm sell-btn"
+                  [disabled]="!isValidSellAmount(trade) || trade.isSelling"
+                  (click)="sell(trade)"
+                >
+                  <span *ngIf="!trade.isSelling">💸 Verkaufen</span>
+                  <div *ngIf="trade.isSelling" class="spinner-border spinner-border-sm text-light" role="status"></div>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="!isLoading && heldTrades.length === 0" class="text-muted text-center mt-4">
+        Keine gehaltenen Assets vorhanden.
+      </div>
     </div>
   `,
   styles: [`
-    table {
-      width: 100%;
-      border-radius: 8px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.05);
-    }
-    th, td {
+    .portfolio-container {
+      padding: 2rem;
+      background: linear-gradient(180deg, #0b0d13, #131822);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
       color: #f8f9fa;
+      animation: fadeIn 0.8s ease;
     }
-    .form-control {
+
+    .page-title {
+      font-weight: 600;
+      color: #00d4ff;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .portfolio-table {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th {
+      background: rgba(0, 0, 0, 0.3);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    td {
+      vertical-align: middle;
+    }
+
+    .gain-loss-cell {
+      font-weight: 600;
+    }
+
+    .quantity-input {
       background: rgba(255, 255, 255, 0.1);
       color: white;
       border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: 0.3s ease;
     }
-    .form-control:focus {
-      background: rgba(255, 255, 255, 0.15);
-      outline: none;
-      border-color: #007bff;
+
+    .quantity-input:focus {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: #00d4ff;
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+    }
+
+    .sell-btn {
+      background: linear-gradient(90deg, #e63946, #b5179e);
+      color: white;
+      font-weight: 600;
+      border: none;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sell-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 0, 100, 0.5);
+    }
+
+    .sell-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .loading-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: #ccc;
+      font-size: 1.1rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   `]
 })
@@ -118,7 +193,10 @@ export class PortfolioPageComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
 
-  constructor(private portfolioService: PortfolioService) {}
+  constructor(
+    private portfolioService: PortfolioService,
+    private ngZone: NgZone 
+  ) {}
 
   ngOnInit(): void {
     this.loadPortfolio();
@@ -132,29 +210,34 @@ export class PortfolioPageComponent implements OnInit {
       next: (trades) => {
         const withSell = trades.map(t => ({ ...t, sellQuantity: 0 }));
 
-        
         const priceRequests = withSell.map(t =>
           this.portfolioService.getCurrentPrice(t.assetSymbol)
         );
 
         forkJoin(priceRequests).subscribe({
           next: (prices) => {
-            this.heldTrades = withSell.map((t, i) => ({
-              ...t,
-              currentPriceUsd: prices[i].price 
-            }));
-            this.isLoading = false;
+            this.ngZone.run(() => { 
+              this.heldTrades = withSell.map((t, i) => ({
+                ...t,
+                currentPriceUsd: prices[i].price
+              }));
+              this.isLoading = false;
+            });
           },
           error: (err) => {
+            this.ngZone.run(() => {
+              this.error = 'Preise konnten nicht geladen werden.';
+              this.isLoading = false;
+            });
             console.error('Fehler beim Laden der Preise:', err);
-            this.error = 'Preise konnten nicht geladen werden.';
-            this.isLoading = false;
           }
         });
       },
       error: (err) => {
-        this.error = 'Portfolio konnte nicht geladen werden.';
-        this.isLoading = false;
+        this.ngZone.run(() => {
+          this.error = 'Portfolio konnte nicht geladen werden.';
+          this.isLoading = false;
+        });
         console.error(err);
       }
     });
@@ -181,13 +264,16 @@ export class PortfolioPageComponent implements OnInit {
       return;
     }
 
+    trade.isSelling = true;
+
     this.portfolioService.sellAsset(trade.assetSymbol, amount).subscribe({
-      next: (response) => {
-        console.log('Verkauf erfolgreich:', response);
+      next: () => {
+        trade.isSelling = false;
         alert(`${amount} ${trade.assetSymbol} erfolgreich verkauft!`);
         this.loadPortfolio();
       },
       error: (err) => {
+        trade.isSelling = false;
         console.error('Verkauf fehlgeschlagen:', err);
         alert(`Verkauf fehlgeschlagen: ${err.error?.message || err.message}`);
       }
