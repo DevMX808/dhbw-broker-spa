@@ -21,7 +21,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
         </div>
 
         <div class="settings-grid">
-          <!-- Profil -->
+          
           <div class="settings-card">
             <div class="card-header">👤 Profil ändern</div>
             <form (ngSubmit)="updateProfile()" #profileForm="ngForm" class="card-body">
@@ -35,7 +35,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
             </form>
           </div>
 
-          <!-- Passwort -->
+          
           <div class="settings-card">
             <div class="card-header">🔒 Passwort ändern</div>
             <form (ngSubmit)="changePassword()" #passwordForm="ngForm" class="card-body">
@@ -49,7 +49,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
             </form>
           </div>
 
-          <!-- E-Mail -->
+        
           <div class="settings-card">
             <div class="card-header">📧 E-Mail ändern</div>
             <form (ngSubmit)="changeEmail()" #emailForm="ngForm" class="card-body">
@@ -63,7 +63,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
             </form>
           </div>
 
-          <!-- Konto löschen -->
+          
           <div class="settings-card danger-zone">
             <div class="card-header text-danger">⚠️ Konto löschen</div>
             <form (ngSubmit)="deleteAccount()" #deleteForm="ngForm" class="card-body">
@@ -80,7 +80,6 @@ import { trigger, transition, style, animate } from '@angular/animations';
     </div>
   `,
   styles: [`
-    /* === Layout: Fullscreen === */
     .settings-fullscreen {
       display: flex;
       justify-content: center;
@@ -114,7 +113,6 @@ import { trigger, transition, style, animate } from '@angular/animations';
       font-weight: 600;
     }
 
-    /* === Grid für 2x2 Layout === */
     .settings-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -264,7 +262,10 @@ export class SettingsPageComponent {
   updateProfile() {
     this.userService.updateProfile(this.profile).subscribe({
       next: () => this.showMessage('✅ Profil erfolgreich aktualisiert', false),
-      error: () => this.showMessage('❌ Fehler beim Aktualisieren des Profils', true)
+      error: (err) => {
+        console.error('Update profile error:', err);
+        this.showMessage('❌ Fehler beim Aktualisieren des Profils', true);
+      }
     });
   }
 
@@ -274,7 +275,10 @@ export class SettingsPageComponent {
         this.showMessage('🔑 Passwort erfolgreich geändert', false);
         this.password = { currentPassword: '', newPassword: '' };
       },
-      error: () => this.showMessage('❌ Fehler beim Ändern des Passworts', true)
+      error: (err) => {
+        console.error('Change password error:', err);
+        this.showMessage('❌ Fehler beim Ändern des Passworts', true);
+      }
     });
   }
 
@@ -284,7 +288,10 @@ export class SettingsPageComponent {
         this.showMessage('📧 E-Mail erfolgreich geändert', false);
         this.email = { newEmail: '', password: '' };
       },
-      error: () => this.showMessage('❌ Fehler beim Ändern der E-Mail', true)
+      error: (err) => {
+        console.error('Change email error:', err);
+        this.showMessage('❌ Fehler beim Ändern der E-Mail', true);
+      }
     });
   }
 
@@ -292,7 +299,10 @@ export class SettingsPageComponent {
     if (confirm('⚠️ Sind Sie sicher, dass Sie Ihr Konto löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.')) {
       this.userService.deleteAccount({ password: this.deletePassword }).subscribe({
         next: () => this.showMessage('🗑️ Konto wurde gelöscht', false),
-        error: () => this.showMessage('❌ Fehler beim Löschen des Kontos', true)
+        error: (err) => {
+          console.error('Delete account error:', err);
+          this.showMessage('❌ Fehler beim Löschen des Kontos', true);
+        }
       });
     }
   }
