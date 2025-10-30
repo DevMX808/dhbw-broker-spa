@@ -1,26 +1,34 @@
 <nav class="navbar">
-  <!-- Normale Navbar für eingeloggte User oder andere Seiten -->
-  @if (!isLoggedOutOnAccount) {
-    <div class="navbar-left">
-      <span class="greeting">Hallo, {{ firstName }} {{ lastName }}</span>
-    </div>
+  <div class="navbar-logo" [class.navbar-logo-centered]="isLoggedOutOnAccount">
+    <span class="logo-text">LEDGERO</span>
+  </div>
 
+  @if (!isLoggedOutOnAccount) {
+    <div class="burger" [class.active]="mobileMenuOpen()" (click)="toggleMobileMenu()">
+      <span class="burger-line"></span>
+      <span class="burger-line"></span>
+      <span class="burger-line"></span>
+    </div>
+  }
+
+  @if (!isLoggedOutOnAccount) {
     <div class="navbar-center">
-      <a routerLink="/assets" routerLinkActive="active-link" class="nav-link">Meine Assets</a>
       <a routerLink="/market" routerLinkActive="active-link" class="nav-link">Markt</a>
       <a routerLink="/portfolio" routerLinkActive="active-link" class="nav-link">Portfolio</a>
+      <a routerLink="/settings" routerLinkActive="active-link" class="nav-link">Einstellungen</a>
     </div>
 
     <div class="navbar-right">
-      <a routerLink="/settings" title="Einstellungen" class="settings-button" aria-label="Einstellungen"></a>
-      <!-- Neu: Logout-Button, nur bei eingeloggt -->
       <button class="logout-button" (click)="logout()" title="Abmelden" aria-label="Abmelden">Abmelden</button>
     </div>
   }
 
-  @if (isLoggedOutOnAccount) {
-    <div class="navbar-logo-centered">
-      <span class="logo-text">LEDGERO</span>
+  @if (mobileMenuOpen() && !isLoggedOutOnAccount) {
+    <div class="mobile-menu">
+      <a routerLink="/market" routerLinkActive="active-link" class="nav-link" (click)="toggleMobileMenu()">Markt</a>
+      <a routerLink="/portfolio" routerLinkActive="active-link" class="nav-link" (click)="toggleMobileMenu()">Portfolio</a>
+      <a routerLink="/settings" routerLinkActive="active-link" class="nav-link" (click)="toggleMobileMenu()">Einstellungen</a>
+      <button class="logout-button" (click)="logout(); toggleMobileMenu()" title="Abmelden" aria-label="Abmelden">Abmelden</button>
     </div>
   }
 </nav>

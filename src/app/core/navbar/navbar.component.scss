@@ -2,27 +2,41 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #1a1a1a;
-  padding: 0.5rem 1rem;
+  background: rgba(26, 26, 26, 0.3);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  padding: 0.75rem 2rem;
   color: #eee;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Montserrat', 'Segoe UI', sans-serif;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 
-  .navbar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-weight: 600;
-    font-size: 1rem;
+  &:hover {
+    background: rgba(26, 26, 26, 0.4);
+    box-shadow: 0 6px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .navbar-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #c1121f;  // Dein Rot für Logo
+    text-transform: uppercase;
+  }
+
+  .navbar-logo-centered {
+    justify-content: center;
+    width: 100%;
   }
 
   .navbar-center {
     display: flex;
-    gap: 1.5rem;
+    gap: 2rem;
 
     .nav-link {
       color: #ccc;
@@ -30,10 +44,12 @@
       font-weight: 500;
       font-size: 1rem;
       position: relative;
+      transition: color 0.3s ease, transform 0.3s ease;
 
       &:hover,
       &.active-link {
-        color: #4caf50;
+        color: #c1121f;
+        transform: scale(1.05);
       }
 
       &.active-link::after {
@@ -43,63 +59,118 @@
         left: 0;
         right: 0;
         height: 2px;
-        background-color: #4caf50;
+        background-color: #c1121f;
         border-radius: 2px;
       }
     }
   }
 
   .navbar-right {
-    display: flex;  // Neu: Flex für Alignment von Buttons
+    display: flex;
     align-items: center;
-    gap: 1rem;  // Neu: Abstand zwischen Settings und Logout
+    gap: 1.5rem;  // Mehr Gap
 
-    a.settings-button {
-      color: #ccc;
-      display: flex;
-      align-items: center;
-      transition: color 0.3s ease;
-
-      &:hover {
-        color: #4caf50;
-      }
-
-      svg {
-        width: 24px;
-        height: 24px;
-      }
+    .greeting {
+      font-weight: 600;
+      font-size: 1rem;
     }
 
-    // Neu: Style für Logout-Button
     .logout-button {
-      background-color: transparent;
-      border: 1px solid #ccc;
-      color: #ccc;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
+      background: rgba(193, 18, 31, 0.2);  // Transparent rot glass
+      border: 1px solid #c1121f;
+      color: #c1121f;
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;  // Rounded wie in deinem Theme
       cursor: pointer;
       font-size: 1rem;
-      transition: all 0.3s ease;
+      transition: background 0.3s ease, transform 0.3s ease;
 
       &:hover {
-        border-color: #f44336;  // Rot für "Logout"-Gefahr
-        color: #f44336;
+        background: rgba(193, 18, 31, 0.4);
+        transform: scale(1.05);
       }
     }
   }
 
-  // Neu: Für zentriertes Logo
-  .navbar-logo-centered {
-    display: flex;
-    justify-content: center;  // Zentriert horizontal
-    align-items: center;
-    width: 100%;  // Full-width für Zentrierung
+  .burger {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    .burger-line {
+      width: 100%;
+      height: 0.25rem;
+      background-color: #eee;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    &.active .burger-line:nth-child(1) {
+      transform: rotate(45deg) translate(0.5rem, 0.5rem);
+    }
+
+    &.active .burger-line:nth-child(2) {
+      opacity: 0;
+    }
+
+    &.active .burger-line:nth-child(3) {
+      transform: rotate(-45deg) translate(0.5rem, -0.5rem);
+    }
   }
 
-  .logo-text {
-    font-size: 1.5rem;  // Größer für Logo-Feel
-    font-weight: bold;
-    color: #4caf50;  // Deine Grün-Akzentfarbe für Branding
-    text-transform: uppercase;  // Optional: Für Logo-Look
+  .mobile-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(26, 26, 26, 0.5);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    animation: slideDown 0.3s ease;
+
+    .nav-link {
+      width: 100%;
+      text-align: center;
+    }
+
+    .mobile-greeting {
+      margin: 1rem 0;
+    }
+
+    .logout-button {
+      width: 100%;
+    }
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-20%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @media (max-width: 768px) {
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+
+    .navbar-center, .navbar-right {
+      display: none;  // Hide on mobile
+    }
+
+    .burger {
+      display: flex;  // Show burger
+    }
+
+    .navbar-logo {
+      flex: 1;  // Center logo with burger
+      text-align: left;
+    }
   }
 }
