@@ -14,10 +14,12 @@ export class PortfolioService {
     return this.http.get<HeldTrade[]>(this.baseUrl);
   }
 
+  
   buyTrade(trade: Partial<HeldTrade>): Observable<HeldTrade> {
     return this.http.post<HeldTrade>(`${this.baseUrl}/buy`, trade);
   }
 
+  
   sellAsset(assetSymbol: string, quantity: number): Observable<any> {
     const tradeRequest = {
       assetSymbol: assetSymbol,
@@ -26,5 +28,12 @@ export class PortfolioService {
     };
     
     return this.http.post<any>(`${environment.apiBaseUrl}/api/trades`, tradeRequest);
+  }
+
+ 
+  getCurrentPrice(symbol: string) {
+    return this.http.get<{ symbol: string; name: string; price: number }>(
+      `${environment.apiBaseUrl}/api/price/quote/${symbol}`
+    );
   }
 }

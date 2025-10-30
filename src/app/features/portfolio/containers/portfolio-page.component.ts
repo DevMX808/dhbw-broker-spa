@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { PortfolioService } from '../data-access/portfolio.service';
 import { HeldTrade } from '../models/held-trade.model';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 
 interface HeldTradeWithPrice extends HeldTrade {
   sellQuantity?: number;
-  currentPriceUsd: number;  // aktueller Preis
+  currentPriceUsd?: number;
 }
 
 @Component({
@@ -39,11 +40,25 @@ interface HeldTradeWithPrice extends HeldTrade {
           <td class="fw-semibold">{{ trade.assetSymbol }}</td>
           <td>{{ trade.quantity }}</td>
           <td>{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
-          <td>{{ trade.currentPriceUsd | number:'1.2-2' }}</td>
-          <td [ngClass]="{'text-success': trade.currentPriceUsd > trade.buyPriceUsd, 'text-danger': trade.currentPriceUsd < trade.buyPriceUsd}">
+
+          <td *ngIf="trade.currentPriceUsd; else loadingPrice">
+            {{ trade.currentPriceUsd | number:'1.2-2' }}
+          </td>
+          <ng-template #loadingPrice>
+            <td class="text-muted">–</td>
+          </ng-template>
+
+          <td *ngIf="trade.currentPriceUsd"
+              [ngClass]="{
+                'text-success': trade.currentPriceUsd > trade.buyPriceUsd,
+                'text-danger': trade.currentPriceUsd < trade.buyPriceUsd
+              }">
             {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.quantity) | number:'1.2-2' }}
           </td>
+          <td *ngIf="!trade.currentPriceUsd" class="text-muted">–</td>
+
           <td>{{ trade.createdAt | date:'short' }}</td>
+
           <td>
             <div class="d-flex align-items-center gap-2">
               <input
@@ -114,14 +129,28 @@ export class PortfolioPageComponent implements OnInit {
     this.error = null;
 
     this.portfolioService.getHeldTrades().subscribe({
-      next: (data) => {
-        // sellQuantity hinzufügen und aktuelle Preise simulieren
-        this.heldTrades = data.map(t => ({
-          ...t,
-          sellQuantity: 0,
-          currentPriceUsd: t.buyPriceUsd * (1 + Math.random() * 0.2 - 0.1) // ±10% Testwert
-        }));
-        this.isLoading = false;
+      next: (trades) => {
+        const withSell = trades.map(t => ({ ...t, sellQuantity: 0 }));
+
+        
+        const priceRequests = withSell.map(t =>
+          this.portfolioService.getCurrentPrice(t.assetSymbol)
+        );
+
+        forkJoin(priceRequests).subscribe({
+          next: (prices) => {
+            this.heldTrades = withSell.map((t, i) => ({
+              ...t,
+              currentPriceUsd: prices[i].price 
+            }));
+            this.isLoading = false;
+          },
+          error: (err) => {
+            console.error('Fehler beim Laden der Preise:', err);
+            this.error = 'Preise konnten nicht geladen werden.';
+            this.isLoading = false;
+          }
+        });
       },
       error: (err) => {
         this.error = 'Portfolio konnte nicht geladen werden.';
