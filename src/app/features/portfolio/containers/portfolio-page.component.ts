@@ -47,7 +47,7 @@ import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';  // WICHT
   `,
   styles: [`
     h1 {
-      color: #333;
+      color: #ffffffff;
     }
     table {
       width: 100%;
