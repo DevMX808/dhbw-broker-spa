@@ -1,0 +1,74 @@
+<form (ngSubmit)="onSubmit(signInForm)" #signInForm="ngForm" novalidate>
+  <h1>Anmelden</h1>
+
+  @if (authService.error()) {
+    <div class="error-message" role="alert" aria-live="polite">
+      {{ authService.error() }}
+    </div>
+  }
+
+  <div class="form-group">
+    <input
+      id="email"
+      type="email"
+      placeholder="E-Mail"
+      [(ngModel)]="credentials.email"
+      name="email"
+      required
+      email
+      #emailInput="ngModel"
+      [class.error]="emailInput.invalid && emailInput.touched"
+      autocomplete="email"
+      aria-describedby="email-error" />
+
+    @if (emailInput.invalid && emailInput.touched) {
+      <div id="email-error" class="field-error" role="alert">
+        @if (emailInput.errors?.['required']) {
+          E-Mail ist erforderlich
+        }
+        @if (emailInput.errors?.['email']) {
+          Ungültige E-Mail-Adresse
+        }
+      </div>
+    }
+  </div>
+
+  <div class="form-group">
+    <input
+      id="password"
+      type="password"
+      placeholder="Passwort"
+      [(ngModel)]="credentials.password"
+      name="passwort"
+      required
+      minlength="6"
+      #passwordInput="ngModel"
+      [class.error]="passwordInput.invalid && passwordInput.touched"
+      autocomplete="current-password"
+      aria-describedby="password-error" />
+
+    @if (passwordInput.invalid && passwordInput.touched) {
+      <div id="password-error" class="field-error" role="alert">
+        @if (passwordInput.errors?.['required']) {
+          Passwort ist erforderlich
+        }
+        @if (passwordInput.errors?.['minlength']) {
+          Passwort muss mindestens 6 Zeichen lang sein
+        }
+      </div>
+    }
+  </div>
+
+  <p>Passwort vergessen?</p>
+
+  <button
+    type="submit"
+    [disabled]="signInForm.invalid || authService.loading()"
+    [attr.aria-disabled]="signInForm.invalid || authService.loading() ? 'true' : 'false'">
+    @if (authService.loading()) {
+      <span class="spinner"></span> Anmelden...
+    } @else {
+      Anmelden
+    }
+  </button>
+</form>

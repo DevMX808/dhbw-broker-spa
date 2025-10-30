@@ -6,6 +6,11 @@
   padding: 0.5rem 1rem;
   color: #eee;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 
   .navbar-left {
     display: flex;

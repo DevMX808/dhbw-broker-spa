@@ -1,0 +1,26 @@
+<div class="page page--center">
+  <div class="auth-container" [class.right-panel-active]="rightPanelActive()" id="container">
+    <div class="form-container sign-up-container">
+      <app-sign-up />
+    </div>
+
+    <div class="form-container sign-in-container">
+      <app-sign-in />
+    </div>
+
+    <div class="overlay-container">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <h1>Willkommen zurück bei <span class="highlight-red">Ledgero</span>!</h1>
+          <p>Melden Sie sich an, um mit dem Trading in unserem Demo-Broker fortzufahren</p>
+          <button class="ghost" type="button" (click)="showSignIn()">Anmelden</button>
+        </div>
+        <div class="overlay-panel overlay-right">
+          <h1>Hallo, zukünftiger <span class="highlight-red">Trader</span>!</h1>
+          <p>Geben Sie Ihre Daten ein und starten Sie Ihr Trading-Abenteuer mit Ledgero, unserem Demo-Broker</p>
+          <button class="ghost" type="button" (click)="showSignUp()">Registrieren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
