@@ -65,13 +65,15 @@ export class ChartDataService {
         // Sortiere nach Zeit
         parsed.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-        // Wähle die letzten 60 Minuten / Punkte
+        // 6-Stunden sliding window (360 Minuten)
         const now = Date.now();
-        const sixtyMinAgo = now - 60 * 60 * 1000;
-        const last60 = parsed.filter(p => new Date(p.timestamp).getTime() >= sixtyMinAgo);
-
-        // Falls weniger als 60 Punkte vorhanden, nimm die letzten bis zu 60
-        const resultPoints = last60.length >= 60 ? last60.slice(-60) : parsed.slice(-60);
+        const sixHoursAgo = now - 6 * 60 * 60 * 1000;  // 6 Stunden in Millisekunden
+        
+        // Filter für die letzten 6 Stunden
+        const lastSixHours = parsed.filter(p => new Date(p.timestamp).getTime() >= sixHoursAgo);
+        
+        // Falls nicht genug Daten für 6 Stunden, nimm alle verfügbaren
+        const resultPoints = lastSixHours.length > 0 ? lastSixHours : parsed.slice(-360);
 
         return {
           symbol,

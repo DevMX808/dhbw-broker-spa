@@ -27,6 +27,7 @@ Chart.register(...registerables);
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       padding: 1rem;
+      margin: 1rem;
       margin-bottom: 1.5rem;
     }
 
@@ -106,10 +107,7 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
         },
         scales: {
           x: {
-            display: true,
-            ticks: {
-              maxTicksLimit: 6
-            }
+            display: false  // X-Achse komplett ausblenden
           },
           y: {
             display: true,
@@ -130,15 +128,45 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
   private updateChart(): void {
     if (!this.chart || !this.chartData) return;
 
-    const labels = this.chartData.dataPoints.map(point => {
+    // Verwende alle verfügbaren Datenpunkte der letzten 6 Stunden (360 Minuten)
+    const now = new Date();
+    const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    
+    // Filtere Datenpunkte für die letzten 6 Stunden
+    const recentPoints = this.chartData.dataPoints.filter(point => {
+      const pointTime = new Date(point.timestamp);
+      return pointTime >= sixHoursAgo && pointTime <= now;
+    });
+
+    // Sortiere nach Zeit (falls nicht schon sortiert)
+    recentPoints.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    // Erstelle Labels und Daten aus allen verfügbaren Punkten
+    const labels = recentPoints.map(point => {
       const date = new Date(point.timestamp);
       return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
     });
     
-    const data = this.chartData.dataPoints.map(point => point.price);
+    const data = recentPoints.map(point => point.price);
 
-    this.chart.data.labels = labels;
-    this.chart.data.datasets[0].data = data;
+    // Fallback: Wenn weniger als 60 Punkte, fülle mit den letzten verfügbaren Punkten auf
+    if (recentPoints.length < 60 && this.chartData.dataPoints.length > 0) {
+      const allPoints = this.chartData.dataPoints.slice(-360); // Letzte 360 Punkte (6h)
+      const allLabels = allPoints.map(point => {
+        const date = new Date(point.timestamp);
+        return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      });
+      const allData = allPoints.map(point => point.price);
+      
+      this.chart.data.labels = allLabels;
+      this.chart.data.datasets[0].data = allData;
+    } else {
+      this.chart.data.labels = labels;
+      this.chart.data.datasets[0].data = data;
+    }
+
     this.chart.update('none');
   }
+
+
 }
