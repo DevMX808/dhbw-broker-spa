@@ -37,8 +37,8 @@
        [class.change-indicator--positive]="price.priceChange === 'UP'"
        [class.change-indicator--negative]="price.priceChange === 'DOWN'"
        [class.change-indicator--neutral]="price.priceChange === 'SAME'">
-    <span *ngIf="price.priceChange === 'UP'">⬆️</span>
-    <span *ngIf="price.priceChange === 'DOWN'">⬇️</span>
+    <span *ngIf="price.priceChange === 'UP'">⬆</span>
+    <span *ngIf="price.priceChange === 'DOWN'">⬇</span>
     <span *ngIf="price.priceChange === 'SAME'">→</span>
   </div>
 </div>
