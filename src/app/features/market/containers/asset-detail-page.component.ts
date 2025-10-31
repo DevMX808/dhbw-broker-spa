@@ -8,11 +8,37 @@ import { MinuteChartComponent } from '../components/minute-chart/minute-chart.co
 import { ChartDataService } from '../data-access/chart-data.service';
 import { MinuteChartData } from '../data-access/chart-data.models';
 import { TradeService } from '../../../core/http/trade.service';
+import { PortfolioService } from '../../portfolio/data-access/portfolio.service';
 
 @Component({
   standalone: true,
   selector: 'app-asset-detail-page',
   imports: [CommonModule, RouterLink, MinuteChartComponent, FormsModule],
+  styles: [`
+    .balance-display {
+      background: rgba(0,0,0,0.1);
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .balance-text {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .balance-amount {
+      font-weight: 600;
+      color: #00aa55;
+    }
+
+    .back-link {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  `],
   template: `
     <div class="asset-detail-page">
       <!-- Back Link -->
@@ -36,6 +62,20 @@ import { TradeService } from '../../../core/http/trade.service';
         [loading]="chartLoading()">
       </app-minute-chart>
 
+      <!-- Wallet Balance -->
+      <div class="mt-4 p-2 rounded balance-display flex items-center gap-2">
+        <span>💰</span>
+        <span class="balance-text">
+          Guthaben: 
+          <span class="balance-amount" *ngIf="!balanceLoading() && walletBalance() !== null">
+            {{ walletBalance() | currency:'USD':'symbol':'1.2-2' }}
+          </span>
+          <span *ngIf="balanceLoading()">Laden...</span>
+          <span class="text-red-500" *ngIf="!balanceLoading() && walletBalance() === null">Error</span>
+        </span>
+      </div>
+
+      <!-- Trading Section -->
       <div class="mt-6 p-4 border rounded-md bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
         <input type="number" [(ngModel)]="quantity"
                min="0.0001" step="0.0001"
@@ -55,6 +95,7 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private tradeService = inject(TradeService);
+  private portfolioService = inject(PortfolioService);
   readonly store = inject(MarketStore);
   private chartService = inject(ChartDataService);
 
@@ -87,6 +128,10 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   quantity: number | null = null;
   buying = false;
 
+  // Wallet Balance
+  readonly walletBalance = signal<number | null>(null);
+  readonly balanceLoading = signal(false);
+
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const symbol = params.get('symbol');
@@ -96,6 +141,9 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
         this.router.navigate(['/market']);
       }
     });
+    
+    // Load wallet balance
+    this.loadWalletBalance();
   }
 
   ngOnDestroy(): void {
@@ -120,6 +168,21 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     this.chartService.getMinuteChart(symbol).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => { this.chartData.set(data); this.chartLoading.set(false); },
       error: () => { this.chartData.set(null); this.chartLoading.set(false); },
+    });
+  }
+
+  private loadWalletBalance(): void {
+    this.balanceLoading.set(true);
+    this.portfolioService.getWalletBalance().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (balance) => {
+        this.walletBalance.set(balance);
+        this.balanceLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load wallet balance:', error);
+        this.walletBalance.set(null);
+        this.balanceLoading.set(false);
+      }
     });
   }
 
