@@ -16,6 +16,9 @@
       <a routerLink="/market" routerLinkActive="active-link" class="nav-link">Markt</a>
       <a routerLink="/portfolio" routerLinkActive="active-link" class="nav-link">Portfolio</a>
       <a routerLink="/settings" routerLinkActive="active-link" class="nav-link">Einstellungen</a>
+      @if (isAdmin()) {
+        <a routerLink="/admin" routerLinkActive="active-link" class="nav-link">Admin</a>
+      }
     </div>
 
     <div class="navbar-right">
@@ -28,6 +31,9 @@
       <a routerLink="/market" routerLinkActive="active-link" class="nav-link" (click)="toggleMobileMenu()">Markt</a>
       <a routerLink="/portfolio" routerLinkActive="active-link" class="nav-link" (click)="toggleMobileMenu()">Portfolio</a>
       <a routerLink="/settings" routerLinkActive="active-link" class="nav-link" (click)="toggleMobileMenu()">Einstellungen</a>
+      @if (isAdmin()) {
+        <a routerLink="/admin" routerLinkActive="active-link" class="nav-link" (click)="toggleMobileMenu()">Admin</a>
+      }
       <button class="logout-button" (click)="logout(); toggleMobileMenu()" title="Abmelden" aria-label="Abmelden">Abmelden</button>
     </div>
   }

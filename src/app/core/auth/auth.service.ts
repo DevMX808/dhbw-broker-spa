@@ -62,6 +62,7 @@ export class AuthService {
     if (token && !this.tokens.isExpired(token)) {
       const payload = this.tokens.parsePayload(token);
       if (payload && this.isValidPayload(payload)) {
+        console.log('Parsed JWT Payload from Storage:', payload);
         this.user.set({
           id: payload.sub,
           email: payload.email,

@@ -1,13 +1,12 @@
 import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { inject } from '@angular/core';
-import { TokenStorageService } from './token-storage.service';
+import { AuthService } from './auth.service';
 
 export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-  const tokens = inject(TokenStorageService);
+  const authService = inject(AuthService);
   const router = inject(Router);
 
-  const token = tokens.get();
-  const valid = token && !tokens.isExpired(token);
+  const valid = authService.isAuthenticated();
   if (valid) return true;
 
   const redirect = encodeURIComponent(state.url || '/');

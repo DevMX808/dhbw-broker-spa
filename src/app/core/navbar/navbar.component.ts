@@ -24,6 +24,7 @@ export class NavbarComponent {
     return !this.authService.isAuthenticated() && isOnAccount;
   });
 
+  isAdmin = computed(() => this.authService.hasRole('ADMIN'));
 
   constructor() {
     this.router.events.pipe(

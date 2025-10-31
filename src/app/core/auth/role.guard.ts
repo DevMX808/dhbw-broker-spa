@@ -1,20 +1,20 @@
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { inject } from '@angular/core';
-import { TokenStorageService } from './token-storage.service';
+import { AuthService } from './auth.service';
 
 export const RoleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
-  const tokens = inject(TokenStorageService);
+  const authService = inject(AuthService);
   const router = inject(Router);
-  const token = tokens.get();
-  if (!token || tokens.isExpired(token)) {
-    router.navigateByUrl('/account');
+
+  if (!authService.isAuthenticated()) {
+    void router.navigateByUrl('/account');
     return false;
   }
-  const payload = tokens.parsePayload(token);
+
   const expected: string[] = route.data?.['roles'] || [];
-  const ok = expected.length === 0 || expected.some(r => payload?.roles?.includes(r));
+  const ok = expected.length === 0 || expected.some(r => authService.hasRole(r));
   if (!ok) {
-    router.navigateByUrl('/unauthorized');
+    void router.navigateByUrl('/unauthorized');
     return false;
   }
   return true;

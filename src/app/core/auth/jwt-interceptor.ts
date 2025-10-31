@@ -1,7 +1,6 @@
-// src/app/core/http/jwt.interceptor.ts
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { TokenStorageService } from '../auth/token-storage.service';
+import { TokenStorageService } from './token-storage.service';
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const tokens = inject(TokenStorageService);
