@@ -15,7 +15,6 @@ export class MarketPageComponent implements OnInit, OnDestroy {
   readonly store = inject(MarketStore);
   private authService = inject(AuthService);
 
-
   get firstName(): string {
     return this.authService.user()?.firstName || 'Gast';
   }
@@ -30,7 +29,7 @@ export class MarketPageComponent implements OnInit, OnDestroy {
 
       const symbolsToPreload = this.store.symbols().slice(0, 6).map(s => s.symbol);
       if (symbolsToPreload.length > 0) {
-        this.store.prefetchPrices(symbolsToPreload);
+        await this.store.prefetchPrices(symbolsToPreload);
       }
     }
 
@@ -41,7 +40,7 @@ export class MarketPageComponent implements OnInit, OnDestroy {
     this.store.stopAutoRefresh();
   }
 
-  onRetry(): void {
-    this.store.loadSymbols();
+  async onRetry(): Promise<void> {
+    await this.store.loadSymbols();
   }
 }

@@ -2,7 +2,7 @@ import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } fr
 import { inject } from '@angular/core';
 import { AuthService } from './auth.service';
 
-export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const authGuard: CanActivateFn = (_route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {  // Neu: _route für unused (fix TS6133)
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -10,6 +10,6 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: R
   if (valid) return true;
 
   const redirect = encodeURIComponent(state.url || '/');
-  router.navigateByUrl(`/account?redirectUrl=${redirect}`);
+  void router.navigateByUrl(`/account?redirectUrl=${redirect}`);
   return false;
 };

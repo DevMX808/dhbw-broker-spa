@@ -236,16 +236,4 @@ export class AuthService {
     this.error.set(null);
   }
 
-  getAuthHeaders(): HttpHeaders {
-    const token = this.tokens.get();
-    if (token) {
-      return new HttpHeaders({
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      });
-    }
-    return new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-  }
 }

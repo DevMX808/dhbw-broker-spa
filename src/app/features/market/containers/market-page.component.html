@@ -1,6 +1,8 @@
 <div class="market-page">
   <div class="page-header mb-4">
-    <h1 class="page-greeting">Hallo, {{ firstName }} {{ lastName }}.</h1>
+    <h1 class="page-greeting"><span>Hallo</span>, {{ firstName }} {{ lastName }}.</h1>
+  </div>
+
   <app-market-list
     [symbols]="store.symbols()"
     [pricesBySymbol]="store.pricesBySymbol()"
