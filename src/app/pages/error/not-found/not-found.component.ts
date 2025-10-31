@@ -1,15 +1,15 @@
 import {Component, computed, inject} from '@angular/core';
-import { AuthService } from '../../core/auth/auth.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
-  selector: 'app-error',
-  templateUrl: './error.component.html',
-  styleUrls: ['./error.component.scss']
+  selector: 'app-not-found',
+  templateUrl: './not-found.component.html',
+  styleUrls: ['../error.component.scss']
 })
-export class ErrorComponent {
 
+export class NotFoundComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
@@ -27,3 +27,4 @@ export class ErrorComponent {
     }
   }
 }
+
