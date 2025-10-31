@@ -9,51 +9,11 @@ Chart.register(...registerables);
   standalone: true,
   selector: 'app-minute-chart',
   imports: [CommonModule],
-  template: `
-    <div class="chart-container">
-      <div class="chart-wrapper">
-        <canvas #chartCanvas></canvas>
-      </div>
-      @if (loading) {
-        <div class="chart-loading">
-          <div class="spinner-border spinner-border-sm text-primary"></div>
-        </div>
-      }
-    </div>
-  `,
-  styles: [`
-    .chart-container {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 1rem;
-      margin: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-
-    .chart-title {
-      color: #333;
-      font-weight: 600;
-    }
-
-    .chart-wrapper {
-      position: relative;
-      height: 250px;
-      width: 100%;
-    }
-
-    .chart-loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-    }
-  `]
+  templateUrl: './minute-chart.component.html',
+  styleUrls: ['./minute-chart.component.scss']
 })
 export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy {
-  @ViewChild('chartCanvas', { static: true }) 
+  @ViewChild('chartCanvas', { static: true })
   chartCanvas!: ElementRef<HTMLCanvasElement>;
 
   @Input() chartData: MinuteChartData | null = null;
@@ -116,8 +76,8 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
                 const timestamp = context[0].dataset.timestamps[index];
                 if (timestamp) {
                   const date = new Date(timestamp);
-                  return date.toLocaleTimeString('de-DE', { 
-                    hour: '2-digit', 
+                  return date.toLocaleTimeString('de-DE', {
+                    hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit'
                   });
@@ -157,7 +117,7 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
     // Verwende alle verfügbaren Datenpunkte der letzten 6 Stunden (360 Minuten)
     const now = new Date();
     const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
-    
+
     // Filtere Datenpunkte für die letzten 6 Stunden
     const recentPoints = this.chartData.dataPoints.filter(point => {
       const pointTime = new Date(point.timestamp);
@@ -172,20 +132,19 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
       const date = new Date(point.timestamp);
       return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
     });
-    
+
     const data = recentPoints.map(point => point.price);
     const timestamps = recentPoints.map(point => point.timestamp);
 
-    // Fallback: Wenn weniger als 60 Punkte, fülle mit den letzten verfügbaren Punkten auf
     if (recentPoints.length < 60 && this.chartData.dataPoints.length > 0) {
-      const allPoints = this.chartData.dataPoints.slice(-360); // Letzte 360 Punkte (6h)
+      const allPoints = this.chartData.dataPoints.slice(-360);
       const allLabels = allPoints.map(point => {
         const date = new Date(point.timestamp);
         return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
       });
       const allData = allPoints.map(point => point.price);
       const allTimestamps = allPoints.map(point => point.timestamp);
-      
+
       this.chart.data.labels = allLabels;
       this.chart.data.datasets[0].data = allData;
       (this.chart.data.datasets[0] as any).timestamps = allTimestamps;

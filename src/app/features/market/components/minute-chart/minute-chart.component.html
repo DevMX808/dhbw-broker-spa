@@ -1,0 +1,10 @@
+<div class="chart-container">
+  <div class="chart-wrapper">
+    <canvas #chartCanvas></canvas>
+  </div>
+  @if (loading) {
+    <div class="chart-loading">
+      <div class="spinner-border spinner-border-sm text-primary"></div>
+    </div>
+  }
+</div>

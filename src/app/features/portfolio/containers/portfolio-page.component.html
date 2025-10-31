@@ -1,0 +1,233 @@
+<div class="portfolio-page">
+  <h1 class="portfolio-title">Portfolio</h1>
+
+  <div class="portfolio-hint">
+    <span class="info-icon">i</span>
+    Übersicht über dein aktuelles Demo-Portfolio. Werte werden live aus den Marktdaten ermittelt.
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div class="portfolio-grid">
+    <div class="portfolio-card balance-card">
+      <div class="balance-header">
+        <h2 class="card-title">Verfügbares Guthaben</h2>
+        <button type="button" class="btn btn-primary btn-sm" (click)="openAddFundsModal()">
+          Guthaben aufladen
+        </button>
+      </div>
+      <div class="balance-body">
+        <div class="balance-info">
+          <div class="balance-amount">
+            <ng-container *ngIf="!balanceLoading; else balanceSpinner">
+              {{ '$' + (walletBalance | number:'1.2-2') }} USD
+            </ng-container>
+            <ng-template #balanceSpinner>
+              <div class="spinner"></div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="portfolio-card summary-card" *ngIf="!isLoading && heldTrades.length === 0">
+      <h2 class="card-title">Keine gehaltenen Assets</h2>
+      <p class="empty-text">
+        Kaufe im Markt ein Asset, damit es hier erscheint.
+      </p>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-block">
+    <div class="spinner"></div>
+    <p>Portfolio wird geladen…</p>
+  </div>
+
+  <div class="portfolio-table-wrapper" *ngIf="!isLoading && heldTrades.length > 0">
+    <div class="portfolio-card">
+      <h2 class="card-title table-title">Gehaltene Assets</h2>
+      <div class="table-scroller">
+        <table class="portfolio-table">
+          <thead>
+          <tr>
+            <th>Asset</th>
+            <th class="th-num">Menge</th>
+            <th class="th-num">Kaufpreis</th>
+            <th class="th-num">Aktueller Preis</th>
+            <th>Gewinn / Verlust</th>
+            <th>Kaufdatum</th>
+            <th class="th-actions">Aktionen</th>
+          </tr>
+          </thead>
+          <tbody>
+          <ng-container *ngFor="let trade of heldTrades">
+            <tr class="portfolio-row">
+              <td class="asset-cell">
+                <span class="asset-badge">{{ trade.assetSymbol }}</span>
+              </td>
+              <td class="td-num">{{ trade.quantity }}</td>
+              <td class="td-num">{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
+              <td class="td-num">
+                <ng-container *ngIf="trade.currentPriceUsd; else priceLoading">
+                  {{ trade.currentPriceUsd | number:'1.2-2' }}
+                </ng-container>
+                <ng-template #priceLoading>
+                  <span class="muted">–</span>
+                </ng-template>
+              </td>
+              <td>
+                <ng-container *ngIf="trade.currentPriceUsd">
+                  <span
+                    class="gain-badge"
+                    [ngClass]="{
+                      'gain-badge--up': trade.currentPriceUsd > trade.buyPriceUsd,
+                      'gain-badge--down': trade.currentPriceUsd < trade.buyPriceUsd
+                    }"
+                  >
+                    <span class="arrow" *ngIf="trade.currentPriceUsd > trade.buyPriceUsd">▲</span>
+                    <span class="arrow" *ngIf="trade.currentPriceUsd < trade.buyPriceUsd">▼</span>
+                    {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.quantity) | number:'1.2-2' }} USD
+                    ({{ ((trade.currentPriceUsd - trade.buyPriceUsd) / trade.buyPriceUsd * 100) | number:'1.2-2' }}%)
+                  </span>
+                </ng-container>
+              </td>
+              <td class="td-date">{{ trade.createdAt | date:'short' }}</td>
+              <td class="td-actions">
+                <div class="row-actions">
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    [(ngModel)]="trade.sellQuantity"
+                    [max]="trade.quantity"
+                    class="form-control quantity-input"
+                    placeholder="Menge"
+                  />
+                  <button
+                    class="btn btn-primary btn-sm"
+                    [disabled]="!isValidSellAmount(trade) || trade.isSelling"
+                    (click)="sell(trade)"
+                  >
+                    <ng-container *ngIf="!trade.isSelling">Verkaufen</ng-container>
+                    <ng-container *ngIf="trade.isSelling">
+                      <div class="spinner spinner--inline"></div>
+                    </ng-container>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr
+              *ngIf="trade.currentPriceUsd && trade.sellQuantity && trade.sellQuantity > 0"
+              class="portfolio-row-details"
+            >
+              <td colspan="7">
+                <div class="sell-preview-row">
+                  <span class="preview-label">Verkaufsvorschau</span>
+
+                  <span class="preview-math">
+                    ({{ trade.sellQuantity }} × {{ trade.currentPriceUsd | number:'1.2-2' }} USD)
+                    &minus;
+                    ({{ trade.sellQuantity }} × {{ trade.buyPriceUsd | number:'1.2-2' }} USD)
+                    =
+                  </span>
+
+                  <ng-container
+                    *ngIf="trade.currentPriceUsd - trade.buyPriceUsd as diff"
+                  >
+                    <span
+                      class="preview-result"
+                      [ngClass]="{
+                        'preview-result--pos': (diff * trade.sellQuantity) > 0,
+                        'preview-result--neg': (diff * trade.sellQuantity) < 0,
+                        'preview-result--zero': (diff * trade.sellQuantity) === 0
+                      }"
+                    >
+                      <ng-container *ngIf="(diff * trade.sellQuantity) > 0">
+                        Gewinn +{{ (diff * trade.sellQuantity) | number:'1.2-2' }} USD
+                      </ng-container>
+                      <ng-container *ngIf="(diff * trade.sellQuantity) < 0">
+                        Verlust {{ (diff * trade.sellQuantity) | number:'1.2-2' }} USD
+                      </ng-container>
+                      <ng-container *ngIf="(diff * trade.sellQuantity) === 0">
+                        +/- 0.00 USD
+                      </ng-container>
+                    </span>
+                  </ng-container>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="showAddFundsModal" class="modal-overlay" (click)="closeAddFundsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Guthaben aufladen</h3>
+        <button class="modal-close" (click)="closeAddFundsModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-hint">
+          <span class="info-icon small">i</span>
+          Demo-Broker: Ziel ist der Umgang mit begrenztem Kapital. Lade nur auf, wenn du es wirklich für einen Trade brauchst.
+        </div>
+
+        <div class="quick-amounts">
+          <button type="button" class="chip" (click)="setAddFundsAmount(50)">50</button>
+          <button type="button" class="chip" (click)="setAddFundsAmount(100)">100</button>
+          <button type="button" class="chip" (click)="setAddFundsAmount(250)">250</button>
+          <button type="button" class="chip" (click)="setAddFundsAmount(500)">500</button>
+          <button type="button" class="chip" (click)="setAddFundsAmount(1000)">1000</button>
+          <button type="button" class="chip" (click)="setAddFundsAmount(2500)">2500</button>
+          <button type="button" class="chip" (click)="setAddFundsAmount(5000)">5000</button>
+          <button type="button" class="chip" (click)="setAddFundsAmount(7500)">7500</button>
+          <button type="button" class="chip" (click)="setAddFundsAmount(10000)">10000</button>
+        </div>
+
+        <label class="modal-label" for="amountInput">Betrag ({{ addFundsMin }} – {{ addFundsMax }} USD)</label>
+        <input
+          id="amountInput"
+          type="number"
+          class="form-control"
+          [ngModel]="addFundsAmount"
+          (ngModelChange)="onAddFundsAmountChange($event)"
+          [min]="addFundsMin"
+          [max]="addFundsMax"
+          step="1"
+          placeholder="z. B. 150"
+        />
+
+        <input
+          type="range"
+          class="range-input"
+          [min]="addFundsMin"
+          [max]="addFundsMax"
+          [step]="1"
+          [ngModel]="addFundsAmount"
+          (ngModelChange)="onAddFundsAmountChange($event)"
+        />
+
+        <div *ngIf="addFundsError" class="modal-error">
+          {{ addFundsError }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" (click)="closeAddFundsModal()">Abbrechen</button>
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="!canSubmitAddFunds()"
+          (click)="addFunds()"
+        >
+          {{ addingFunds ? 'Wird hinzugefügt…' : 'Aufladen' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
