@@ -20,7 +20,7 @@ export class ErrorComponent {
       if (this.isAuthenticated()) {
         await this.router.navigate(['/market']);
       } else {
-        await this.router.navigate(['/account/sign-in']);
+        await this.router.navigate(['/account/']);
       }
     } catch (error) {
       console.error('Navigation failed:', error);
