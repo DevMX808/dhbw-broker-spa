@@ -16,8 +16,16 @@
 }
 
 input.error {
-  border-color: #c1121f !important;
-  background-color: #ffebee;
+  border: 1px solid #c1121f;
+  box-shadow: 0 0 0 3px rgba(193, 18, 31, 0.15);
+}
+
+.field-error {
+  color: #c1121f;
+}
+
+.form-actions--spaced {
+  margin-top: 1rem;
 }
 
 button:disabled {

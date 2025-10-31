@@ -17,11 +17,11 @@
       required
       email
       #emailInput="ngModel"
-      [class.error]="emailInput.invalid && emailInput.touched"
+      [class.error]="submitted && emailInput.invalid"
       autocomplete="email"
       aria-describedby="email-error" />
 
-    @if (emailInput.invalid && emailInput.touched) {
+    @if (submitted && emailInput.invalid) {
       <div id="email-error" class="field-error" role="alert">
         @if (emailInput.errors?.['required']) {
           E-Mail ist erforderlich
@@ -43,11 +43,11 @@
       required
       minlength="6"
       #passwordInput="ngModel"
-      [class.error]="passwordInput.invalid && passwordInput.touched"
+      [class.error]="submitted && passwordInput.invalid"
       autocomplete="current-password"
       aria-describedby="password-error" />
 
-    @if (passwordInput.invalid && passwordInput.touched) {
+    @if (submitted && passwordInput.invalid) {
       <div id="password-error" class="field-error" role="alert">
         @if (passwordInput.errors?.['required']) {
           Passwort ist erforderlich
@@ -63,8 +63,8 @@
 
   <button
     type="submit"
-    [disabled]="signInForm.invalid || authService.loading()"
-    [attr.aria-disabled]="signInForm.invalid || authService.loading() ? 'true' : 'false'">
+    [disabled]="authService.loading()"
+    [attr.aria-disabled]="authService.loading() ? 'true' : 'false'">
     @if (authService.loading()) {
       <span class="spinner"></span> Anmelden...
     } @else {

@@ -14,11 +14,16 @@ import { SignUpPageComponent } from './sign-xx/sign-up-page/sign-up-page.compone
 export class AuthShellComponent {
   rightPanelActive = signal(false);
 
+  signInReset = signal(0);
+  signUpReset = signal(0);
+
   showSignUp() {
     this.rightPanelActive.set(true);
+    this.signUpReset.update(v => v + 1);
   }
 
   showSignIn() {
     this.rightPanelActive.set(false);
+    this.signInReset.update(v => v + 1);
   }
 }

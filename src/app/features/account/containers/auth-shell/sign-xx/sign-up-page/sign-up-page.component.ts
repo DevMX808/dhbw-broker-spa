@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -11,9 +11,13 @@ import { AuthService, SignUpInput } from '../../../../../../core/auth/auth.servi
   templateUrl: './sign-up-page.component.html',
   styleUrls: ['../sign-xx-page.component.scss']
 })
-export class SignUpPageComponent {
+export class SignUpPageComponent implements OnChanges {
   private router = inject(Router);
   readonly authService = inject(AuthService);
+
+  @Input() resetTrigger = 0;
+
+  submitted = false;
 
   userData: SignUpInput = {
     firstName: '',
@@ -22,25 +26,46 @@ export class SignUpPageComponent {
     password: ''
   };
 
-  onSubmit(form: NgForm) {
-    if (form.valid) {
-      this.authService.clearError();
-
-      this.authService.signUp(this.userData).subscribe({
-        next: (response) => {
-          console.log('Registration successful:', response);
-          if (response && response.accessToken && this.authService.isAuthenticated()) {
-            setTimeout(() => {
-              this.router.navigate(['/market']);
-            }, 500);
-          } else {
-            console.warn('Registration response received but user not authenticated');
-          }
-        },
-        error: (error) => {
-          console.error('Registration failed:', error);
-        }
-      });
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['resetTrigger'] && !changes['resetTrigger'].firstChange) {
+      this.resetFormState();
     }
+  }
+
+  private resetFormState() {
+    this.submitted = false;
+    this.userData = {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: ''
+    };
+    this.authService.clearError();
+  }
+
+  onSubmit(form: NgForm) {
+    this.submitted = true;
+    form.control.markAllAsTouched();
+
+    if (form.invalid) {
+      return;
+    }
+
+    this.authService.clearError();
+
+    this.authService.signUp(this.userData).subscribe({
+      next: (response) => {
+        if (response && response.accessToken && this.authService.isAuthenticated()) {
+          setTimeout(() => {
+            void this.router.navigate(['/market']);
+          }, 500);
+        } else {
+          console.warn('Registration response received but user not authenticated');
+        }
+      },
+      error: (error) => {
+        console.error('Registration failed:', error);
+      }
+    });
   }
 }
