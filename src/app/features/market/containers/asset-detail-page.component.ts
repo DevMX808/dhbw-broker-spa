@@ -67,11 +67,10 @@ import { PortfolioService } from '../../portfolio/data-access/portfolio.service'
         <span>💰</span>
         <span class="balance-text">
           Guthaben: 
-          <span class="balance-amount" *ngIf="!balanceLoading() && walletBalance() !== null">
-            {{ walletBalance() | currency:'USD':'symbol':'1.2-2' }}
+          <span class="balance-amount" *ngIf="!balanceLoading">
+            {{ '$' + (walletBalance | number:'1.2-2') }} USD
           </span>
-          <span *ngIf="balanceLoading()">Laden...</span>
-          <span class="text-red-500" *ngIf="!balanceLoading() && walletBalance() === null">Error</span>
+          <span *ngIf="balanceLoading">Laden...</span>
         </span>
       </div>
 
@@ -129,8 +128,8 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   buying = false;
 
   // Wallet Balance
-  readonly walletBalance = signal<number | null>(null);
-  readonly balanceLoading = signal(false);
+  walletBalance: number = 0;
+  balanceLoading: boolean = false;
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -172,16 +171,16 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   }
 
   private loadWalletBalance(): void {
-    this.balanceLoading.set(true);
+    this.balanceLoading = true;
     this.portfolioService.getWalletBalance().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (balance) => {
-        this.walletBalance.set(balance);
-        this.balanceLoading.set(false);
+      next: (response) => {
+        this.walletBalance = response.balance;
+        this.balanceLoading = false;
       },
       error: (error) => {
         console.error('Failed to load wallet balance:', error);
-        this.walletBalance.set(null);
-        this.balanceLoading.set(false);
+        this.walletBalance = 0;
+        this.balanceLoading = false;
       }
     });
   }
