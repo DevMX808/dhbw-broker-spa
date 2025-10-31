@@ -38,6 +38,11 @@ import { PortfolioService } from '../../portfolio/data-access/portfolio.service'
     .back-link:hover {
       text-decoration: underline;
     }
+
+    .page-title {
+      color: white;
+      font-weight: bold;
+    }
   `],
   template: `
     <div class="asset-detail-page">
@@ -201,6 +206,9 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
       console.log('Trade executed successfully:', result);
       alert(`Erfolgreich ${this.quantity} ${this.currentSymbol()} gekauft!`);
       this.quantity = null;
+      
+      // Aktualisiere das Wallet-Guthaben nach dem Kauf
+      this.loadWalletBalance();
     } catch (error) {
       console.error('Trade execution failed:', error);
       alert('Fehler beim Kauf des Assets. Bitte prüfen Sie die Konsole für Details.');
