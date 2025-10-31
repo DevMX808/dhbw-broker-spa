@@ -1,0 +1,58 @@
+<div class="asset-detail-page">
+  <div class="mb-3">
+    <a routerLink="/market" class="back-link">← Zurück zur Übersicht</a>
+  </div>
+
+  <div class="page-header mb-4">
+    <h1 class="page-title">
+      {{ currentSymbol() || 'Asset Details' }}
+      <span *ngIf="currentPrice() && !isLoading()" class="text-muted ml-2">
+        (\${{ currentPrice()?.price | number:'1.2-4' }} USD)
+      </span>
+      <span *ngIf="isLoading()" class="text-muted ml-2">(Laden...)</span>
+    </h1>
+  </div>
+
+  <app-minute-chart [chartData]="chartData()" [loading]="chartLoading()"></app-minute-chart>
+
+  <!-- Wallet Balance -->
+  <div class="balance-display mt-4">
+    <span>💰 Guthaben:</span>
+    <span *ngIf="!balanceLoading" class="balance-amount">
+      {{ '$' + (walletBalance | number:'1.2-2') }} USD
+    </span>
+    <span *ngIf="balanceLoading">Laden...</span>
+  </div>
+
+  <!-- Kaufmodus -->
+  <div class="buy-mode-toggle mt-6">
+    <button [class.active]="buyMode === 'quantity'" (click)="buyMode = 'quantity'">
+      Nach Menge
+    </button>
+    <button [class.active]="buyMode === 'usd'" (click)="buyMode = 'usd'">
+      Nach Dollarbetrag
+    </button>
+  </div>
+
+  <!-- Eingabe -->
+  <div class="trade-box mt-4">
+    <ng-container *ngIf="buyMode === 'quantity'">
+      <label>Menge ({{ currentSymbol() }})</label>
+      <input type="number" [(ngModel)]="quantity" min="0.0001" step="0.0001" placeholder="Menge eingeben" />
+    </ng-container>
+
+    <ng-container *ngIf="buyMode === 'usd'">
+      <label>Betrag (USD)</label>
+      <input type="number" [(ngModel)]="usdAmount" min="1" step="0.01" placeholder="USD-Betrag eingeben" />
+      <p *ngIf="calculatedQuantity">
+        ≈ {{ calculatedQuantity | number:'1.4-4' }} {{ currentSymbol() }}
+      </p>
+    </ng-container>
+
+    <button (click)="buyAsset()"
+            [disabled]="buying || !calculatedQuantity"
+            class="buy-button">
+      {{ buying ? 'Kaufe...' : 'Kaufen' }}
+    </button>
+  </div>
+</div>

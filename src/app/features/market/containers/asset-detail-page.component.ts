@@ -14,86 +14,10 @@ import { PortfolioService } from '../../portfolio/data-access/portfolio.service'
   standalone: true,
   selector: 'app-asset-detail-page',
   imports: [CommonModule, RouterLink, MinuteChartComponent, FormsModule],
-  styles: [`
-    .balance-display {
-      background: rgba(0,0,0,0.1);
-      border: 1px solid rgba(0,0,0,0.1);
-    }
+  
 
-    .balance-text {
-      font-size: 0.9rem;
-      color: white;
-    }
-
-    .balance-amount {
-      font-weight: 600;
-      color: white;
-    }
-
-    .back-link {
-      color: #007bff;
-      text-decoration: none;
-    }
-
-    .back-link:hover {
-      text-decoration: underline;
-    }
-
-    .page-title {
-      color: white;
-      font-weight: bold;
-    }
-  `],
-  template: `
-    <div class="asset-detail-page">
-      <!-- Back Link -->
-      <div class="mb-3">
-        <a routerLink="/market" class="back-link">← Zurück zur Übersicht</a>
-      </div>
-
-      <!-- Header with Price -->
-      <div class="page-header mb-4">
-        <h1 class="page-title">
-          {{ currentSymbol() || 'Asset Details' }}
-          <span *ngIf="currentPrice() && !isLoading()" class="text-muted ml-2">
-            (\${{ currentPrice()?.price | number:'1.2-4' }} USD)
-          </span>
-          <span *ngIf="isLoading()" class="text-muted ml-2">(Laden...)</span>
-        </h1>
-      </div>
-
-      <app-minute-chart
-        [chartData]="chartData()"
-        [loading]="chartLoading()">
-      </app-minute-chart>
-
-      <!-- Wallet Balance -->
-      <div class="mt-4 p-2 rounded balance-display flex items-center gap-2">
-        <span>💰</span>
-        <span class="balance-text">
-          Guthaben: 
-          <span class="balance-amount" *ngIf="!balanceLoading">
-            {{ '$' + (walletBalance | number:'1.2-2') }} USD
-          </span>
-          <span *ngIf="balanceLoading">Laden...</span>
-        </span>
-      </div>
-
-      <!-- Trading Section -->
-      <div class="mt-6 p-4 border rounded-md bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-        <input type="number" [(ngModel)]="quantity"
-               min="0.0001" step="0.0001"
-               class="border rounded-md px-3 py-2 w-full sm:w-32 mb-2 sm:mb-0"
-               placeholder="Menge" />
-
-        <button (click)="buyAsset()"
-                [disabled]="buying || !quantity || !currentSymbol()"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed">
-          {{ buying ? 'Kaufe...' : 'Kaufen' }}
-        </button>
-      </div>
-    </div>
-  `,
+    templateUrl: './asset-detail-page.component.html',
+  styleUrls: ['./asset-detail-page.component.scss']
 })
 export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -105,11 +29,9 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  // Chart data signals
   readonly chartData = signal<MinuteChartData | null>(null);
   readonly chartLoading = signal(false);
 
-  // Computed values from store
   readonly currentSymbol = computed(() => this.store.selectedSymbol());
   readonly currentPrice = computed(() => this.store.selectedPrice());
   readonly isLoading = computed(() => {
@@ -117,22 +39,11 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     return symbol ? this.store.isLoadingPrice(symbol) : false;
   });
 
-  // Local error state for price loading
-  readonly priceError = computed(() => {
-    const symbol = this.currentSymbol();
-    const price = this.currentPrice();
-    const loading = this.isLoading();
-    if (!loading && symbol && !price) {
-      return `Preis für ${symbol} konnte nicht geladen werden.`;
-    }
-    return null;
-  });
-
-  // Kauf-Logik
   quantity: number | null = null;
+  usdAmount: number | null = null;
+  buyMode: 'quantity' | 'usd' = 'quantity';
   buying = false;
 
-  // Wallet Balance
   walletBalance: number = 0;
   balanceLoading: boolean = false;
 
@@ -145,8 +56,6 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
         this.router.navigate(['/market']);
       }
     });
-    
-    // Load wallet balance
     this.loadWalletBalance();
   }
 
@@ -190,8 +99,15 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  get calculatedQuantity(): number | null {
+    if (this.buyMode === 'usd' && this.usdAmount && this.currentPrice()?.price) {
+      return this.usdAmount / this.currentPrice()!.price;
+    }
+    return this.quantity;
+  }
+
   async buyAsset(): Promise<void> {
-    if (!this.currentSymbol() || !this.quantity) return;
+    if (!this.currentSymbol() || !this.calculatedQuantity) return;
 
     this.buying = true;
 
@@ -199,19 +115,20 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
       const request = {
         assetSymbol: this.currentSymbol()!,
         side: 'BUY' as const,
-        quantity: this.quantity
+        quantity: this.calculatedQuantity
       };
 
       const result = await this.tradeService.executeTrade(request).toPromise();
       console.log('Trade executed successfully:', result);
-      alert(`Erfolgreich ${this.quantity} ${this.currentSymbol()} gekauft!`);
+
+      alert(`Erfolgreich ${this.calculatedQuantity.toFixed(4)} ${this.currentSymbol()} gekauft!`);
       this.quantity = null;
-      
-      // Aktualisiere das Wallet-Guthaben nach dem Kauf
+      this.usdAmount = null;
+
       this.loadWalletBalance();
     } catch (error) {
       console.error('Trade execution failed:', error);
-      alert('Fehler beim Kauf des Assets. Bitte prüfen Sie die Konsole für Details.');
+      alert('Fehler beim Kauf des Assets.');
     } finally {
       this.buying = false;
     }

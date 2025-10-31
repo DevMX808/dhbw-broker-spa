@@ -1,0 +1,113 @@
+.asset-detail-page {
+  color: white;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .back-link {
+    color: #61dafb;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  .balance-display {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .balance-amount {
+      font-weight: 600;
+      color: #22c55e;
+    }
+  }
+
+  .buy-mode-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+
+    button {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.active {
+        background: #2563eb;
+        border-color: #2563eb;
+      }
+
+      &:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+  }
+
+  .trade-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+
+    label {
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #e6e6e6;
+    }
+
+    input {
+      width: 100%;
+      max-width: 250px;
+      padding: 0.5rem;
+      border-radius: 0.4rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: #9ca3af;
+      margin-bottom: 1rem;
+    }
+
+    .buy-button {
+      background: #22c55e;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      font-weight: 600;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: #16a34a;
+      }
+
+      &:disabled {
+        background: rgba(255, 255, 255, 0.2);
+        cursor: not-allowed;
+      }
+    }
+  }
+}
