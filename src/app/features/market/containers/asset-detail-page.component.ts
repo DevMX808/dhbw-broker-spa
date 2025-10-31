@@ -22,12 +22,12 @@ import { PortfolioService } from '../../portfolio/data-access/portfolio.service'
 
     .balance-text {
       font-size: 0.9rem;
-      color: #666;
+      color: white;
     }
 
     .balance-amount {
       font-weight: 600;
-      color: #00aa55;
+      color: white;
     }
 
     .back-link {
