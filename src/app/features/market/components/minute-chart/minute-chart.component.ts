@@ -94,15 +94,41 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
           fill: true,
           tension: 0.1,
           pointRadius: 0,
-          pointHoverRadius: 0
+          pointHoverRadius: 5
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
         plugins: {
           legend: {
             display: false
+          },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              title: function(context: any) {
+                const index = context[0].dataIndex;
+                const timestamp = context[0].dataset.timestamps[index];
+                if (timestamp) {
+                  const date = new Date(timestamp);
+                  return date.toLocaleTimeString('de-DE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                  });
+                }
+                return '';
+              },
+              label: function(context: any) {
+                const value = context.parsed.y;
+                return `Preis: $${value.toFixed(4)}`;
+              }
+            }
           }
         },
         scales: {
@@ -148,6 +174,7 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
     });
     
     const data = recentPoints.map(point => point.price);
+    const timestamps = recentPoints.map(point => point.timestamp);
 
     // Fallback: Wenn weniger als 60 Punkte, fülle mit den letzten verfügbaren Punkten auf
     if (recentPoints.length < 60 && this.chartData.dataPoints.length > 0) {
@@ -157,12 +184,15 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
         return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
       });
       const allData = allPoints.map(point => point.price);
+      const allTimestamps = allPoints.map(point => point.timestamp);
       
       this.chart.data.labels = allLabels;
       this.chart.data.datasets[0].data = allData;
+      (this.chart.data.datasets[0] as any).timestamps = allTimestamps;
     } else {
       this.chart.data.labels = labels;
       this.chart.data.datasets[0].data = data;
+      (this.chart.data.datasets[0] as any).timestamps = timestamps;
     }
 
     this.chart.update('none');
