@@ -1,5 +1,10 @@
 <div class="settings-page">
-  <h1 class="settings-title">⚙️ Einstellungen</h1>
+  <h1 class="settings-title">Einstellungen</h1>
+
+  <div class="settings-hint">
+    <span class="info-icon">i</span>
+    Änderungen an Profil, Passwort oder E-Mail werden in anderen Bereichen erst nach erneutem An- und Abmelden sichtbar.
+  </div>
 
   <div *ngIf="message"
        class="alert"
@@ -10,96 +15,95 @@
   <div class="settings-grid">
 
     <div class="settings-card">
-      <div class="card-header">👤 Profil ändern</div>
+      <h2 class="card-header">Profil ändern</h2>
       <form (ngSubmit)="updateProfile()" #profileForm="ngForm" class="card-body">
-        <div class="field-group">
-          <div class="field-current">
+        <div class="field-row">
+          <div class="field-item">
             <label>Aktueller Vorname</label>
             <input class="form-control" type="text" [value]="currentFirstName" readonly>
           </div>
-          <div class="field-new">
+          <div class="field-item">
             <label>Neuer Vorname</label>
-            <input
-              class="form-control"
-              type="text"
-              [(ngModel)]="profile.firstName"
-              name="firstName"
-              autocomplete="given-name">
+            <input class="form-control" type="text" [(ngModel)]="profile.firstName" name="firstName" autocomplete="given-name">
           </div>
         </div>
 
-        <div class="field-group">
-          <div class="field-current">
+        <div class="field-row">
+          <div class="field-item">
             <label>Aktueller Nachname</label>
             <input class="form-control" type="text" [value]="currentLastName" readonly>
           </div>
-          <div class="field-new">
+          <div class="field-item">
             <label>Neuer Nachname</label>
-            <input
-              class="form-control"
-              type="text"
-              [(ngModel)]="profile.lastName"
-              name="lastName"
-              autocomplete="family-name">
+            <input class="form-control" type="text" [(ngModel)]="profile.lastName" name="lastName" autocomplete="family-name">
           </div>
         </div>
 
-        <button
-          class="btn btn-primary"
-          type="submit"
-          [disabled]="isProfileDisabled()">
-          💾 Speichern
-        </button>
+        <button class="btn btn-primary" type="submit" [disabled]="isProfileDisabled()">Speichern</button>
       </form>
     </div>
 
     <div class="settings-card">
-      <div class="card-header">🔒 Passwort ändern</div>
+      <h2 class="card-header">Passwort ändern</h2>
       <form (ngSubmit)="changePassword()" #passwordForm="ngForm" class="card-body">
-        <input type="email" [value]="currentEmail" autocomplete="username" style="display: none;" readonly>
 
-        <label>Aktuelles Passwort</label>
-        <input class="form-control" type="password" [(ngModel)]="password.currentPassword" name="currentPassword" required placeholder="********" autocomplete="current-password">
+        <div class="field-row">
+          <div class="field-item">
+            <label>Aktuelles Passwort</label>
+            <input class="form-control" type="password" [(ngModel)]="password.currentPassword" name="currentPassword" required autocomplete="current-password">
+          </div>
+        </div>
 
-        <label>Neues Passwort</label>
-        <input class="form-control" type="password" [(ngModel)]="password.newPassword" name="newPassword" required minlength="8" placeholder="********" autocomplete="new-password">
+        <div class="field-row">
+          <div class="field-item">
+            <label>Neues Passwort</label>
+            <input class="form-control" type="password" [(ngModel)]="password.newPassword" name="newPassword" required minlength="8" autocomplete="new-password">
+          </div>
+        </div>
 
-        <button class="btn btn-primary" type="submit" [disabled]="!passwordForm.valid">🔁 Ändern</button>
+        <button class="btn btn-primary" type="submit" [disabled]="!passwordForm.valid">Ändern</button>
       </form>
     </div>
 
     <div class="settings-card">
-      <div class="card-header">📧 E-Mail ändern</div>
+      <h2 class="card-header">E-Mail ändern</h2>
       <form (ngSubmit)="changeEmail()" #emailForm="ngForm" class="card-body">
-        <div class="field-group">
-          <div class="field-current">
+
+        <div class="field-row">
+          <div class="field-item">
             <label>Aktuelle E-Mail</label>
             <input class="form-control" type="email" [value]="currentEmail" readonly>
           </div>
-          <div class="field-new">
+          <div class="field-item">
             <label>Neue E-Mail</label>
             <input class="form-control" type="email" [(ngModel)]="email.newEmail" name="newEmail" required autocomplete="email">
           </div>
         </div>
 
-        <label>Passwort bestätigen</label>
-        <input class="form-control" type="password" [(ngModel)]="email.password" name="password" required placeholder="********" autocomplete="current-password">
+        <div class="field-row">
+          <div class="field-item">
+            <label>Passwort bestätigen</label>
+            <input class="form-control" type="password" [(ngModel)]="email.password" name="password" required autocomplete="current-password">
+          </div>
+        </div>
 
-        <button class="btn btn-primary" type="submit" [disabled]="!emailForm.valid">✉️ Ändern</button>
+        <button class="btn btn-primary" type="submit" [disabled]="!emailForm.valid">Ändern</button>
       </form>
     </div>
 
     <div class="settings-card danger-zone">
-      <div class="card-header text-danger">⚠️ Konto löschen</div>
+      <h2 class="card-header text-danger">Konto löschen</h2>
+      <p class="danger-hint">Diese Aktion ist dauerhaft und kann nicht rückgängig gemacht werden.</p>
       <form (ngSubmit)="deleteAccount()" #deleteForm="ngForm" class="card-body">
-        <input type="email" [value]="currentEmail" autocomplete="username" style="display: none;" readonly>
 
-        <label>Passwort bestätigen</label>
-        <input class="form-control" type="password" [(ngModel)]="deletePassword" name="deletePassword" required placeholder="********" autocomplete="current-password">
+        <div class="field-row">
+          <div class="field-item">
+            <label>Passwort bestätigen</label>
+            <input class="form-control" type="password" [(ngModel)]="deletePassword" name="deletePassword" required autocomplete="current-password">
+          </div>
+        </div>
 
-        <button class="btn btn-danger delete-btn" type="submit" [disabled]="!deleteForm.valid">
-          🗑️ Konto löschen
-        </button>
+        <button class="btn btn-primary delete-btn" type="submit" [disabled]="!deleteForm.valid">Konto löschen</button>
       </form>
     </div>
   </div>

@@ -4,14 +4,54 @@
   padding: 2rem 1rem;
   background: transparent;
   font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  box-sizing: border-box;
 }
 
 .settings-title {
   text-align: left;
   color: #eee;
-  margin-bottom: 1rem;
-  font-size: 1.8rem;
+  margin-bottom: 0.6rem;
+  font-size: 1.9rem;
   font-weight: 600;
+}
+
+.settings-hint {
+  margin-bottom: 1rem;
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: #fca5a5;
+  background: rgba(17, 24, 39, 0.25);
+  border: 1px solid rgba(193, 18, 31, 0.5);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  box-shadow: 0 0 7px rgba(193, 18, 31, 0.23), 0 0 16px rgba(193, 18, 31, 0.12);
+  transition: all 0.3s ease;
+}
+
+.settings-hint:hover {
+  background: rgba(193, 18, 31, 0.12);
+  border-color: rgba(193, 18, 31, 0.7);
+  box-shadow: 0 6px 28px rgba(193, 18, 31, 0.18);
+  transform: translateY(-2px) scale(1.01);
+  cursor: help;
+}
+
+.info-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: rgba(193, 18, 31, 0.15);
+  border: 1px solid rgba(193, 18, 31, 0.5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: #fff;
 }
 
 .settings-grid {
@@ -35,6 +75,7 @@
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   color: #eee;
+  box-sizing: border-box;
 
   &:hover {
     background: rgba(26, 26, 26, 0.4);
@@ -44,55 +85,57 @@
 }
 
 .card-header {
+  font-size: 1.625rem;
   font-weight: 600;
-  padding: 0.8rem 1rem;
-  background: rgba(0,0,0,0.3);
-  border-top-left-radius: 0.75rem;
-  border-top-right-radius: 0.75rem;
+  line-height: 1;
   color: #eee;
-  font-size: 0.95rem;
+  margin-bottom: 0.9rem;
+}
+
+.danger-zone .card-header,
+.danger-zone .text-danger {
+  color: #c1121f;
 }
 
 .card-body {
-  padding: 0.8rem 1rem;
+  padding: 0.2rem 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  height: 100%;
+  gap: 0.75rem;
+  box-sizing: border-box;
 }
 
-.field-group {
+.field-row {
   display: flex;
   gap: 1rem;
-  margin-bottom: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.field-current {
-  flex: 1;
-  input {
-    background: rgba(255,255,255,0.05);
-    cursor: not-allowed;
-  }
-}
-
-.field-new {
-  flex: 1;
+.field-item {
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 label {
-  font-size: 0.85rem;
-  color: #ccc;
-  margin-top: 0.2rem;
+  display: block;
+  font-size: 1rem;
+  color: #ddd;
+  margin-bottom: 0.35rem;
 }
 
 .form-control {
+  width: 100%;
   background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.2);
   color: #eee;
   border-radius: 8px;
-  padding: 0.4rem 0.6rem;
+  padding: 0.55rem 0.7rem;
   transition: all 0.2s ease;
   margin-bottom: 0.5rem;
+  font-size: 1rem;
+  box-sizing: border-box;
 
   &:focus {
     background: rgba(255,255,255,0.2);
@@ -101,13 +144,22 @@ label {
   }
 }
 
+.form-control[readonly],
+.form-control[disabled] {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.08);
+  color: #9c9c9c;
+  cursor: not-allowed;
+}
+
 .btn {
   border: none;
   border-radius: 20px;
   font-weight: 600;
-  padding: 0.45rem 1rem;
+  padding: 0.6rem 1.1rem;
   transition: all 0.3s ease;
   cursor: pointer;
+  font-size: 1rem;
 }
 
 .btn-primary {
@@ -116,33 +168,27 @@ label {
   color: #c1121f;
 
   &:hover:not(:disabled) {
-    background: rgba(193, 18, 31, 0.4);
-    transform: scale(1.05);
-  }
-}
-
-.btn-danger {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid #ef4444;
-  color: #ef4444;
-
-  &:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.4);
-    transform: scale(1.05);
+    background: rgba(193, 18, 31, 0.45);
+    transform: scale(1.015);
   }
 }
 
 .alert {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  margin: 0 auto 1rem auto;
+  gap: 0.6rem;
   width: 100%;
-  border-radius: 20px;
-  padding: 0.6rem;
-  font-weight: 500;
-  font-size: 0.95rem;
+  margin: 0 0 1rem 0;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.8rem;
   background: rgba(26, 26, 26, 0.3);
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 7px rgba(193, 18, 31, 0.12);
+  font-weight: 500;
+  font-size: 1.25rem;
 }
 
 .alert-success {
@@ -156,20 +202,36 @@ label {
 }
 
 .danger-zone {
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(255, 56, 56, 0.55);
+  background: radial-gradient(circle at top, rgba(255, 56, 56, 0.08), rgba(26, 26, 26, 0.3));
+  box-shadow: 0 0 9px rgba(255, 56, 56, 0.35), 0 0 22px rgba(255, 56, 56, 0.18);
+  transition: all 0.3s ease;
+}
+
+.danger-zone:hover {
+  background: radial-gradient(circle at top, rgba(255, 56, 56, 0.12), rgba(26, 26, 26, 0.35));
+  border-color: rgba(255, 56, 56, 0.8);
+  box-shadow: 0 6px 28px rgba(255, 56, 56, 0.25), 0 0 18px rgba(255, 56, 56, 0.4);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.danger-hint {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: #fffff5;
 }
 
 @media (max-width: 768px) {
   .settings-page {
     padding: 1rem;
+    font-size: 1rem;
   }
 
   .settings-title {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
   }
 
-  .field-group {
+  .field-row {
     flex-direction: column;
-    gap: 0.5rem;
   }
 }

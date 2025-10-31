@@ -81,12 +81,12 @@ export class SettingsPageComponent {
 
     this.userService.updateProfile(payload).subscribe({
       next: () => {
-        this.showMessage('✅ Profil erfolgreich aktualisiert', false);
+        this.showMessage('Profil erfolgreich aktualisiert', false);
         this.profile = { firstName: '', lastName: '' };
       },
       error: (err) => {
         console.error('Update profile error:', err);
-        this.showMessage('❌ Fehler beim Aktualisieren des Profils', true);
+        this.showMessage('Fehler beim Aktualisieren des Profils. Versuche es später erneut!', true);
       }
     });
   }
