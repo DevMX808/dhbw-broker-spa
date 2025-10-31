@@ -18,6 +18,7 @@ export interface MarketPrice {
   updatedAt: string; // ISO8601 format
   updatedAtReadable: string;
   changePct?: number; // Prozentuale Änderung seit letzter Minute (optional)
+  priceChange?: string; // "UP", "DOWN", "SAME" - vom /trend endpoint
 }
 
 /**

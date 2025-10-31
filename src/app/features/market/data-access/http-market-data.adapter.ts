@@ -39,11 +39,12 @@ export class HttpMarketDataAdapter implements MarketDataPort {
   async fetchPrice(symbol: string): Promise<MarketPrice> {
     try {
 
-      const response = await firstValueFrom(
-        this.http.get<MarketPriceDto>(`${this.baseUrl}/quote/${symbol}`)
-      );
+      const [priceResponse, trendResponse] = await Promise.all([
+        firstValueFrom(this.http.get<MarketPriceDto>(`${this.baseUrl}/quote/${symbol}`)),
+        firstValueFrom(this.http.get<{priceChange: string}>(`${this.baseUrl}/trend/${symbol}`)).catch(() => null)
+      ]);
 
-      return this.mapPrice(response);
+      return this.mapPrice(priceResponse, trendResponse?.priceChange);
     } catch (error) {
       throw error;
     }
@@ -62,7 +63,7 @@ export class HttpMarketDataAdapter implements MarketDataPort {
   /**
    * Map backend price DTO to domain model
    */
-  private mapPrice(dto: MarketPriceDto): MarketPrice {
+  private mapPrice(dto: MarketPriceDto, priceChange?: string): MarketPrice {
 
     const changePct = dto.changePct
                    ?? dto.change1mPct
@@ -77,7 +78,8 @@ export class HttpMarketDataAdapter implements MarketDataPort {
       price: dto.price,
       updatedAt: dto.updatedAt,
       updatedAtReadable: dto.updatedAtReadable || this.getReadableTimestamp(dto.updatedAt),
-      changePct: changePct
+      changePct: changePct,
+      priceChange: priceChange
     };
 
     return result;

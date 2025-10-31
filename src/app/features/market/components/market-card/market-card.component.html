@@ -32,13 +32,13 @@
   </div>
 
   <!-- Change Indicator -->
-  <div *ngIf="!loading && price && price.changePct !== undefined && price.changePct !== null"
+  <div *ngIf="!loading && price && price.priceChange"
        class="change-indicator"
-       [class.change-indicator--positive]="price.changePct > 0"
-       [class.change-indicator--negative]="price.changePct < 0"
-       [class.change-indicator--neutral]="price.changePct === 0">
-    <span *ngIf="price.changePct > 0">↑</span>
-    <span *ngIf="price.changePct < 0">↓</span>
-    <span *ngIf="price.changePct === 0">→</span>
+       [class.change-indicator--positive]="price.priceChange === 'UP'"
+       [class.change-indicator--negative]="price.priceChange === 'DOWN'"
+       [class.change-indicator--neutral]="price.priceChange === 'SAME'">
+    <span *ngIf="price.priceChange === 'UP'">⬆️</span>
+    <span *ngIf="price.priceChange === 'DOWN'">⬇️</span>
+    <span *ngIf="price.priceChange === 'SAME'">→</span>
   </div>
 </div>
