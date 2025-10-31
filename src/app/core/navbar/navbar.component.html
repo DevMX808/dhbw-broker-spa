@@ -1,9 +1,9 @@
 <nav class="navbar">
-  <div class="navbar-logo" [class.navbar-logo-centered]="isLoggedOutOnAccount">
+  <div class="navbar-logo" [class.navbar-logo-centered]="isLoggedOutOnAccount()">
     <span class="logo-text">LEDGERO</span>
   </div>
 
-  @if (!isLoggedOutOnAccount) {
+  @if (!isLoggedOutOnAccount()) {
     <div class="burger" [class.active]="mobileMenuOpen()" (click)="toggleMobileMenu()">
       <span class="burger-line"></span>
       <span class="burger-line"></span>
@@ -11,7 +11,7 @@
     </div>
   }
 
-  @if (!isLoggedOutOnAccount) {
+  @if (!isLoggedOutOnAccount()) {
     <div class="navbar-center">
       <a routerLink="/market" routerLinkActive="active-link" class="nav-link">Markt</a>
       <a routerLink="/portfolio" routerLinkActive="active-link" class="nav-link">Portfolio</a>
@@ -23,7 +23,7 @@
     </div>
   }
 
-  @if (mobileMenuOpen() && !isLoggedOutOnAccount) {
+  @if (mobileMenuOpen() && !isLoggedOutOnAccount()) {
     <div class="mobile-menu">
       <a routerLink="/market" routerLinkActive="active-link" class="nav-link" (click)="toggleMobileMenu()">Markt</a>
       <a routerLink="/portfolio" routerLinkActive="active-link" class="nav-link" (click)="toggleMobileMenu()">Portfolio</a>

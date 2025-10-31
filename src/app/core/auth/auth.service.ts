@@ -1,9 +1,9 @@
 import { Injectable, computed, signal, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, throwError, map, switchMap, defer } from 'rxjs';
+import { Observable, catchError, throwError, map, defer } from 'rxjs';
 import { TokenStorageService, DevJwtPayload } from './token-storage.service';
 import { environment } from '../../../environments/environments';
-import { Router } from '@angular/router';  // Neu: Für Redirect nach Logout
+import { Router } from '@angular/router';
 
 export interface SignInInput {
   email: string;
@@ -46,7 +46,7 @@ export class AuthService {
   private readonly baseUrl = environment.apiBaseUrl;
 
   readonly user = signal<AuthUser | null>(null);
-  readonly isAuthenticated = computed(() => !!this.user());
+  readonly isAuthenticated = computed(() => !!this.user());  // Bereits reaktiv via computed
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
 
@@ -170,7 +170,10 @@ export class AuthService {
     if (response.accessToken) {
       this.tokens.set(response.accessToken);
       const payload = this.tokens.parsePayload(response.accessToken);
-      console.log(payload);
+
+      if (!environment.production) {
+        console.log('Parsed JWT Payload:', payload);
+      }
 
       if (payload && this.isValidPayload(payload)) {
         this.user.set({
@@ -212,7 +215,7 @@ export class AuthService {
     this.error.set(null);
     this.loading.set(false);
 
-    this.router.navigate(['/account']);
+    this.router.navigate(['/account']).catch(err => console.error('Logout Navigation Error:', err));
   }
 
   private clearLoginQueue(): void {
