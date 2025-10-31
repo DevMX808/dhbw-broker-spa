@@ -2,17 +2,11 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MarketPrice } from '../../data-access/market.port';
 
-/**
- * Presentational component for displaying price details
- * Props: price, loading, error
- * Events: refresh
- */
 @Component({
   standalone: true,
   selector: 'app-price-card',
   imports: [CommonModule],
   template: `
-    <!-- Loading State -->
     <div *ngIf="loading" class="card">
       <div class="card-body">
         <div class="skeleton-box mb-2" style="height: 32px; width: 60%;"></div>
@@ -21,7 +15,6 @@ import { MarketPrice } from '../../data-access/market.port';
       </div>
     </div>
 
-    <!-- Error State -->
     <div *ngIf="!loading && error" class="card border-danger">
       <div class="card-body">
         <div class="d-flex align-items-center mb-3">
@@ -38,10 +31,8 @@ import { MarketPrice } from '../../data-access/market.port';
       </div>
     </div>
 
-    <!-- Success State -->
     <div *ngIf="!loading && !error && price" class="card">
       <div class="card-body">
-        <!-- Header: Name and Symbol -->
         <div class="d-flex justify-content-between align-items-start mb-3">
           <div>
             <h2 class="h4 mb-1">{{ price.name }}</h2>
@@ -58,13 +49,11 @@ import { MarketPrice } from '../../data-access/market.port';
           </button>
         </div>
 
-        <!-- Price Display -->
         <div class="price-display mb-3">
           <span class="price-value">{{ price.price | number:'1.2-4' }}</span>
           <span class="price-currency ml-2 text-muted">USD</span>
         </div>
 
-        <!-- Timestamp -->
         <div class="text-muted small">
           <span class="mr-3">
             <strong>Aktualisiert:</strong> {{ price.updatedAtReadable }}
@@ -76,7 +65,6 @@ import { MarketPrice } from '../../data-access/market.port';
       </div>
     </div>
 
-    <!-- Empty State (no price and no loading/error) -->
     <div *ngIf="!loading && !error && !price" class="card">
       <div class="card-body text-center py-5">
         <div class="text-muted mb-3" style="font-size: 3rem;">📊</div>
