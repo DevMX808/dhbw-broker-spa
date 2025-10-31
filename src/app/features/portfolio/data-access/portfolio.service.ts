@@ -36,4 +36,8 @@ export class PortfolioService {
       `${environment.apiBaseUrl}/api/price/quote/${symbol}`
     );
   }
+
+  getWalletBalance(): Observable<any> {
+    return this.http.get<any>(`${environment.apiBaseUrl}/api/wallet/balance`);
+  }
 }

@@ -19,6 +19,20 @@ interface HeldTradeWithPrice extends HeldTrade {
     <div class="portfolio-container">
       <h1 class="page-title">💼 Mein Portfolio</h1>
 
+      <!-- Balance Card -->
+      <div class="balance-card mb-4">
+        <div class="balance-content">
+          <div class="balance-icon">💰</div>
+          <div class="balance-info">
+            <h4 class="balance-label">Verfügbares Guthaben</h4>
+            <div class="balance-amount">
+              <span *ngIf="!balanceLoading">{{ '$' + (walletBalance | number:'1.2-2') }} USD</span>
+              <div *ngIf="balanceLoading" class="spinner-border spinner-border-sm text-light" role="status"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div *ngIf="isLoading" class="loading-spinner">
         <div class="spinner-border text-light" role="status"></div>
         <p>Portfolio wird geladen...</p>
@@ -196,6 +210,39 @@ interface HeldTradeWithPrice extends HeldTrade {
       font-size: 1.1rem;
     }
 
+    .balance-card {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .balance-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .balance-icon {
+      font-size: 2.5rem;
+      opacity: 0.8;
+    }
+
+    .balance-label {
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      margin: 0 0 0.5rem 0;
+      font-weight: 500;
+    }
+
+    .balance-amount {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #00ff88;
+      text-shadow: 0 0 10px rgba(0,255,136,0.3);
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -206,6 +253,8 @@ export class PortfolioPageComponent implements OnInit {
   heldTrades: HeldTradeWithPrice[] = [];
   isLoading = false;
   error: string | null = null;
+  walletBalance: number = 0;
+  balanceLoading = false;
 
   constructor(
     private portfolioService: PortfolioService,
@@ -214,6 +263,7 @@ export class PortfolioPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPortfolio();
+    this.loadBalance();
   }
 
   loadPortfolio(): void {
@@ -253,6 +303,20 @@ export class PortfolioPageComponent implements OnInit {
           this.isLoading = false;
         });
         console.error(err);
+      }
+    });
+  }
+
+  loadBalance(): void {
+    this.balanceLoading = true;
+    this.portfolioService.getWalletBalance().subscribe({
+      next: (response) => {
+        this.walletBalance = response.balance;
+        this.balanceLoading = false;
+      },
+      error: (err) => {
+        console.error('Balance konnte nicht geladen werden:', err);
+        this.balanceLoading = false;
       }
     });
   }
