@@ -1,26 +1,19 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';  // Neu: ChangeDetectionStrategy importieren
 import { CommonModule } from '@angular/common';
 import { MarketSymbol, MarketPrice } from '../../data-access/market.port';
-
 
 @Component({
   standalone: true,
   selector: 'app-market-card',
   imports: [CommonModule],
   templateUrl: './market-card.component.html',
-  styleUrls: ['./market-card.component.scss']
+  styleUrls: ['./market-card.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MarketCardComponent implements OnChanges {
+
+export class MarketCardComponent {
   @Input() symbol!: MarketSymbol;
   @Input() price?: MarketPrice;
   @Input() loading: boolean = false;
   @Output() select = new EventEmitter<string>();
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['price'] && this.price) {
-    }
-
-    if (changes['loading']) {
-    }
-  }
 }

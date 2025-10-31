@@ -1,8 +1,6 @@
 <div class="market-card" [class.market-card--loading]="loading">
-  <!-- Indicator Dot in der rechten oberen Ecke -->
   <span *ngIf="!loading" class="indicator-dot"></span>
 
-  <!-- Header: Icon + Name | Symbol -->
   <div class="header">
     <div class="symbol-icon icon-{{symbol.symbol.toLowerCase()}}">
       <span>♦</span>
@@ -12,14 +10,11 @@
     <span class="ticker">{{ symbol.symbol }}</span>
   </div>
 
-  <!-- Price Section -->
   <div class="price-section">
-    <!-- Loading State -->
     <div *ngIf="loading" class="skeleton-loader">
       <div class="skeleton-box skeleton-price"></div>
     </div>
 
-    <!-- Price Available -->
     <div *ngIf="!loading && price" class="price-content">
       <div class="price-value">
         {{ price.price | number:'1.2-2' }}
@@ -27,18 +22,16 @@
       </div>
     </div>
 
-    <!-- No Price -->
     <div *ngIf="!loading && !price" class="no-price">—</div>
   </div>
 
-  <!-- Change Indicator -->
   <div *ngIf="!loading && price && price.priceChange"
        class="change-indicator"
        [class.change-indicator--positive]="price.priceChange === 'UP'"
        [class.change-indicator--negative]="price.priceChange === 'DOWN'"
        [class.change-indicator--neutral]="price.priceChange === 'SAME'">
-    <span *ngIf="price.priceChange === 'UP'">⬆</span>
-    <span *ngIf="price.priceChange === 'DOWN'">⬇</span>
-    <span *ngIf="price.priceChange === 'SAME'">→</span>
+    <span *ngIf="price.priceChange === 'UP'">▲</span>
+    <span *ngIf="price.priceChange === 'DOWN'">▼</span>
+    <span *ngIf="price.priceChange === 'SAME'">—</span>
   </div>
 </div>

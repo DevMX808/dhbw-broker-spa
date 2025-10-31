@@ -1,9 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 import { filter } from 'rxjs';
-import { NavbarComponent } from './core/navbar/navbar.component'; // Pfad anpassen
+import { NavbarComponent } from './core/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
@@ -11,33 +11,27 @@ import { NavbarComponent } from './core/navbar/navbar.component'; // Pfad anpass
   imports: [
     CommonModule,
     RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
-    NavbarComponent // Navbar importieren
+    NavbarComponent
   ],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'] // kleine Korrektur
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
 
   readonly isAuth = computed(() => this.auth.isAuthenticated());
-  readonly isAdmin = computed(() => this.auth.hasRole('ADMIN'));
   readonly email = computed(() => this.auth.user()?.email ?? '');
 
-  // Signal to track if we're on an auth route
   readonly isAuthRoute = signal(false);
 
   constructor() {
-    // Listen to route changes
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
       this.isAuthRoute.set(event.url.includes('/account'));
     });
 
-    // Set initial state
     this.isAuthRoute.set(this.router.url.includes('/account'));
   }
 }
