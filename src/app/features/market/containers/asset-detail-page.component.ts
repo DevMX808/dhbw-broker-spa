@@ -14,9 +14,7 @@ import { PortfolioService } from '../../portfolio/data-access/portfolio.service'
   standalone: true,
   selector: 'app-asset-detail-page',
   imports: [CommonModule, RouterLink, MinuteChartComponent, FormsModule],
-  
-
-    templateUrl: './asset-detail-page.component.html',
+  templateUrl: './asset-detail-page.component.html',
   styleUrls: ['./asset-detail-page.component.scss']
 })
 export class AssetDetailPageComponent implements OnInit, OnDestroy {
@@ -79,8 +77,14 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private loadChartData(symbol: string): void {
     this.chartLoading.set(true);
     this.chartService.getMinuteChart(symbol).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data) => { this.chartData.set(data); this.chartLoading.set(false); },
-      error: () => { this.chartData.set(null); this.chartLoading.set(false); },
+      next: (data) => {
+        this.chartData.set(data);
+        this.chartLoading.set(false);
+      },
+      error: () => {
+        this.chartData.set(null);
+        this.chartLoading.set(false);
+      },
     });
   }
 
@@ -99,15 +103,25 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
+ 
   get calculatedQuantity(): number | null {
-    if (this.buyMode === 'usd' && this.usdAmount && this.currentPrice()?.price) {
-      return this.usdAmount / this.currentPrice()!.price;
+    const priceValue = this.currentPrice();
+
+    const price = typeof priceValue === 'object' && priceValue !== null
+      ? (priceValue as any).price
+      : priceValue;
+
+    if (this.buyMode === 'usd' && this.usdAmount && price) {
+      return this.usdAmount / price;
     }
     return this.quantity;
   }
 
   async buyAsset(): Promise<void> {
-    if (!this.currentSymbol() || !this.calculatedQuantity) return;
+    if (!this.currentSymbol() || !this.calculatedQuantity) {
+      alert('Bitte geben Sie eine gültige Menge oder einen USD-Betrag ein.');
+      return;
+    }
 
     this.buying = true;
 
@@ -118,14 +132,17 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
         quantity: this.calculatedQuantity
       };
 
+      console.log('Sende Trade Request:', request);
+
       const result = await this.tradeService.executeTrade(request).toPromise();
       console.log('Trade executed successfully:', result);
 
       alert(`Erfolgreich ${this.calculatedQuantity.toFixed(4)} ${this.currentSymbol()} gekauft!`);
+
       this.quantity = null;
       this.usdAmount = null;
-
       this.loadWalletBalance();
+
     } catch (error) {
       console.error('Trade execution failed:', error);
       alert('Fehler beim Kauf des Assets.');
