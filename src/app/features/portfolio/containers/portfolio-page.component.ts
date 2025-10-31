@@ -30,6 +30,42 @@ interface HeldTradeWithPrice extends HeldTrade {
               <div *ngIf="balanceLoading" class="spinner-border spinner-border-sm text-light" role="status"></div>
             </div>
           </div>
+          <div class="balance-actions">
+            <button class="btn btn-outline-light btn-sm" (click)="showAddFundsModal = true">
+              + Guthaben hinzufügen
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Funds Modal -->
+      <div *ngIf="showAddFundsModal" class="modal-overlay" (click)="showAddFundsModal = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h5>⚠️ Guthaben hinzufügen</h5>
+            <button class="btn-close" (click)="showAddFundsModal = false">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning">
+              <strong>Hinweis für realistische Trading-Simulation:</strong><br>
+              Fügen Sie nur dann Guthaben hinzu, wenn es wirklich nötig ist! 
+              Eine echte Trading-Experience bedeutet, mit dem verfügbaren Kapital zu arbeiten 
+              und nicht ständig "Geld nachzuladen". Nutzen Sie diese Funktion sparsam.
+            </div>
+            <div class="form-group mt-3">
+              <label>Betrag (USD)</label>
+              <input type="number" [(ngModel)]="addFundsAmount" 
+                     class="form-control" placeholder="100.00" min="1" max="10000">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="showAddFundsModal = false">Abbrechen</button>
+            <button class="btn btn-warning" 
+                    [disabled]="!addFundsAmount || addFundsAmount <= 0 || addingFunds"
+                    (click)="addFunds()">
+              {{ addingFunds ? 'Wird hinzugefügt...' : 'Guthaben hinzufügen' }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -243,6 +279,67 @@ interface HeldTradeWithPrice extends HeldTrade {
       text-shadow: 0 0 10px rgba(0,255,136,0.3);
     }
 
+    .balance-actions {
+      margin-top: 0.5rem;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      color: #333;
+    }
+
+    .modal-header {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-body {
+      padding: 1rem;
+    }
+
+    .modal-footer {
+      padding: 1rem;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .alert-warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      padding: 0.75rem;
+      border-radius: 4px;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -255,6 +352,11 @@ export class PortfolioPageComponent implements OnInit {
   error: string | null = null;
   walletBalance: number = 0;
   balanceLoading = false;
+  
+  // Add Funds Modal
+  showAddFundsModal = false;
+  addFundsAmount: number | null = null;
+  addingFunds = false;
 
   constructor(
     private portfolioService: PortfolioService,
@@ -354,6 +456,29 @@ export class PortfolioPageComponent implements OnInit {
         trade.isSelling = false;
         console.error('Verkauf fehlgeschlagen:', err);
         alert(`Verkauf fehlgeschlagen: ${err.error?.message || err.message}`);
+      }
+    });
+  }
+
+  addFunds(): void {
+    if (!this.addFundsAmount || this.addFundsAmount <= 0) {
+      return;
+    }
+
+    this.addingFunds = true;
+
+    this.portfolioService.addFunds(this.addFundsAmount).subscribe({
+      next: (response) => {
+        this.addingFunds = false;
+        this.showAddFundsModal = false;
+        this.walletBalance = response.newBalance;
+        this.addFundsAmount = null;
+        alert(`Erfolgreich $${response.addedAmount} hinzugefügt! Neues Guthaben: $${response.newBalance}`);
+      },
+      error: (err) => {
+        this.addingFunds = false;
+        console.error('Guthaben hinzufügen fehlgeschlagen:', err);
+        alert(`Fehler: ${err.error?.error || err.message}`);
       }
     });
   }

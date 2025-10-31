@@ -40,4 +40,8 @@ export class PortfolioService {
   getWalletBalance(): Observable<any> {
     return this.http.get<any>(`${environment.apiBaseUrl}/api/wallet/balance`);
   }
+
+  addFunds(amount: number): Observable<any> {
+    return this.http.post<any>(`${environment.apiBaseUrl}/api/wallet/add-funds`, { amount });
+  }
 }
