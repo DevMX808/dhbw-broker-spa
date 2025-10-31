@@ -51,19 +51,33 @@ export class SettingsPageComponent {
   }
 
   updateProfile(): void {
-    const payload: any = {};
+    const currentUser = this.authService.user();
 
-    if (this.profile.firstName && this.profile.firstName.trim() !== '') {
-      payload.firstName = this.profile.firstName.trim();
-    }
-    if (this.profile.lastName && this.profile.lastName.trim() !== '') {
-      payload.lastName = this.profile.lastName.trim();
-    }
+    const enteredFirst = this.profile.firstName?.trim() || '';
+    const enteredLast = this.profile.lastName?.trim() || '';
 
-    if (Object.keys(payload).length === 0) {
+    const finalFirst = enteredFirst !== '' ? enteredFirst : (currentUser?.firstName ?? '');
+    const finalLast = enteredLast !== '' ? enteredLast : (currentUser?.lastName ?? '');
+
+    if (!finalFirst && !finalLast) {
       this.showMessage('Bitte mindestens ein Feld ausfüllen.', true);
       return;
     }
+
+    const noChange =
+      currentUser &&
+      finalFirst === currentUser.firstName &&
+      finalLast === currentUser.lastName;
+
+    if (noChange) {
+      this.showMessage('Es wurden keine Änderungen erkannt.', true);
+      return;
+    }
+
+    const payload = {
+      firstName: finalFirst,
+      lastName: finalLast
+    };
 
     this.userService.updateProfile(payload).subscribe({
       next: () => {
