@@ -6,32 +6,53 @@
       <div class="alexa-left">
         <div class="alexa-title">Alexa Demo</div>
         <p class="alexa-text">
-          Löst den BFF-Alexa-Endpunkt aus und liest die aktuellen Marktpreise bzw. ein einzelnes Asset.
+          Löst den BFF-Alexa-Endpunkt aus und liest die aktuellen Marktpreise oder ein einzelnes Asset.
         </p>
-        <div class="alexa-actions">
-          <button class="btn btn-primary" (click)="onAlexaLaunch()" [disabled]="alexaLoading">
-            Skill starten
+
+        <div class="alexa-grid">
+          <button
+            class="btn btn-secondary alexa-full-btn"
+            (click)="onAlexaAll()"
+            [disabled]="alexaLoading">
+            Alle Marktpreise abrufen
           </button>
-          <button class="btn btn-primary" (click)="onAlexaAll()" [disabled]="alexaLoading">
-            Alle Marktpreise
-          </button>
-          <div class="alexa-input-group">
+
+          <div class="alexa-row">
             <input
               class="form-control"
               type="text"
               placeholder="z. B. Gold, BTC, ETH"
-              [(ngModel)]="alexaAsset"
-            />
-            <button class="btn btn-secondary" (click)="onAlexaSingle()" [disabled]="alexaLoading">
+              [(ngModel)]="alexaAsset" />
+            <button
+              class="btn btn-secondary"
+              (click)="onAlexaSingle()"
+              [disabled]="alexaLoading">
               Einzelnes Asset
             </button>
           </div>
-          <button class="btn btn-secondary" type="button" (click)="onAlexaRepeat()" [disabled]="!alexaOutput">
-            Noch einmal abspielen
-          </button>
+
+          <div class="alexa-row alexa-row-split">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              (click)="onAlexaRepeat()"
+              [disabled]="!alexaOutput">
+              Noch einmal abspielen
+            </button>
+            <button
+              class="btn btn-secondary"
+              type="button"
+              (click)="onAlexaStop()"
+              [disabled]="!alexaSpeaking">
+              Sprachausgabe stoppen
+            </button>
+          </div>
         </div>
       </div>
+
       <div class="alexa-right">
+        <div class="alexa-output-title">Alexa Antwort</div>
+
         <div *ngIf="alexaLoading" class="alexa-loading">
           Wird abgefragt...
         </div>

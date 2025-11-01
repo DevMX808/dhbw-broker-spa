@@ -100,12 +100,12 @@ export class SettingsPageComponent {
   changePassword(): void {
     this.userService.changePassword(this.password).subscribe({
       next: () => {
-        this.showMessage('🔑 Passwort erfolgreich geändert', false);
+        this.showMessage('Passwort erfolgreich geändert', false);
         this.password = { currentPassword: '', newPassword: '' };
       },
       error: (err) => {
         console.error('Change password error:', err);
-        this.showMessage('❌ Fehler beim Ändern des Passworts', true);
+        this.showMessage('Fehler beim Ändern des Passworts', true);
       }
     });
   }
@@ -113,19 +113,19 @@ export class SettingsPageComponent {
   changeEmail(): void {
     this.userService.changeEmail(this.email).subscribe({
       next: () => {
-        this.showMessage('📧 E-Mail erfolgreich geändert', false);
+        this.showMessage('E-Mail erfolgreich geändert', false);
         this.email = { newEmail: '', password: '' };
       },
       error: (err) => {
         console.error('Change email error:', err);
-        this.showMessage('❌ Fehler beim Ändern der E-Mail', true);
+        this.showMessage('Fehler beim Ändern der E-Mail', true);
       }
     });
   }
 
   deleteAccount(): void {
     const confirmed = confirm(
-      '⚠️ Sind Sie sicher, dass Sie Ihr Konto löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.'
+      'Sind Sie sicher, dass Sie Ihr Konto löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.'
     );
 
     if (!confirmed) return;
@@ -134,7 +134,7 @@ export class SettingsPageComponent {
       next: () => this.showMessage('🗑️ Konto wurde gelöscht', false),
       error: (err) => {
         console.error('Delete account error:', err);
-        this.showMessage('❌ Fehler beim Löschen des Kontos', true);
+        this.showMessage('Fehler beim Löschen des Kontos', true);
       }
     });
   }
