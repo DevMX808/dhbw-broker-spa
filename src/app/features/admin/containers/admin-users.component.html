@@ -1,0 +1,43 @@
+<div class="admin-users-container">
+  <h2>Benutzerverwaltung</h2>
+
+  <div *ngIf="loading" class="loading">
+    Lade Benutzer...
+  </div>
+
+  <div *ngIf="error" class="error">
+    {{ error }}
+    <button (click)="loadUsers()" class="retry-btn">Erneut versuchen</button>
+  </div>
+
+  <div *ngIf="!loading && !error" class="users-table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Vorname</th>
+          <th>Nachname</th>
+          <th>E-Mail</th>
+          <th>Status</th>
+          <th>Guthaben</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.firstName }}</td>
+          <td>{{ user.lastName }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span [class]="getStatusClass(user.status)">
+              {{ getStatusText(user.status) }}
+            </span>
+          </td>
+          <td class="balance">{{ formatBalance(user.balance) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="users.length === 0" class="no-users">
+      Keine Benutzer gefunden
+    </div>
+  </div>
+</div>

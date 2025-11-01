@@ -1,17 +1,13 @@
-// src/app/features/admin/routes.ts  (Guard ergänzt)
 import { Routes } from '@angular/router';
-import { AdminPageComponent } from './containers/admin-page.component';
+import { AdminUsersComponent } from './containers/admin-users.component';
 import { RoleGuard } from '../../core/auth/role.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
     path: '',
-    component: AdminPageComponent,
-    title: 'Admin',
+    component: AdminUsersComponent,
+    title: 'Admin - Benutzerverwaltung',
     canActivate: [RoleGuard],
-    data: { roles: ['ADMIN'] },
-    children: [
-      { path: '', pathMatch: 'full', redirectTo: 'users' },
-    ]
+    data: { roles: ['ADMIN'] }
   }
 ];
