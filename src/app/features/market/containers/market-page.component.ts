@@ -22,8 +22,8 @@ export class MarketPageComponent implements OnInit, OnDestroy {
   alexaLoading = false;
   alexaError = '';
   alexaAsset = '';
+  alexaSpeaking = false;
   private lastSpokenText = '';
-  isSpeaking = false;
 
   get firstName(): string {
     return this.authService.user()?.firstName || 'Gast';
@@ -108,7 +108,7 @@ export class MarketPageComponent implements OnInit, OnDestroy {
     this.speak(this.lastSpokenText);
   }
 
-  onAlexaStopSpeech(): void {
+  onAlexaStop(): void {
     this.stopSpeech();
   }
 
@@ -139,9 +139,11 @@ export class MarketPageComponent implements OnInit, OnDestroy {
     utterance.lang = 'de-DE';
     utterance.rate = 1;
     utterance.pitch = 1;
-    this.isSpeaking = true;
+    utterance.onstart = () => {
+      this.alexaSpeaking = true;
+    };
     utterance.onend = () => {
-      this.isSpeaking = false;
+      this.alexaSpeaking = false;
     };
     window.speechSynthesis.speak(utterance);
   }
@@ -150,6 +152,6 @@ export class MarketPageComponent implements OnInit, OnDestroy {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
-    this.isSpeaking = false;
+    this.alexaSpeaking = false;
   }
 }
