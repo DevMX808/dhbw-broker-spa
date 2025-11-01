@@ -1,0 +1,125 @@
+<form (ngSubmit)="onSubmit(signUpForm)" #signUpForm="ngForm" novalidate>
+  <h1>Konto erstellen</h1>
+
+  @if (authService.error()) {
+    <div class="error-message" role="alert" aria-live="polite">
+      {{ authService.error() }}
+    </div>
+  }
+
+  <div class="form-group">
+    <input
+      id="firstName"
+      type="text"
+      placeholder="Vorname"
+      [(ngModel)]="userData.firstName"
+      name="firstName"
+      required
+      minlength="2"
+      #firstNameInput="ngModel"
+      [class.error]="submitted && firstNameInput.invalid"
+      autocomplete="given-name"
+      aria-describedby="firstName-error" />
+
+    @if (submitted && firstNameInput.invalid) {
+      <div id="firstName-error" class="field-error" role="alert">
+        @if (firstNameInput.errors?.['required']) {
+          Vorname ist erforderlich
+        }
+        @if (firstNameInput.errors?.['minlength']) {
+          Vorname muss mindestens 2 Zeichen lang sein
+        }
+      </div>
+    }
+  </div>
+
+  <div class="form-group">
+    <input
+      id="lastName"
+      type="text"
+      placeholder="Nachname"
+      [(ngModel)]="userData.lastName"
+      name="lastName"
+      required
+      minlength="2"
+      #lastNameInput="ngModel"
+      [class.error]="submitted && lastNameInput.invalid"
+      autocomplete="family-name"
+      aria-describedby="lastName-error" />
+
+    @if (submitted && lastNameInput.invalid) {
+      <div id="lastName-error" class="field-error" role="alert">
+        @if (lastNameInput.errors?.['required']) {
+          Nachname ist erforderlich
+        }
+        @if (lastNameInput.errors?.['minlength']) {
+          Nachname muss mindestens 2 Zeichen lang sein
+        }
+      </div>
+    }
+  </div>
+
+  <div class="form-group">
+    <input
+      id="email"
+      type="email"
+      placeholder="E-Mail"
+      [(ngModel)]="userData.email"
+      name="email"
+      required
+      email
+      #emailInput="ngModel"
+      [class.error]="submitted && emailInput.invalid"
+      autocomplete="email"
+      aria-describedby="email-error" />
+
+    @if (submitted && emailInput.invalid) {
+      <div id="email-error" class="field-error" role="alert">
+        @if (emailInput.errors?.['required']) {
+          E-Mail ist erforderlich
+        }
+        @if (emailInput.errors?.['email']) {
+          Ungültige E-Mail-Adresse
+        }
+      </div>
+    }
+  </div>
+
+  <div class="form-group">
+    <input
+      id="password"
+      type="password"
+      placeholder="Passwort"
+      [(ngModel)]="userData.password"
+      name="password"
+      required
+      minlength="6"
+      #passwordInput="ngModel"
+      [class.error]="submitted && passwordInput.invalid"
+      autocomplete="new-password"
+      aria-describedby="password-error" />
+
+    @if (submitted && passwordInput.invalid) {
+      <div id="password-error" class="field-error" role="alert">
+        @if (passwordInput.errors?.['required']) {
+          Passwort ist erforderlich
+        }
+        @if (passwordInput.errors?.['minlength']) {
+          Passwort muss mindestens 6 Zeichen lang sein
+        }
+      </div>
+    }
+  </div>
+  <div class="form-actions--spaced">
+    <button
+      type="submit"
+      [disabled]="authService.loading()"
+      [attr.aria-disabled]="authService.loading() ? 'true' : 'false'">
+      @if (authService.loading()) {
+        <span class="spinner"></span> Registrieren...
+      } @else {
+        Registrieren
+      }
+    </button>
+  </div>
+</form>
