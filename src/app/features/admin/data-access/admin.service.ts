@@ -20,6 +20,14 @@ export class AdminService {
 
   getUsersWithBalances(): Observable<UserWithBalance[]> {
     console.log('🔍 Admin API call:', '/api/admin/users-with-balances');
-    return this.http.get<UserWithBalance[]>('/api/admin/users-with-balances');
+    
+    // Cache-busting headers hinzufügen
+    const headers = {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
+    
+    return this.http.get<UserWithBalance[]>('/api/admin/users-with-balances', { headers });
   }
 }
