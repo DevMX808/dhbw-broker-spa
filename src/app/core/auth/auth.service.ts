@@ -46,7 +46,7 @@ export class AuthService {
   private readonly baseUrl = environment.apiBaseUrl;
 
   readonly user = signal<AuthUser | null>(null);
-  readonly isAuthenticated = computed(() => !!this.user());  // Bereits reaktiv via computed
+  readonly isAuthenticated = computed(() => !!this.user());
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
 

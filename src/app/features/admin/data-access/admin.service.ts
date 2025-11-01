@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environments';
 
 export interface UserWithBalance {
   userId: string;
@@ -8,10 +9,10 @@ export interface UserWithBalance {
   firstName: string;
   lastName: string;
   role?: string;
-  status?: string;
+  status?: 'ACTIVATED' | 'DEACTIVATED';
+  balance?: number;
   createdAt?: string;
   updatedAt?: string;
-  balance?: number;
 }
 
 export interface StatusUpdateRequest {
@@ -20,28 +21,34 @@ export interface StatusUpdateRequest {
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = this.getBaseUrl();
+
+  private getBaseUrl(): string {
+    const isHeroku = window.location.hostname.includes('herokuapp.com');
+    const isLocalhost =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1';
+
+    if (isHeroku || (!isLocalhost && environment.production)) {
+      return `${environment.apiBaseUrl}/api/admin`;
+    } else {
+      return 'http://localhost:8080/api/admin';
+    }
+  }
 
   getUsersWithBalances(): Observable<UserWithBalance[]> {
-    console.log('🔍 Admin API call:', '/api/admin/users-with-balances');
-
-    const headers = {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    };
-
-    return this.http.get<UserWithBalance[]>('/api/admin/users-with-balances', { headers });
+    const url = `${this.baseUrl}/users-with-balances`;
+    return this.http.get<UserWithBalance[]>(url, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      }
+    });
   }
 
   updateUserStatus(userId: string, status: 'ACTIVATED' | 'DEACTIVATED'): Observable<UserWithBalance> {
-    console.log('🔄 Updating user status:', userId, status);
-
+    const url = `${this.baseUrl}/users/${userId}/status`;
     const body: StatusUpdateRequest = { status };
-
-    return this.http.put<UserWithBalance>(
-      `/api/admin/users/${userId}/status`,
-      body
-    );
+    return this.http.put<UserWithBalance>(url, body);
   }
 }

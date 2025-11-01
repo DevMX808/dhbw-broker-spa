@@ -1,4 +1,3 @@
-// src/app/core/http/trade.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
