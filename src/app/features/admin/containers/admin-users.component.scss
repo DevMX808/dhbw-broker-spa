@@ -34,6 +34,15 @@
     }
   }
 
+  .success {
+    color: #4caf50;
+    padding: 15px;
+    background-color: rgba(76, 175, 80, 0.1);
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 4px solid #4caf50;
+  }
+
   .users-table-container {
     .users-table {
       width: 100%;
@@ -57,6 +66,10 @@
         &.balance {
           font-family: monospace;
           text-align: right;
+        }
+
+        &.actions {
+          text-align: center;
         }
       }
 
@@ -82,6 +95,104 @@
       padding: 40px;
       color: rgba(255, 255, 255, 0.7);
       font-style: italic;
+    }
+
+    .btn {
+      padding: 6px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      &.btn-danger {
+        background-color: #dc3545;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: #c82333;
+        }
+      }
+
+      &.btn-success {
+        background-color: #28a745;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: #218838;
+        }
+      }
+
+      &.btn-secondary {
+        background-color: #6c757d;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: #5a6268;
+        }
+      }
+    }
+  }
+}
+
+// Modal Styles
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #2d2d2d;
+  padding: 30px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+  h3 {
+    color: white;
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 15px;
+    line-height: 1.5;
+
+    &.warning {
+      color: #ff9800;
+      font-weight: 500;
+      margin-top: 20px;
+    }
+
+    strong {
+      color: white;
+    }
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 30px;
+
+    .btn {
+      min-width: 100px;
     }
   }
 }

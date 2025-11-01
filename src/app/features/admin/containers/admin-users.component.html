@@ -10,34 +10,77 @@
     <button (click)="loadUsers()" class="retry-btn">Erneut versuchen</button>
   </div>
 
+  <div *ngIf="successMessage" class="success">
+    {{ successMessage }}
+  </div>
+
   <div *ngIf="!loading && !error" class="users-table-container">
     <table class="users-table">
       <thead>
-        <tr>
-          <th>Vorname</th>
-          <th>Nachname</th>
-          <th>E-Mail</th>
-          <th>Status</th>
-          <th>Guthaben</th>
-        </tr>
+      <tr>
+        <th>Vorname</th>
+        <th>Nachname</th>
+        <th>E-Mail</th>
+        <th>Status</th>
+        <th>Guthaben</th>
+        <th>Aktionen</th>
+      </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.firstName }}</td>
-          <td>{{ user.lastName }}</td>
-          <td>{{ user.email }}</td>
-          <td>
+      <tr *ngFor="let user of users">
+        <td>{{ user.firstName }}</td>
+        <td>{{ user.lastName }}</td>
+        <td>{{ user.email }}</td>
+        <td>
             <span [class]="getStatusClass(user.status)">
               {{ getStatusText(user.status) }}
             </span>
-          </td>
-          <td class="balance">{{ formatBalance(user.balance) }}</td>
-        </tr>
+        </td>
+        <td class="balance">{{ formatBalance(user.balance) }}</td>
+        <td class="actions">
+          <button
+            *ngIf="user.status === 'ACTIVATED'"
+            (click)="confirmStatusChange(user, 'DEACTIVATED')"
+            [disabled]="updatingUserId === user.userId"
+            class="btn btn-danger">
+            {{ updatingUserId === user.userId ? 'Wird blockiert...' : 'Blockieren' }}
+          </button>
+          <button
+            *ngIf="user.status === 'DEACTIVATED'"
+            (click)="updateUserStatus(user, 'ACTIVATED')"
+            [disabled]="updatingUserId === user.userId"
+            class="btn btn-success">
+            {{ updatingUserId === user.userId ? 'Wird aktiviert...' : 'Aktivieren' }}
+          </button>
+        </td>
+      </tr>
       </tbody>
     </table>
 
     <div *ngIf="users.length === 0" class="no-users">
       Keine Benutzer gefunden
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div *ngIf="showConfirmDialog" class="modal-backdrop" (click)="cancelConfirmation()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h3>Benutzer blockieren</h3>
+    <p>
+      Möchten Sie den Benutzer <strong>{{ pendingUser?.firstName }} {{ pendingUser?.lastName }}</strong>
+      ({{ pendingUser?.email }}) wirklich blockieren?
+    </p>
+    <p class="warning">
+      Der Benutzer kann sich nach der Blockierung nicht mehr einloggen.
+    </p>
+    <div class="modal-actions">
+      <button (click)="cancelConfirmation()" class="btn btn-secondary">
+        Abbrechen
+      </button>
+      <button (click)="confirmBlock()" class="btn btn-danger">
+        Ja, blockieren
+      </button>
     </div>
   </div>
 </div>
