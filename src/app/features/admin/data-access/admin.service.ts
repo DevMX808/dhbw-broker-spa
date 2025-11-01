@@ -19,6 +19,7 @@ export class AdminService {
   constructor(private http: HttpClient) {}
 
   getUsersWithBalances(): Observable<UserWithBalance[]> {
+    console.log('🔍 Admin API call:', '/api/admin/users-with-balances');
     return this.http.get<UserWithBalance[]>('/api/admin/users-with-balances');
   }
 }
