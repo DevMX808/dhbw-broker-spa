@@ -21,7 +21,7 @@
       <div class="table-scroller">
         <table class="portfolio-table users-table">
           <thead>
-          <tr>
+          <tr class="table-header">
             <th>Vorname</th>
             <th>Nachname</th>
             <th>E-Mail</th>
@@ -32,7 +32,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let user of users">
+          <tr class="table-row" *ngFor="let user of users">
             <td>{{ user.firstName }}</td>
             <td>{{ user.lastName }}</td>
             <td>{{ user.email }}</td>
@@ -83,7 +83,6 @@
   </div>
 </div>
 
-<!-- Confirmation Modal (wie Portfolio) -->
 <div *ngIf="showConfirmDialog" class="modal-overlay" (click)="cancelConfirmation()">
   <div class="modal-content glass" (click)="$event.stopPropagation()">
     <div class="modal-header">
