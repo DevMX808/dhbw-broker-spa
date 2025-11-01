@@ -1,10 +1,5 @@
 <div class="admin-page">
-  <h1 class="admin-title">Benutzerverwaltung</h1>
-
-  <div class="admin-hint" *ngIf="!loading && !error">
-    <span class="info-icon">i</span>
-    Verwaltung aller registrierten Benutzer. Admins können hier Konten sperren oder wieder aktivieren.
-  </div>
+  <h1 class="portfolio-title">Benutzerverwaltung</h1>
 
   <div *ngIf="loading" class="loading-block">
     <div class="spinner"></div>
@@ -13,25 +8,26 @@
 
   <div *ngIf="error" class="alert alert-danger">
     {{ error }}
-    <button (click)="loadUsers()" class="btn btn-secondary btn-sm">Erneut versuchen</button>
+    <button type="button" class="btn btn-secondary" (click)="loadUsers()">Erneut versuchen</button>
   </div>
 
   <div *ngIf="successMessage" class="alert alert-success">
     {{ successMessage }}
   </div>
 
-  <div *ngIf="!loading && !error" class="admin-table-wrapper">
-    <div class="admin-card">
-      <h2 class="card-title table-title">Registrierte Benutzer</h2>
+  <div *ngIf="!loading && !error" class="portfolio-table-wrapper">
+    <div class="portfolio-card users-card">
+      <h2 class="card-title table-title">Alle Benutzer</h2>
       <div class="table-scroller">
-        <table class="admin-table">
+        <table class="portfolio-table users-table">
           <thead>
           <tr>
             <th>Vorname</th>
             <th>Nachname</th>
             <th>E-Mail</th>
+            <th>Rolle</th>
             <th>Status</th>
-            <th>Guthaben</th>
+            <th class="th-num">Guthaben</th>
             <th class="th-actions">Aktionen</th>
           </tr>
           </thead>
@@ -41,28 +37,39 @@
             <td>{{ user.lastName }}</td>
             <td>{{ user.email }}</td>
             <td>
-                <span [class]="getStatusClass(user.status)">
-                  {{ getStatusText(user.status) }}
-                </span>
+              <span class="role-badge" [ngClass]="user.role === 'ADMIN' ? 'role-admin' : 'role-user'">
+                {{ user.role === 'ADMIN' ? 'ADMIN' : 'USER' }}
+              </span>
             </td>
-            <td class="td-num">{{ formatBalance(user.balance) }}</td>
+            <td>
+              <span [class]="getStatusClass(user.status)">
+                {{ getStatusText(user.status) }}
+              </span>
+            </td>
+            <td class="td-num">
+              {{ formatBalance(user.balance) }}
+            </td>
             <td class="td-actions">
-              <button
-                *ngIf="user.status === 'ACTIVATED'"
-                class="btn btn-danger btn-sm"
-                (click)="confirmStatusChange(user, 'DEACTIVATED')"
-                [disabled]="updatingUserId === user.userId"
-              >
-                {{ updatingUserId === user.userId ? 'Wird blockiert…' : 'Blockieren' }}
-              </button>
-              <button
-                *ngIf="user.status === 'DEACTIVATED'"
-                class="btn btn-primary btn-sm"
-                (click)="updateUserStatus(user, 'ACTIVATED')"
-                [disabled]="updatingUserId === user.userId"
-              >
-                {{ updatingUserId === user.userId ? 'Wird aktiviert…' : 'Aktivieren' }}
-              </button>
+              <div class="row-actions">
+                <button
+                  *ngIf="user.status === 'ACTIVATED'"
+                  type="button"
+                  class="btn btn-danger btn-sm"
+                  [disabled]="updatingUserId === user.userId"
+                  (click)="confirmStatusChange(user, 'DEACTIVATED')"
+                >
+                  {{ updatingUserId === user.userId ? 'Wird blockiert…' : 'Blockieren' }}
+                </button>
+                <button
+                  *ngIf="user.status === 'DEACTIVATED'"
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  [disabled]="updatingUserId === user.userId"
+                  (click)="updateUserStatus(user, 'ACTIVATED')"
+                >
+                  {{ updatingUserId === user.userId ? 'Wird aktiviert…' : 'Aktivieren' }}
+                </button>
+              </div>
             </td>
           </tr>
           </tbody>
@@ -76,12 +83,12 @@
   </div>
 </div>
 
-<!-- Bestätigungsmodal im Portfolio-Style -->
+<!-- Confirmation Modal (wie Portfolio) -->
 <div *ngIf="showConfirmDialog" class="modal-overlay" (click)="cancelConfirmation()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-content glass" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3 class="modal-title">Benutzer blockieren</h3>
-      <button class="modal-close" (click)="cancelConfirmation()">×</button>
+      <button class="modal-close" type="button" (click)="cancelConfirmation()">×</button>
     </div>
     <div class="modal-body">
       <p>
@@ -89,13 +96,13 @@
         <strong>{{ pendingUser?.firstName }} {{ pendingUser?.lastName }}</strong>
         ({{ pendingUser?.email }}) wirklich blockiert werden?
       </p>
-      <p class="modal-hint">
-        Der Benutzer kann sich danach nicht mehr anmelden.
+      <p class="warning-text">
+        Blockierte Benutzer können sich nicht mehr anmelden.
       </p>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="cancelConfirmation()">Abbrechen</button>
-      <button class="btn btn-danger" (click)="confirmBlock()">Ja, blockieren</button>
+      <button type="button" class="btn btn-secondary" (click)="cancelConfirmation()">Abbrechen</button>
+      <button type="button" class="btn btn-danger" (click)="confirmBlock()">Ja, blockieren</button>
     </div>
   </div>
 </div>

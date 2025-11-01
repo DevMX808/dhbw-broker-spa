@@ -1,24 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { AdminService, UserWithBalance } from '../../../core/http/admin.service';
 
 @Component({
-  standalone: true,
   selector: 'app-admin-users',
-  imports: [CommonModule],
   templateUrl: './admin-users.component.html',
-  styleUrls: ['./admin-users.component.scss']
+  styleUrls: ['./admin-users.component.scss'],
+  standalone: true
 })
 export class AdminUsersComponent implements OnInit {
   users: UserWithBalance[] = [];
-  loading = true;
-  error: string | null = null;
-  successMessage: string | null = null;
+  loading = false;
+  error = '';
+  successMessage = '';
   updatingUserId: string | null = null;
 
   showConfirmDialog = false;
   pendingUser: UserWithBalance | null = null;
-  pendingStatus: 'ACTIVATED' | 'DEACTIVATED' | null = null;
+  pendingStatus: 'ACTIVATED' | 'DEACTIVATED' = 'DEACTIVATED';
 
   constructor(private adminService: AdminService) {}
 
@@ -28,110 +26,71 @@ export class AdminUsersComponent implements OnInit {
 
   loadUsers(): void {
     this.loading = true;
-    this.error = null;
-
+    this.error = '';
     this.adminService.getUsersWithBalances().subscribe({
-      next: (users) => {
+      next: (users: UserWithBalance[]) => {
         this.users = users;
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Error loading users:', err);
-        this.error = `Fehler beim Laden der Benutzer (Status: ${err.status}): ${err.error?.message || err.message}`;
+      error: (err: any) => {
+        this.error = 'Fehler beim Laden der Benutzer.';
         this.loading = false;
-      }
+        console.error(err);
+      },
     });
   }
 
-  confirmStatusChange(user: UserWithBalance, status: 'ACTIVATED' | 'DEACTIVATED'): void {
-    if (status === 'DEACTIVATED') {
-      this.pendingUser = user;
-      this.pendingStatus = status;
-      this.showConfirmDialog = true;
-    } else {
-      this.updateUserStatus(user, status);
+  formatBalance(balance?: number): string {
+    if (balance == null) {
+      return '0.00 USD';
     }
+    return balance.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
   }
 
-  confirmBlock(): void {
-    if (this.pendingUser && this.pendingStatus) {
-      this.updateUserStatus(this.pendingUser, this.pendingStatus);
-      this.cancelConfirmation();
+  getStatusText(status?: string): string {
+    if (status === 'DEACTIVATED') {
+      return 'Blockiert';
     }
+    return 'Aktiv';
+  }
+
+  getStatusClass(status?: string): string {
+    return status === 'DEACTIVATED' ? 'status-badge status-badge--blocked' : 'status-badge status-badge--active';
+  }
+
+  confirmStatusChange(user: UserWithBalance, status: 'ACTIVATED' | 'DEACTIVATED'): void {
+    this.pendingUser = user;
+    this.pendingStatus = status;
+    this.showConfirmDialog = true;
   }
 
   cancelConfirmation(): void {
     this.showConfirmDialog = false;
     this.pendingUser = null;
-    this.pendingStatus = null;
   }
 
-  updateUserStatus(user: UserWithBalance, newStatus: 'ACTIVATED' | 'DEACTIVATED'): void {
+  confirmBlock(): void {
+    if (!this.pendingUser) {
+      return;
+    }
+    this.updateUserStatus(this.pendingUser, this.pendingStatus);
+    this.showConfirmDialog = false;
+  }
+
+  updateUserStatus(user: UserWithBalance, status: 'ACTIVATED' | 'DEACTIVATED'): void {
     this.updatingUserId = user.userId;
-    this.error = null;
-    this.successMessage = null;
-
-    this.adminService.updateUserStatus(user.userId, newStatus).subscribe({
-      next: (updatedUser) => {
-        const index = this.users.findIndex(u => u.userId === user.userId);
-        if (index !== -1) {
-          this.users[index] = updatedUser;
-        }
-
-        const action = newStatus === 'ACTIVATED' ? 'aktiviert' : 'blockiert';
-        this.successMessage = `Benutzer ${user.firstName} ${user.lastName} wurde erfolgreich ${action}.`;
-
-        setTimeout(() => {
-          this.successMessage = null;
-        }, 5000);
-
+    this.adminService.updateUserStatus(user.userId, status).subscribe({
+      next: () => {
+        user.status = status;
         this.updatingUserId = null;
+        this.successMessage = status === 'DEACTIVATED' ? 'Benutzer wurde blockiert.' : 'Benutzer wurde aktiviert.';
+        setTimeout(() => (this.successMessage = ''), 4000);
       },
-      error: (err) => {
-        console.error('Error updating user status:', err);
-
-        let errorMessage = 'Fehler beim Aktualisieren des Benutzerstatus';
-
-        if (err.status === 400 && err.error?.message) {
-          errorMessage = err.error.message;
-        } else if (err.status === 403) {
-          errorMessage = 'Sie haben keine Berechtigung, diesen Benutzer zu ändern';
-        } else if (err.status === 404) {
-          errorMessage = 'Benutzer nicht gefunden';
-        }
-
-        this.error = errorMessage;
+      error: (err: any) => {
+        console.error(err);
         this.updatingUserId = null;
-
-        setTimeout(() => {
-          this.error = null;
-        }, 10000);
-      }
+        this.error = 'Änderung konnte nicht gespeichert werden.';
+      },
     });
-  }
-
-  getStatusClass(status?: string): string {
-    if (status === 'ACTIVATED') {
-      return 'status-active';
-    } else if (status === 'DEACTIVATED') {
-      return 'status-inactive';
-    }
-    return '';
-  }
-
-  getStatusText(status?: string): string {
-    if (status === 'ACTIVATED') {
-      return 'Aktiv';
-    } else if (status === 'DEACTIVATED') {
-      return 'Deaktiviert';
-    }
-    return 'Unbekannt';
-  }
-
-  formatBalance(balance?: number): string {
-    if (balance == null) {
-      return '-';
-    }
-    return '$' + Number(balance).toFixed(2);
   }
 }
