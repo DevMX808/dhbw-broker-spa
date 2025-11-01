@@ -18,6 +18,42 @@
   color: #fff;
 }
 
+.users-table {
+  border-spacing: 0 0.75rem;
+  width: 100%;
+  border-collapse: separate;
+}
+
+.users-table tbody tr {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.users-table tbody tr td:first-child {
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+}
+
+.users-table tbody tr td:last-child {
+  border-top-right-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+.users-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.col-left {
+  text-align: left;
+}
+
+.col-right {
+  text-align: right;
+}
+
 .spinner {
   width: 1.5rem;
   height: 1.5rem;

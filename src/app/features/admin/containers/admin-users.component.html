@@ -22,34 +22,34 @@
         <table class="portfolio-table users-table">
           <thead>
           <tr class="table-header">
-            <th>Vorname</th>
-            <th>Nachname</th>
-            <th>E-Mail</th>
-            <th>Rolle</th>
-            <th>Status</th>
-            <th class="th-num">Guthaben</th>
-            <th class="th-actions">Aktionen</th>
+            <th class="col-left">Vorname</th>
+            <th class="col-left">Nachname</th>
+            <th class="col-left">E-Mail</th>
+            <th class="col-right">Rolle</th>
+            <th class="col-right">Status</th>
+            <th class="th-num col-right">Guthaben</th>
+            <th class="th-actions col-right">Aktionen</th>
           </tr>
           </thead>
           <tbody>
           <tr class="table-row" *ngFor="let user of users">
-            <td>{{ user.firstName }}</td>
-            <td>{{ user.lastName }}</td>
-            <td>{{ user.email }}</td>
-            <td>
+            <td class="col-left">{{ user.firstName }}</td>
+            <td class="col-left">{{ user.lastName }}</td>
+            <td class="col-left">{{ user.email }}</td>
+            <td class="col-right">
               <span class="role-badge" [ngClass]="user.role === 'ADMIN' ? 'role-admin' : 'role-user'">
                 {{ user.role === 'ADMIN' ? 'ADMIN' : 'USER' }}
               </span>
             </td>
-            <td>
+            <td class="col-right">
               <span [class]="getStatusClass(user.status)">
                 {{ getStatusText(user.status) }}
               </span>
             </td>
-            <td class="td-num">
+            <td class="td-num col-right">
               {{ formatBalance(user.balance) }}
             </td>
-            <td class="td-actions">
+            <td class="td-actions col-right">
               <div class="row-actions">
                 <button
                   *ngIf="user.status === 'ACTIVATED'"
