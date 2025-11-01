@@ -9,6 +9,9 @@
           Löst den BFF-Alexa-Endpunkt aus und liest die aktuellen Marktpreise bzw. ein einzelnes Asset.
         </p>
         <div class="alexa-actions">
+          <button class="btn btn-primary" (click)="onAlexaLaunch()" [disabled]="alexaLoading">
+            Skill starten
+          </button>
           <button class="btn btn-primary" (click)="onAlexaAll()" [disabled]="alexaLoading">
             Alle Marktpreise
           </button>
@@ -23,6 +26,9 @@
               Einzelnes Asset
             </button>
           </div>
+          <button class="btn btn-secondary" type="button" (click)="onAlexaRepeat()" [disabled]="!alexaOutput">
+            Noch einmal abspielen
+          </button>
         </div>
       </div>
       <div class="alexa-right">

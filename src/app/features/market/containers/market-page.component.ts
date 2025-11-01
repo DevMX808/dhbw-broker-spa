@@ -22,6 +22,7 @@ export class MarketPageComponent implements OnInit, OnDestroy {
   alexaLoading = false;
   alexaError = '';
   alexaAsset = '';
+  private lastSpokenText = '';
 
   get firstName(): string {
     return this.authService.user()?.firstName || 'Gast';
@@ -40,25 +41,49 @@ export class MarketPageComponent implements OnInit, OnDestroy {
         await this.store.prefetchPrices(symbolsToPreload);
       }
     }
-
     this.store.startAutoRefresh();
   }
 
   ngOnDestroy(): void {
     this.store.stopAutoRefresh();
+    this.stopSpeech();
   }
 
   async onRetry(): Promise<void> {
     await this.store.loadSymbols();
   }
 
+  onAlexaLaunch(): void {
+    this.alexaError = '';
+    this.alexaLoading = true;
+    this.stopSpeech();
+    this.alexaService.launch().subscribe({
+      next: (res) => {
+        this.alexaLoading = false;
+        const text = this.extractSpeech(res);
+        this.alexaOutput = text;
+        this.lastSpokenText = text;
+        this.speak(text);
+      },
+      error: (err) => {
+        this.alexaLoading = false;
+        this.alexaError = 'Alexa-Launch konnte nicht geladen werden.';
+        console.error(err);
+      }
+    });
+  }
+
   onAlexaAll(): void {
     this.alexaError = '';
     this.alexaLoading = true;
+    this.stopSpeech();
     this.alexaService.readAllPrices().subscribe({
       next: (res) => {
         this.alexaLoading = false;
-        this.alexaOutput = this.extractSpeech(res);
+        const text = this.extractSpeech(res);
+        this.alexaOutput = text;
+        this.lastSpokenText = text;
+        this.speak(text);
       },
       error: (err) => {
         this.alexaLoading = false;
@@ -76,10 +101,14 @@ export class MarketPageComponent implements OnInit, OnDestroy {
     }
     this.alexaError = '';
     this.alexaLoading = true;
+    this.stopSpeech();
     this.alexaService.readSingleAsset(asset).subscribe({
       next: (res) => {
         this.alexaLoading = false;
-        this.alexaOutput = this.extractSpeech(res);
+        const text = this.extractSpeech(res);
+        this.alexaOutput = text;
+        this.lastSpokenText = text;
+        this.speak(text);
       },
       error: (err) => {
         this.alexaLoading = false;
@@ -89,20 +118,59 @@ export class MarketPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  onAlexaRepeat(): void {
+    if (!this.lastSpokenText) {
+      return;
+    }
+    this.stopSpeech();
+    this.speak(this.lastSpokenText);
+  }
+
   private extractSpeech(res: AlexaResponse): string {
-    const speech = res?.response?.outputSpeech;
-    if (!speech) {
+    const body = res?.response;
+    if (!body) {
       return '';
     }
-    if (speech.type === 'PlainText') {
-      return speech.text ?? '';
+
+    const speech = body.outputSpeech;
+    if (speech) {
+      if (speech.type === 'PlainText' && speech.text) {
+        return speech.text;
+      }
+      if (speech.type === 'SSML' && speech.ssml) {
+        return speech.ssml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      }
     }
-    if (speech.type === 'SSML') {
-      return (speech.ssml ?? '')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+
+    if (body.reprompt && body.reprompt.outputSpeech) {
+      const r = body.reprompt.outputSpeech;
+      if (r.type === 'PlainText' && r.text) {
+        return r.text;
+      }
+      if (r.type === 'SSML' && r.ssml) {
+        return r.ssml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      }
     }
+
     return '';
+  }
+
+  private speak(text: string): void {
+    if (!text) return;
+    if (!('speechSynthesis' in window)) {
+      console.warn('SpeechSynthesis nicht verfügbar');
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'de-DE';
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  private stopSpeech(): void {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
   }
 }

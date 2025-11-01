@@ -3,22 +3,22 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environments';
 
-interface AlexaSlot {
+export interface AlexaSlot {
   name: string;
   value: string;
 }
 
-interface AlexaIntent {
+export interface AlexaIntent {
   name: string;
   slots?: Record<string, AlexaSlot>;
 }
 
-interface AlexaInnerRequest {
+export interface AlexaInnerRequest {
   type: string;
   intent?: AlexaIntent;
 }
 
-interface AlexaRequest {
+export interface AlexaRequest {
   session?: {
     sessionId?: string;
     user?: {
@@ -28,15 +28,18 @@ interface AlexaRequest {
   request: AlexaInnerRequest;
 }
 
-interface AlexaOutputSpeech {
+export interface AlexaOutputSpeech {
   type: 'PlainText' | 'SSML';
   text?: string;
   ssml?: string;
 }
 
-interface AlexaResponseBody {
+export interface AlexaResponseBody {
   outputSpeech: AlexaOutputSpeech;
   shouldEndSession?: boolean;
+  reprompt?: {
+    outputSpeech?: AlexaOutputSpeech;
+  };
 }
 
 export interface AlexaResponse {
@@ -64,6 +67,15 @@ export class AlexaService {
     }
   }
 
+  launch(): Observable<AlexaResponse> {
+    const payload: AlexaRequest = {
+      request: {
+        type: 'LaunchRequest'
+      }
+    };
+    return this.http.post<AlexaResponse>(this.baseUrl, payload);
+  }
+
   readAllPrices(): Observable<AlexaResponse> {
     const payload: AlexaRequest = {
       request: {
@@ -89,15 +101,6 @@ export class AlexaService {
             }
           }
         }
-      }
-    };
-    return this.http.post<AlexaResponse>(this.baseUrl, payload);
-  }
-
-  launch(): Observable<AlexaResponse> {
-    const payload: AlexaRequest = {
-      request: {
-        type: 'LaunchRequest'
       }
     };
     return this.http.post<AlexaResponse>(this.baseUrl, payload);
