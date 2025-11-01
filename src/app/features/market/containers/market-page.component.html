@@ -1,6 +1,45 @@
 <div class="market-page">
   <div class="page-header mb-4">
     <h1 class="page-greeting"><span>Hallo</span>, {{ firstName }} {{ lastName }}.</h1>
+
+    <div class="alexa-panel">
+      <div class="alexa-left">
+        <div class="alexa-title">Alexa Demo</div>
+        <p class="alexa-text">
+          Löst den BFF-Alexa-Endpunkt aus und liest die aktuellen Marktpreise bzw. ein einzelnes Asset.
+        </p>
+        <div class="alexa-actions">
+          <button class="btn btn-primary" (click)="onAlexaAll()" [disabled]="alexaLoading">
+            Alle Marktpreise
+          </button>
+          <div class="alexa-input-group">
+            <input
+              class="form-control"
+              type="text"
+              placeholder="z. B. Gold, BTC, ETH"
+              [(ngModel)]="alexaAsset"
+            />
+            <button class="btn btn-secondary" (click)="onAlexaSingle()" [disabled]="alexaLoading">
+              Einzelnes Asset
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="alexa-right">
+        <div *ngIf="alexaLoading" class="alexa-loading">
+          Wird abgefragt...
+        </div>
+        <div *ngIf="alexaError" class="alexa-error">
+          {{ alexaError }}
+        </div>
+        <div *ngIf="!alexaLoading && !alexaError && alexaOutput" class="alexa-output">
+          {{ alexaOutput }}
+        </div>
+        <div *ngIf="!alexaLoading && !alexaError && !alexaOutput" class="alexa-placeholder">
+          Noch keine Ausgabe.
+        </div>
+      </div>
+    </div>
   </div>
 
   <app-market-list

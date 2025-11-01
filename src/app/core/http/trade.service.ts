@@ -32,10 +32,9 @@ export class TradeService {
   }
 
   private getBaseUrl(): string {
-    // Gleiche Logik wie UserService für konsistente URL-Behandlung
     const isHeroku = window.location.hostname.includes('herokuapp.com');
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    
+
     if (isHeroku || (!isLocalhost && environment.production)) {
       return `${environment.apiBaseUrl}/api/trades`;
     } else {
