@@ -112,8 +112,12 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
       : priceValue;
 
     if (this.buyMode === 'usd' && this.usdAmount && price) {
-      return this.usdAmount / price;
+      const rawQuantity = this.usdAmount / price;
+      // Runde auf 2 Dezimalstellen (minTradeIncrement = 0.01)
+      const roundedQuantity = Math.floor(rawQuantity * 100) / 100;
+      return roundedQuantity;
     }
+    
     return this.quantity;
   }
 
@@ -132,7 +136,7 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
         quantity: this.calculatedQuantity
       };
 
-      console.log('Sende Trade Request:', request);
+
 
       const result = await this.tradeService.executeTrade(request).toPromise();
       console.log('Trade executed successfully:', result);
