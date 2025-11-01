@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule, NgClass, NgForOf, NgIf } from '@angular/common';
 import { AdminService, UserWithBalance } from '../../../core/http/admin.service';
 
 @Component({
   selector: 'app-admin-users',
+  standalone: true,
+  imports: [CommonModule, NgIf, NgForOf, NgClass],
   templateUrl: './admin-users.component.html',
   styleUrls: ['./admin-users.component.scss'],
-  standalone: true
 })
 export class AdminUsersComponent implements OnInit {
   users: UserWithBalance[] = [];
@@ -33,9 +35,9 @@ export class AdminUsersComponent implements OnInit {
         this.loading = false;
       },
       error: (err: any) => {
+        console.error(err);
         this.error = 'Fehler beim Laden der Benutzer.';
         this.loading = false;
-        console.error(err);
       },
     });
   }
@@ -48,14 +50,13 @@ export class AdminUsersComponent implements OnInit {
   }
 
   getStatusText(status?: string): string {
-    if (status === 'DEACTIVATED') {
-      return 'Blockiert';
-    }
-    return 'Aktiv';
+    return status === 'DEACTIVATED' ? 'Blockiert' : 'Aktiv';
   }
 
   getStatusClass(status?: string): string {
-    return status === 'DEACTIVATED' ? 'status-badge status-badge--blocked' : 'status-badge status-badge--active';
+    return status === 'DEACTIVATED'
+      ? 'status-badge status-badge--blocked'
+      : 'status-badge status-badge--active';
   }
 
   confirmStatusChange(user: UserWithBalance, status: 'ACTIVATED' | 'DEACTIVATED'): void {
@@ -83,7 +84,9 @@ export class AdminUsersComponent implements OnInit {
       next: () => {
         user.status = status;
         this.updatingUserId = null;
-        this.successMessage = status === 'DEACTIVATED' ? 'Benutzer wurde blockiert.' : 'Benutzer wurde aktiviert.';
+        this.successMessage = status === 'DEACTIVATED'
+          ? 'Benutzer wurde blockiert.'
+          : 'Benutzer wurde aktiviert.';
         setTimeout(() => (this.successMessage = ''), 4000);
       },
       error: (err: any) => {
