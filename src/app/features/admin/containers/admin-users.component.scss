@@ -6,11 +6,9 @@
 }
 
 .portfolio-title {
-  font-size: 2.25rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: #fff;
-  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 600;
+  margin-bottom: .7rem;
 }
 
 .loading-block {
@@ -76,14 +74,13 @@
 .table-row {
   background: #0000002e;
   backdrop-filter: blur(7px);
-  border: 1px solid rgba(255, 255, 255, .04);
   border-radius: .75rem;
   transition: all .15s ease;
   padding: .6rem .65rem;
   vertical-align: middle;
   font-size: 1rem;
   line-height: 1.3;
-  text-align: right;
+  text-align: left;
 }
 
 .table-scroller {
@@ -110,7 +107,7 @@
 .portfolio-table tbody td {
   padding: 0.7rem 0.5rem;
   color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.015);
+  border-spacing: 0 .4rem;
 }
 
 .td-num,
