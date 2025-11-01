@@ -1,86 +1,101 @@
-<div class="admin-users-container">
-  <h2>Benutzerverwaltung</h2>
+<div class="admin-page">
+  <h1 class="admin-title">Benutzerverwaltung</h1>
 
-  <div *ngIf="loading" class="loading">
-    Lade Benutzer...
+  <div class="admin-hint" *ngIf="!loading && !error">
+    <span class="info-icon">i</span>
+    Verwaltung aller registrierten Benutzer. Admins können hier Konten sperren oder wieder aktivieren.
   </div>
 
-  <div *ngIf="error" class="error">
+  <div *ngIf="loading" class="loading-block">
+    <div class="spinner"></div>
+    <p>Benutzer werden geladen…</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
     {{ error }}
-    <button (click)="loadUsers()" class="retry-btn">Erneut versuchen</button>
+    <button (click)="loadUsers()" class="btn btn-secondary btn-sm">Erneut versuchen</button>
   </div>
 
-  <div *ngIf="successMessage" class="success">
+  <div *ngIf="successMessage" class="alert alert-success">
     {{ successMessage }}
   </div>
 
-  <div *ngIf="!loading && !error" class="users-table-container">
-    <table class="users-table">
-      <thead>
-      <tr>
-        <th>Vorname</th>
-        <th>Nachname</th>
-        <th>E-Mail</th>
-        <th>Status</th>
-        <th>Guthaben</th>
-        <th>Aktionen</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.firstName }}</td>
-        <td>{{ user.lastName }}</td>
-        <td>{{ user.email }}</td>
-        <td>
-            <span [class]="getStatusClass(user.status)">
-              {{ getStatusText(user.status) }}
-            </span>
-        </td>
-        <td class="balance">{{ formatBalance(user.balance) }}</td>
-        <td class="actions">
-          <button
-            *ngIf="user.status === 'ACTIVATED'"
-            (click)="confirmStatusChange(user, 'DEACTIVATED')"
-            [disabled]="updatingUserId === user.userId"
-            class="btn btn-danger">
-            {{ updatingUserId === user.userId ? 'Wird blockiert...' : 'Blockieren' }}
-          </button>
-          <button
-            *ngIf="user.status === 'DEACTIVATED'"
-            (click)="updateUserStatus(user, 'ACTIVATED')"
-            [disabled]="updatingUserId === user.userId"
-            class="btn btn-success">
-            {{ updatingUserId === user.userId ? 'Wird aktiviert...' : 'Aktivieren' }}
-          </button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+  <div *ngIf="!loading && !error" class="admin-table-wrapper">
+    <div class="admin-card">
+      <h2 class="card-title table-title">Registrierte Benutzer</h2>
+      <div class="table-scroller">
+        <table class="admin-table">
+          <thead>
+          <tr>
+            <th>Vorname</th>
+            <th>Nachname</th>
+            <th>E-Mail</th>
+            <th>Status</th>
+            <th>Guthaben</th>
+            <th class="th-actions">Aktionen</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.firstName }}</td>
+            <td>{{ user.lastName }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+                <span [class]="getStatusClass(user.status)">
+                  {{ getStatusText(user.status) }}
+                </span>
+            </td>
+            <td class="td-num">{{ formatBalance(user.balance) }}</td>
+            <td class="td-actions">
+              <button
+                *ngIf="user.status === 'ACTIVATED'"
+                class="btn btn-danger btn-sm"
+                (click)="confirmStatusChange(user, 'DEACTIVATED')"
+                [disabled]="updatingUserId === user.userId"
+              >
+                {{ updatingUserId === user.userId ? 'Wird blockiert…' : 'Blockieren' }}
+              </button>
+              <button
+                *ngIf="user.status === 'DEACTIVATED'"
+                class="btn btn-primary btn-sm"
+                (click)="updateUserStatus(user, 'ACTIVATED')"
+                [disabled]="updatingUserId === user.userId"
+              >
+                {{ updatingUserId === user.userId ? 'Wird aktiviert…' : 'Aktivieren' }}
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <div *ngIf="users.length === 0" class="no-users">
-      Keine Benutzer gefunden
+      <div *ngIf="users.length === 0" class="empty-text">
+        Keine Benutzer gefunden.
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Confirmation Modal -->
-<div *ngIf="showConfirmDialog" class="modal-backdrop" (click)="cancelConfirmation()">
+<!-- Bestätigungsmodal im Portfolio-Style -->
+<div *ngIf="showConfirmDialog" class="modal-overlay" (click)="cancelConfirmation()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <h3>Benutzer blockieren</h3>
-    <p>
-      Möchten Sie den Benutzer <strong>{{ pendingUser?.firstName }} {{ pendingUser?.lastName }}</strong>
-      ({{ pendingUser?.email }}) wirklich blockieren?
-    </p>
-    <p class="warning">
-      Der Benutzer kann sich nach der Blockierung nicht mehr einloggen.
-    </p>
-    <div class="modal-actions">
-      <button (click)="cancelConfirmation()" class="btn btn-secondary">
-        Abbrechen
-      </button>
-      <button (click)="confirmBlock()" class="btn btn-danger">
-        Ja, blockieren
-      </button>
+    <div class="modal-header">
+      <h3 class="modal-title">Benutzer blockieren</h3>
+      <button class="modal-close" (click)="cancelConfirmation()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>
+        Soll der Benutzer
+        <strong>{{ pendingUser?.firstName }} {{ pendingUser?.lastName }}</strong>
+        ({{ pendingUser?.email }}) wirklich blockiert werden?
+      </p>
+      <p class="modal-hint">
+        Der Benutzer kann sich danach nicht mehr anmelden.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancelConfirmation()">Abbrechen</button>
+      <button class="btn btn-danger" (click)="confirmBlock()">Ja, blockieren</button>
     </div>
   </div>
 </div>

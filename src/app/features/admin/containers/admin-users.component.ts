@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminService, UserWithBalance } from '../data-access/admin.service';
+import { AdminService, UserWithBalance } from '../../../core/http/admin.service';
 
 @Component({
   standalone: true,
@@ -16,7 +16,6 @@ export class AdminUsersComponent implements OnInit {
   successMessage: string | null = null;
   updatingUserId: string | null = null;
 
-  // Confirmation Dialog
   showConfirmDialog = false;
   pendingUser: UserWithBalance | null = null;
   pendingStatus: 'ACTIVATED' | 'DEACTIVATED' | null = null;
@@ -46,12 +45,10 @@ export class AdminUsersComponent implements OnInit {
 
   confirmStatusChange(user: UserWithBalance, status: 'ACTIVATED' | 'DEACTIVATED'): void {
     if (status === 'DEACTIVATED') {
-      // Zeige Confirmation Dialog nur beim Blockieren
       this.pendingUser = user;
       this.pendingStatus = status;
       this.showConfirmDialog = true;
     } else {
-      // Aktivieren ohne Confirmation
       this.updateUserStatus(user, status);
     }
   }
@@ -84,7 +81,6 @@ export class AdminUsersComponent implements OnInit {
         const action = newStatus === 'ACTIVATED' ? 'aktiviert' : 'blockiert';
         this.successMessage = `Benutzer ${user.firstName} ${user.lastName} wurde erfolgreich ${action}.`;
 
-        // Entferne Success-Message nach 5 Sekunden
         setTimeout(() => {
           this.successMessage = null;
         }, 5000);
@@ -107,10 +103,9 @@ export class AdminUsersComponent implements OnInit {
         this.error = errorMessage;
         this.updatingUserId = null;
 
-        // Entferne Error-Message nach 8 Sekunden
         setTimeout(() => {
           this.error = null;
-        }, 8000);
+        }, 10000);
       }
     });
   }
