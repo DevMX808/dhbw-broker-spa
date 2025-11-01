@@ -6,12 +6,9 @@
       <div class="alexa-left">
         <div class="alexa-title">Alexa Demo</div>
         <p class="alexa-text">
-          Löst den BFF-Alexa-Endpunkt aus und liest die aktuellen Marktpreise bzw. ein einzelnes Asset.
+          Löst den BFF-Alexa-Endpunkt aus und liest die aktuellen Marktpreise oder ein einzelnes Asset.
         </p>
         <div class="alexa-actions">
-          <button class="btn btn-primary" (click)="onAlexaLaunch()" [disabled]="alexaLoading">
-            Skill starten
-          </button>
           <button class="btn btn-primary" (click)="onAlexaAll()" [disabled]="alexaLoading">
             Alle Marktpreise
           </button>
@@ -29,11 +26,14 @@
           <button class="btn btn-secondary" type="button" (click)="onAlexaRepeat()" [disabled]="!alexaOutput">
             Noch einmal abspielen
           </button>
+          <button class="btn btn-tertiary" type="button" (click)="onAlexaStopSpeech()" [disabled]="!isSpeaking">
+            Sprachausgabe stoppen
+          </button>
         </div>
       </div>
       <div class="alexa-right">
         <div *ngIf="alexaLoading" class="alexa-loading">
-          Wird abgefragt...
+          Wird abgefragt.
         </div>
         <div *ngIf="alexaError" class="alexa-error">
           {{ alexaError }}

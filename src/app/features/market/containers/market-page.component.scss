@@ -29,7 +29,7 @@
   border-radius: 0.75rem;
   padding: 1rem;
   margin-bottom: 1.25rem;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
   color: #eee;
 }
 
@@ -39,13 +39,12 @@
 
 .alexa-right {
   flex: 1 1 50%;
-  background: rgba(0,0,0,0.20);
-  border: 1px solid rgba(255,255,255,0.02);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.02);
   border-radius: 0.6rem;
   padding: 0.75rem 0.8rem;
   min-height: 90px;
   display: flex;
-  align-items: center;
   justify-content: flex-start;
 }
 
@@ -75,8 +74,8 @@
 }
 
 .form-control {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #fff;
   border-radius: 0.5rem;
   padding: 0.45rem 0.6rem;
@@ -85,7 +84,7 @@
   &:focus {
     outline: none;
     border-color: #c1121f;
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
   }
 }
 
@@ -97,6 +96,11 @@
   cursor: pointer;
   transition: all 0.25s ease;
   font-size: 0.85rem;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .btn-primary {
@@ -111,12 +115,22 @@
 }
 
 .btn-secondary {
-  background: rgba(248,250,252,0.03);
-  border: 1px solid rgba(248,250,252,0.18);
+  background: rgba(248, 250, 252, 0.03);
+  border: 1px solid rgba(248, 250, 252, 0.18);
   color: #fff;
 
   &:hover:not(:disabled) {
-    background: rgba(248,250,252,0.12);
+    background: rgba(248, 250, 252, 0.12);
+  }
+}
+
+.btn-tertiary {
+  background: rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #e2e8f0;
+
+  &:hover:not(:disabled) {
+    background: rgba(15, 23, 42, 0.2);
   }
 }
 

@@ -23,6 +23,7 @@ export class MarketPageComponent implements OnInit, OnDestroy {
   alexaError = '';
   alexaAsset = '';
   private lastSpokenText = '';
+  isSpeaking = false;
 
   get firstName(): string {
     return this.authService.user()?.firstName || 'Gast';
@@ -41,6 +42,7 @@ export class MarketPageComponent implements OnInit, OnDestroy {
         await this.store.prefetchPrices(symbolsToPreload);
       }
     }
+
     this.store.startAutoRefresh();
   }
 
@@ -51,26 +53,6 @@ export class MarketPageComponent implements OnInit, OnDestroy {
 
   async onRetry(): Promise<void> {
     await this.store.loadSymbols();
-  }
-
-  onAlexaLaunch(): void {
-    this.alexaError = '';
-    this.alexaLoading = true;
-    this.stopSpeech();
-    this.alexaService.launch().subscribe({
-      next: (res) => {
-        this.alexaLoading = false;
-        const text = this.extractSpeech(res);
-        this.alexaOutput = text;
-        this.lastSpokenText = text;
-        this.speak(text);
-      },
-      error: (err) => {
-        this.alexaLoading = false;
-        this.alexaError = 'Alexa-Launch konnte nicht geladen werden.';
-        console.error(err);
-      }
-    });
   }
 
   onAlexaAll(): void {
@@ -126,32 +108,24 @@ export class MarketPageComponent implements OnInit, OnDestroy {
     this.speak(this.lastSpokenText);
   }
 
+  onAlexaStopSpeech(): void {
+    this.stopSpeech();
+  }
+
   private extractSpeech(res: AlexaResponse): string {
-    const body = res?.response;
-    if (!body) {
+    const speech = res?.response?.outputSpeech;
+    if (!speech) {
       return '';
     }
-
-    const speech = body.outputSpeech;
-    if (speech) {
-      if (speech.type === 'PlainText' && speech.text) {
-        return speech.text;
-      }
-      if (speech.type === 'SSML' && speech.ssml) {
-        return speech.ssml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      }
+    if (speech.type === 'PlainText') {
+      return speech.text ?? '';
     }
-
-    if (body.reprompt && body.reprompt.outputSpeech) {
-      const r = body.reprompt.outputSpeech;
-      if (r.type === 'PlainText' && r.text) {
-        return r.text;
-      }
-      if (r.type === 'SSML' && r.ssml) {
-        return r.ssml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-      }
+    if (speech.type === 'SSML') {
+      return (speech.ssml ?? '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
     }
-
     return '';
   }
 
@@ -165,6 +139,10 @@ export class MarketPageComponent implements OnInit, OnDestroy {
     utterance.lang = 'de-DE';
     utterance.rate = 1;
     utterance.pitch = 1;
+    this.isSpeaking = true;
+    utterance.onend = () => {
+      this.isSpeaking = false;
+    };
     window.speechSynthesis.speak(utterance);
   }
 
@@ -172,5 +150,6 @@ export class MarketPageComponent implements OnInit, OnDestroy {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
+    this.isSpeaking = false;
   }
 }
