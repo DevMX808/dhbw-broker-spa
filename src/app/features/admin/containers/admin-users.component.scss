@@ -153,7 +153,7 @@
 }
 .portfolio-table thead th {
   padding: 0.7rem 0.65rem;
-  text-align: right; /* Geändert von left zu right, um den Konflikt zu beheben und ab Spalte 4 right zu machen */
+  text-align: left; /* Zurückgeändert zu left, um Konflikt zu vermeiden; der spezifische Alignment wird von .users-table übernommen */
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -167,7 +167,7 @@
 }
 .td-num,
 .th-num {
-  text-align: right; /* Geändert von left zu right für Konsistenz */
+  text-align: right; /* Behalte right für num */
 }
 .td-actions,
 .th-actions {
