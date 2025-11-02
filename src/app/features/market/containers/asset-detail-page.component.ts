@@ -101,7 +101,6 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
-
   get calculatedQuantity(): number | null {
     const priceValue = this.currentPrice();
 
@@ -111,7 +110,7 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
 
     if (this.buyMode === 'usd' && this.usdAmount && price) {
       const rawQuantity = this.usdAmount / price;
-      return Math.floor(rawQuantity * 100) / 100;
+      return Math.floor(rawQuantity * 10000) / 10000;
     }
 
     return this.quantity;

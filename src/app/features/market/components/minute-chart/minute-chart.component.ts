@@ -48,13 +48,16 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
         datasets: [{
           label: 'Preis USD',
           data: [],
-          borderColor: '#000000ff',
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+          borderColor: '#c1121f',
+          backgroundColor: 'rgba(193, 18, 31, 0.1)',
           borderWidth: 2,
           fill: true,
-          tension: 0.1,
+          tension: 0.3,
           pointRadius: 0,
-          pointHoverRadius: 5
+          pointHoverRadius: 6,
+          pointHoverBackgroundColor: '#c1121f',
+          pointHoverBorderColor: '#fff',
+          pointHoverBorderWidth: 2
         }]
       },
       options: {
@@ -70,6 +73,13 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
           },
           tooltip: {
             enabled: true,
+            backgroundColor: 'rgba(26, 26, 26, 0.95)',
+            titleColor: '#e2e8f0',
+            bodyColor: '#e2e8f0',
+            borderColor: 'rgba(193, 18, 31, 0.5)',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: false,
             callbacks: {
               title: function(context: any) {
                 const index = context[0].dataIndex;
@@ -93,11 +103,25 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
         },
         scales: {
           x: {
-            display: false
+            display: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)',
+              display: true
+            },
+            ticks: {
+              color: '#9ca3af',
+              maxRotation: 0,
+              autoSkipPadding: 50
+            }
           },
           y: {
             display: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)',
+              display: true
+            },
             ticks: {
+              color: '#9ca3af',
               callback: function(value) {
                 return '$' + Number(value).toFixed(2);
               }
