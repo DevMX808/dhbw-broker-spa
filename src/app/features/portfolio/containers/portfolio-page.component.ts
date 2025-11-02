@@ -31,14 +31,12 @@ export class PortfolioPageComponent implements OnInit {
   readonly addFundsMax = 10000;
   addFundsError = '';
 
-  // Sell Modal
   showSellModal = false;
   selectedTrade: HeldTradeWithPrice | null = null;
   sellQuantity: number | null = null;
   isSelling = false;
   sellError = '';
 
-  // Math für Template verfügbar machen
   Math = Math;
 
   constructor(
@@ -66,7 +64,7 @@ export class PortfolioPageComponent implements OnInit {
             this.ngZone.run(() => {
               this.heldTrades = trades.map((t, i) => ({
                 ...t,
-                assetName: prices[i].name, // Asset-Namen von der API übernehmen
+                assetName: prices[i].name,
                 currentPriceUsd: prices[i].price
               }));
               this.isLoading = false;
@@ -105,31 +103,25 @@ export class PortfolioPageComponent implements OnInit {
     });
   }
 
-  // Berechnet den Gesamtkaufpreis (Kaufpreis * Menge)
   getTotalBuyPrice(trade: HeldTradeWithPrice): number {
     return trade.buyPriceUsd * trade.quantity;
   }
 
-  // Berechnet den aktuellen Gesamtwert (Aktueller Preis * Menge)
   getCurrentTotalValue(trade: HeldTradeWithPrice): number {
     if (!trade.currentPriceUsd) return 0;
     return trade.currentPriceUsd * trade.quantity;
   }
 
-  // Berechnet Gewinn/Verlust gesamt
   getTotalProfitLoss(trade: HeldTradeWithPrice): number {
     if (!trade.currentPriceUsd) return 0;
     return this.getCurrentTotalValue(trade) - this.getTotalBuyPrice(trade);
   }
 
-  // Ermittelt den passenden Increment-Step basierend auf der Menge
   getIncrementStep(quantity: number): number {
     if (quantity < 0.1) return 0.01;
     if (quantity < 1) return 0.1;
     return 1;
   }
-
-  // ========== Add Funds Modal Functions ==========
 
   openAddFundsModal(): void {
     this.addFundsAmount = 100;
@@ -179,8 +171,6 @@ export class PortfolioPageComponent implements OnInit {
       !this.addFundsError
     );
   }
-
-  // ========== Sell Modal Functions ==========
 
   openSellModal(trade: HeldTradeWithPrice): void {
     this.selectedTrade = trade;
