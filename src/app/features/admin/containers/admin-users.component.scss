@@ -44,6 +44,7 @@
   letter-spacing: 0.04em;
   font-weight: 600;
   color: #e2e8f0;
+  text-align: right;
 }
 
 .users-table th:nth-child(1),
@@ -180,7 +181,6 @@
 
 .portfolio-table thead th {
   padding: .7rem .65rem;
-  text-align: right;
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: .04em;
