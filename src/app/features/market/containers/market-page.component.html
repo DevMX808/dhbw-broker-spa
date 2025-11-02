@@ -2,6 +2,11 @@
   <div class="page-header mb-4">
     <h1 class="page-greeting"><span>Hallo</span>, {{ firstName }} {{ lastName }}.</h1>
 
+    <div class="market-hint">
+      <span class="info-icon">i</span>
+      Diese Alexa-Demo repliziert die Sprachausgabe. Sowohl die echte Alexa-Skill-Integration als auch diese Demo nutzen den BFF-Endpunkt, der via GraphQL auf die Datenbank zugreift.
+    </div>
+
     <div class="alexa-panel">
       <div class="alexa-left">
         <div class="alexa-title">Alexa Demo</div>
@@ -67,6 +72,11 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="market-hint market-hint-assets">
+    <span class="info-icon">i</span>
+    Durch Auswahl eines Assets können Sie den Kursverlauf einsehen und einen Kauf zum aktuellen Marktpreis tätigen. Die Kurse werden minütlich aktualisiert. Bei geschlossenen Märkten werden die letzten verfügbaren Kurse fortgeschrieben.
   </div>
 
   <app-market-list

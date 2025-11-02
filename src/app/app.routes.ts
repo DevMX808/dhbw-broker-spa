@@ -28,12 +28,6 @@ export const routes: Routes = [
     loadChildren: () => import('./features/portfolio/routes').then(m => m.PORTFOLIO_ROUTES)
   },
   {
-    path: 'wallet',
-    canMatch: [authMatchGuard],
-    canActivate: [authGuard],
-    loadChildren: () => import('./features/wallet/routes').then(m => m.WALLET_ROUTES)
-  },
-  {
     path: 'settings',
     canMatch: [authMatchGuard],
     canActivate: [authGuard],
