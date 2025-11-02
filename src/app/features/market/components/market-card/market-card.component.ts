@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MarketSymbol, MarketPrice } from '../../data-access/market.port';
+import { isMarketOpen } from './market-hours.config';
 
 @Component({
   standalone: true,
@@ -16,4 +17,8 @@ export class MarketCardComponent {
   @Input() price?: MarketPrice;
   @Input() loading: boolean = false;
   @Output() select = new EventEmitter<string>();
+
+  get isMarketOpen(): boolean {
+    return isMarketOpen(this.symbol.symbol);
+  }
 }

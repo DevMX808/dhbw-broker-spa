@@ -1,5 +1,5 @@
 <div class="market-card" [class.market-card--loading]="loading">
-  <span *ngIf="!loading" class="indicator-dot"></span>
+  <span *ngIf="!loading" class="indicator-dot" [class.indicator-dot--closed]="!isMarketOpen"></span>
 
   <div class="header">
     <div class="symbol-icon icon-{{symbol.symbol.toLowerCase()}}">
