@@ -8,16 +8,16 @@
   <div class="form-group">
     <input
       id="signInEmail"
-    type="email"
-    placeholder="E-Mail"
-    [(ngModel)]="credentials.email"
-    name="email"
-    required
-    email
-    #emailInput="ngModel"
-    [class.error]="submitted && emailInput.invalid"
-    autocomplete="username"
-    aria-describedby="signInEmail-error" />
+      type="email"
+      placeholder="E-Mail"
+      [(ngModel)]="credentials.email"
+      name="email"
+      required
+      email
+      #emailInput="ngModel"
+      [class.error]="submitted && emailInput.invalid"
+      autocomplete="username"
+      aria-describedby="signInEmail-error" />
     @if (submitted && emailInput.invalid) {
       <div id="signInEmail-error" class="field-error" role="alert">
         @if (emailInput.errors?.['required']) {
@@ -32,16 +32,16 @@
   <div class="form-group">
     <input
       id="signInPassword"
-    type="password"
-    placeholder="Passwort"
-    [(ngModel)]="credentials.password"
-    name="passwort"
-    required
-    minlength="6"
-    #passwordInput="ngModel"
-    [class.error]="submitted && passwordInput.invalid"
-    autocomplete="current-password"
-    aria-describedby="signInPassword-error" />
+      type="password"
+      placeholder="Passwort"
+      [(ngModel)]="credentials.password"
+      name="password"
+      required
+      minlength="6"
+      #passwordInput="ngModel"
+      [class.error]="submitted && passwordInput.invalid"
+      autocomplete="current-password"
+      aria-describedby="signInPassword-error" />
     @if (submitted && passwordInput.invalid) {
       <div id="signInPassword-error" class="field-error" role="alert">
         @if (passwordInput.errors?.['required']) {
