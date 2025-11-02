@@ -50,19 +50,19 @@
 .users-table th:nth-child(1),
 .users-table th:nth-child(2),
 .users-table th:nth-child(3) {
-  text-align: left; /* Erste drei Spalten left, rest right – passe an deine Spalten an */
+  text-align: left;
 }
 
 .users-table tbody tr {
   background: rgba(0, 0, 0, 0.18);
   backdrop-filter: blur(7px);
-  border: none; /* Entfernt den weißen Border – alternativ: border: 1px solid rgba(0,0,0,0.04); für dunkleren Rand */
-  border-radius: 0.75rem; /* Abgerundet nur auf Body-Zeilen */
+  border: none;
+  border-radius: 0.75rem;
   transition: all 0.15s ease;
 }
 
 .users-table tbody tr:hover {
-  background: rgba(0, 0, 0, 0.28); /* Hover wie in Portfolio */
+  background: rgba(0, 0, 0, 0.28);
 }
 
 .users-table tbody tr td:first-child {
@@ -355,8 +355,8 @@
 }
 
 .admin-hint {
-  margin-top: 1.25rem;
-  margin-bottom: 0.75rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.05rem;
   display: flex;
   align-items: center;
   gap: 0.6rem;
