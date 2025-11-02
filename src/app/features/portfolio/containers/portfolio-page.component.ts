@@ -6,9 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 
 interface HeldTradeWithPrice extends HeldTrade {
-  sellQuantity?: number;
   currentPriceUsd?: number;
-  isSelling?: boolean;
 }
 
 @Component({
@@ -33,6 +31,13 @@ export class PortfolioPageComponent implements OnInit {
   readonly addFundsMax = 10000;
   addFundsError = '';
 
+  // Sell Modal
+  showSellModal = false;
+  selectedTrade: HeldTradeWithPrice | null = null;
+  sellQuantity: number | null = null;
+  isSelling = false;
+  sellError = '';
+
   // Math für Template verfügbar machen
   Math = Math;
 
@@ -52,16 +57,14 @@ export class PortfolioPageComponent implements OnInit {
 
     this.portfolioService.getHeldTrades().subscribe({
       next: (trades) => {
-        const withSell = trades.map(t => ({ ...t, sellQuantity: 0 }));
-
-        const priceRequests = withSell.map(t =>
+        const priceRequests = trades.map(t =>
           this.portfolioService.getCurrentPrice(t.assetSymbol)
         );
 
         forkJoin(priceRequests).subscribe({
           next: (prices) => {
             this.ngZone.run(() => {
-              this.heldTrades = withSell.map((t, i) => ({
+              this.heldTrades = trades.map((t, i) => ({
                 ...t,
                 assetName: prices[i].name, // Asset-Namen von der API übernehmen
                 currentPriceUsd: prices[i].price
@@ -126,51 +129,7 @@ export class PortfolioPageComponent implements OnInit {
     return 1;
   }
 
-  // Increment-Funktion für Verkaufsmenge
-  incrementSellQuantity(trade: HeldTradeWithPrice): void {
-    const step = this.getIncrementStep(trade.quantity);
-    const currentValue = trade.sellQuantity || 0;
-    let newValue = currentValue + step;
-
-    // Auf max. verfügbare Menge begrenzen
-    if (newValue > trade.quantity) {
-      newValue = trade.quantity;
-    }
-
-    // Auf 2 Dezimalstellen runden
-    trade.sellQuantity = Math.round(newValue * 100) / 100;
-  }
-
-  // Decrement-Funktion für Verkaufsmenge
-  decrementSellQuantity(trade: HeldTradeWithPrice): void {
-    const step = this.getIncrementStep(trade.quantity);
-    const currentValue = trade.sellQuantity || 0;
-    let newValue = currentValue - step;
-
-    // Nicht kleiner als 0
-    if (newValue < 0) {
-      newValue = 0;
-    }
-
-    // Auf 2 Dezimalstellen runden
-    trade.sellQuantity = Math.round(newValue * 100) / 100;
-  }
-
-  // Validierung und Begrenzung bei manueller Eingabe
-  onSellQuantityChange(trade: HeldTradeWithPrice): void {
-    if (trade.sellQuantity === null || trade.sellQuantity === undefined) {
-      trade.sellQuantity = 0;
-      return;
-    }
-
-    // Auf min/max begrenzen
-    if (trade.sellQuantity < 0) {
-      trade.sellQuantity = 0;
-    }
-    if (trade.sellQuantity > trade.quantity) {
-      trade.sellQuantity = trade.quantity;
-    }
-  }
+  // ========== Add Funds Modal Functions ==========
 
   openAddFundsModal(): void {
     this.addFundsAmount = 100;
@@ -221,39 +180,126 @@ export class PortfolioPageComponent implements OnInit {
     );
   }
 
-  isValidSellAmount(trade: HeldTradeWithPrice): boolean {
-    return !!trade.sellQuantity && trade.sellQuantity > 0 && trade.sellQuantity <= trade.quantity;
+  // ========== Sell Modal Functions ==========
+
+  openSellModal(trade: HeldTradeWithPrice): void {
+    this.selectedTrade = trade;
+    this.sellQuantity = 0;
+    this.sellError = '';
+    this.showSellModal = true;
   }
 
-  sell(trade: HeldTradeWithPrice): void {
-    const amount = trade.sellQuantity ?? 0;
+  closeSellModal(): void {
+    this.showSellModal = false;
+    this.selectedTrade = null;
+    this.sellQuantity = null;
+    this.sellError = '';
+  }
 
-    if (amount <= 0) {
-      alert('Bitte eine gültige Menge eingeben.');
+  setSellPercentage(percentage: number): void {
+    if (!this.selectedTrade) return;
+    const amount = (this.selectedTrade.quantity * percentage) / 100;
+    this.sellQuantity = Math.round(amount * 10000) / 10000; // Auf 4 Dezimalstellen runden
+    this.onSellQuantityChange();
+  }
+
+  incrementSellQuantity(): void {
+    if (!this.selectedTrade) return;
+    const step = this.getIncrementStep(this.selectedTrade.quantity);
+    const currentValue = this.sellQuantity || 0;
+    let newValue = currentValue + step;
+
+    if (newValue > this.selectedTrade.quantity) {
+      newValue = this.selectedTrade.quantity;
+    }
+
+    this.sellQuantity = Math.round(newValue * 10000) / 10000;
+    this.onSellQuantityChange();
+  }
+
+  decrementSellQuantity(): void {
+    if (!this.selectedTrade) return;
+    const step = this.getIncrementStep(this.selectedTrade.quantity);
+    const currentValue = this.sellQuantity || 0;
+    let newValue = currentValue - step;
+
+    if (newValue < 0) {
+      newValue = 0;
+    }
+
+    this.sellQuantity = Math.round(newValue * 10000) / 10000;
+    this.onSellQuantityChange();
+  }
+
+  onSellQuantityChange(): void {
+    if (!this.selectedTrade) return;
+
+    if (this.sellQuantity === null || this.sellQuantity === undefined) {
+      this.sellQuantity = 0;
+      this.sellError = '';
       return;
     }
 
-    if (amount > trade.quantity) {
-      alert('Sie können nicht mehr verkaufen, als Sie besitzen.');
+    if (this.sellQuantity < 0) {
+      this.sellQuantity = 0;
+    }
+
+    if (this.sellQuantity > this.selectedTrade.quantity) {
+      this.sellQuantity = this.selectedTrade.quantity;
+      this.sellError = `Maximal ${this.selectedTrade.quantity} verfügbar.`;
       return;
     }
 
-    if (!confirm(`Wollen Sie wirklich ${amount} ${trade.assetSymbol} verkaufen?`)) {
+    this.sellError = '';
+  }
+
+  getSellPreviewProfitLoss(): number {
+    if (!this.selectedTrade || !this.sellQuantity || !this.selectedTrade.currentPriceUsd) {
+      return 0;
+    }
+    return (this.selectedTrade.currentPriceUsd - this.selectedTrade.buyPriceUsd) * this.sellQuantity;
+  }
+
+  getSellTotalValue(): number {
+    if (!this.selectedTrade || !this.sellQuantity || !this.selectedTrade.currentPriceUsd) {
+      return 0;
+    }
+    return this.selectedTrade.currentPriceUsd * this.sellQuantity;
+  }
+
+  canSubmitSell(): boolean {
+    return (
+      !this.isSelling &&
+      !!this.selectedTrade &&
+      this.sellQuantity !== null &&
+      this.sellQuantity > 0 &&
+      this.sellQuantity <= this.selectedTrade.quantity &&
+      !this.sellError
+    );
+  }
+
+  confirmSell(): void {
+    if (!this.canSubmitSell() || !this.selectedTrade) {
       return;
     }
 
-    trade.isSelling = true;
+    const amount = this.sellQuantity as number;
+    const symbol = this.selectedTrade.assetSymbol;
 
-    this.portfolioService.sellAsset(trade.assetSymbol, amount).subscribe({
+    this.isSelling = true;
+
+    this.portfolioService.sellAsset(symbol, amount).subscribe({
       next: () => {
-        trade.isSelling = false;
+        this.isSelling = false;
+        this.closeSellModal();
         this.loadPortfolio();
         this.loadBalance();
+        alert(`Erfolgreich ${amount} ${symbol} verkauft!`);
       },
       error: (err) => {
-        trade.isSelling = false;
+        this.isSelling = false;
         console.error('Verkauf fehlgeschlagen:', err);
-        alert(`Verkauf fehlgeschlagen: ${err.error?.message || err.message}`);
+        this.sellError = err.error?.message || err.message || 'Verkauf fehlgeschlagen';
       }
     });
   }

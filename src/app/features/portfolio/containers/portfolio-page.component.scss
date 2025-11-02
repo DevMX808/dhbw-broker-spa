@@ -606,6 +606,171 @@
   color: #fee2e2;
 }
 
+// ========== Sell Modal Styles ==========
+
+.asset-info-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.6rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+.info-label {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.modal-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #e5e7eb;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+.quantity-controls-modal {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  justify-content: center;
+}
+
+.qty-btn-modal {
+  width: 40px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+
+  &:hover:not(:disabled) {
+    background: rgba(193, 18, 31, 0.3);
+    border-color: rgba(193, 18, 31, 0.5);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.qty-btn-modal.qty-btn-dec {
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  border-right: none;
+}
+
+.qty-btn-modal.qty-btn-inc {
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  border-left: none;
+}
+
+.quantity-controls-modal .form-control {
+  flex: 1;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+  padding: 0.5rem;
+  font-size: 1.05rem;
+  height: 42px;
+  border-left: none;
+  border-right: none;
+
+  &:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    outline: none;
+  }
+}
+
+// Chrome, Safari, Edge - Entfernt Spinner im Modal
+.quantity-controls-modal .form-control::-webkit-outer-spin-button,
+.quantity-controls-modal .form-control::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+// Firefox - Entfernt Spinner im Modal
+.quantity-controls-modal .form-control[type=number] {
+  -moz-appearance: textfield;
+}
+
+.sell-preview-box {
+  background: rgba(193, 18, 31, 0.08);
+  border: 1px solid rgba(193, 18, 31, 0.25);
+  border-radius: 0.6rem;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.preview-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #e5e7eb;
+  margin-bottom: 0.2rem;
+}
+
+.preview-calculation {
+  color: rgba(209, 213, 219, 0.75);
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.preview-result-large {
+  font-weight: 700;
+  font-size: 1.15rem;
+  padding: 0.4rem 0;
+}
+
+.preview-result-large.preview-result--pos {
+  color: #22c55e;
+}
+
+.preview-result-large.preview-result--neg {
+  color: #f43f5e;
+}
+
+.preview-result-large.preview-result--zero {
+  color: #9ca3af;
+}
+
+.preview-total {
+  font-size: 0.95rem;
+  color: #cbd5e0;
+  font-weight: 500;
+  margin-top: 0.2rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

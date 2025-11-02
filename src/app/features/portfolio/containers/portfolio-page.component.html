@@ -61,7 +61,6 @@
             <th class="th-num th-multiline">Aktueller<br>Gesamtwert</th>
             <th>Kaufdatum</th>
             <th class="th-num">Gewinn / Verlust</th>
-            <th class="th-num">Verkaufsmenge</th>
             <th class="th-actions">Aktionen</th>
           </tr>
           </thead>
@@ -120,86 +119,14 @@
                 </ng-container>
               </td>
 
-              <!-- Verkaufsmenge Input -->
-              <td class="td-num">
-                <div class="quantity-controls">
-                  <button
-                    class="qty-btn qty-btn-dec"
-                    (click)="decrementSellQuantity(trade)"
-                    [disabled]="!trade.sellQuantity || trade.sellQuantity <= 0"
-                  >
-                    −
-                  </button>
-                  <input
-                    type="number"
-                    min="0"
-                    step="any"
-                    [(ngModel)]="trade.sellQuantity"
-                    (ngModelChange)="onSellQuantityChange(trade)"
-                    [max]="trade.quantity"
-                    class="form-control quantity-input-new"
-                    placeholder="0"
-                  />
-                  <button
-                    class="qty-btn qty-btn-inc"
-                    (click)="incrementSellQuantity(trade)"
-                    [disabled]="(trade.sellQuantity ?? 0) >= trade.quantity"
-                  >
-                    +
-                  </button>
-                </div>
-              </td>
-
               <!-- Aktionen -->
               <td class="td-actions">
                 <button
                   class="btn btn-primary btn-sm"
-                  [disabled]="!isValidSellAmount(trade) || trade.isSelling"
-                  (click)="sell(trade)"
+                  (click)="openSellModal(trade)"
                 >
-                  <ng-container *ngIf="!trade.isSelling">Verkaufen</ng-container>
-                  <ng-container *ngIf="trade.isSelling">
-                    <div class="spinner spinner--inline"></div>
-                  </ng-container>
+                  Verkaufen
                 </button>
-              </td>
-            </tr>
-
-            <!-- Verkaufsvorschau -->
-            <tr
-              *ngIf="trade.currentPriceUsd && trade.sellQuantity && trade.sellQuantity > 0"
-              class="portfolio-row-details"
-            >
-              <td colspan="11">
-                <div class="sell-preview-row">
-                  <span class="preview-label">Verkaufsvorschau:</span>
-
-                  <span class="preview-math">
-                    ({{ trade.sellQuantity | number:'1.2-4' }} × {{ trade.currentPriceUsd | number:'1.2-2' }} USD)
-                    −
-                    ({{ trade.sellQuantity | number:'1.2-4' }} × {{ trade.buyPriceUsd | number:'1.2-2' }} USD)
-                    =
-                  </span>
-
-                  <span
-                    class="preview-result"
-                    [ngClass]="{
-                      'preview-result--pos': ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) > 0.001,
-                      'preview-result--neg': ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) < -0.001,
-                      'preview-result--zero': Math.abs((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) <= 0.001
-                    }"
-                  >
-                    <ng-container *ngIf="((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) > 0.001">
-                      Gewinn +{{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) | number:'1.2-2' }} USD
-                    </ng-container>
-                    <ng-container *ngIf="((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) < -0.001">
-                      Verlust {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) | number:'1.2-2' }} USD
-                    </ng-container>
-                    <ng-container *ngIf="Math.abs((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) <= 0.001">
-                      ±0.00 USD
-                    </ng-container>
-                  </span>
-                </div>
               </td>
             </tr>
           </ng-container>
@@ -270,6 +197,140 @@
           (click)="addFunds()"
         >
           {{ addingFunds ? 'Wird hinzugefügt…' : 'Aufladen' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sell Asset Modal -->
+  <div *ngIf="showSellModal" class="modal-overlay" (click)="closeSellModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ selectedTrade?.assetSymbol }} verkaufen</h3>
+        <button class="modal-close" (click)="closeSellModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-hint">
+          <span class="info-icon small">i</span>
+          Verfügbare Menge: {{ selectedTrade?.quantity | number:'1.2-4' }} {{ selectedTrade?.assetSymbol }}
+        </div>
+
+        <!-- Asset Info -->
+        <div class="asset-info-box">
+          <div class="info-row">
+            <span class="info-label">Asset:</span>
+            <span class="info-value">{{ selectedTrade?.assetName || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Kaufpreis/Stk.:</span>
+            <span class="info-value">{{ selectedTrade?.buyPriceUsd | number:'1.2-2' }} USD</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Aktueller Preis/Stk.:</span>
+            <span class="info-value">{{ selectedTrade?.currentPriceUsd | number:'1.2-2' }} USD</span>
+          </div>
+        </div>
+
+        <!-- Quick Amounts (Prozentuale Auswahl) -->
+        <div class="quick-amounts">
+          <button type="button" class="chip" (click)="setSellPercentage(25)">25%</button>
+          <button type="button" class="chip" (click)="setSellPercentage(50)">50%</button>
+          <button type="button" class="chip" (click)="setSellPercentage(75)">75%</button>
+          <button type="button" class="chip" (click)="setSellPercentage(100)">100%</button>
+        </div>
+
+        <label class="modal-label" for="sellQuantityInput">Verkaufsmenge</label>
+
+        <!-- Quantity Controls (wie beim Add Funds die chips) -->
+        <div class="quantity-controls-modal">
+          <button
+            class="qty-btn-modal qty-btn-dec"
+            (click)="decrementSellQuantity()"
+            [disabled]="!sellQuantity || sellQuantity <= 0"
+          >
+            −
+          </button>
+          <input
+            id="sellQuantityInput"
+            type="number"
+            class="form-control"
+            [(ngModel)]="sellQuantity"
+            (ngModelChange)="onSellQuantityChange()"
+            [min]="0"
+            [max]="selectedTrade?.quantity"
+            step="any"
+            placeholder="0"
+          />
+          <button
+            class="qty-btn-modal qty-btn-inc"
+            (click)="incrementSellQuantity()"
+            [disabled]="(sellQuantity ?? 0) >= (selectedTrade?.quantity ?? 0)"
+          >
+            +
+          </button>
+        </div>
+
+        <!-- Range Slider -->
+        <input
+          type="range"
+          class="range-input"
+          [min]="0"
+          [max]="selectedTrade?.quantity"
+          [step]="getIncrementStep(selectedTrade?.quantity ?? 0)"
+          [(ngModel)]="sellQuantity"
+          (ngModelChange)="onSellQuantityChange()"
+        />
+
+        <!-- Verkaufsvorschau -->
+        <div *ngIf="sellQuantity && sellQuantity > 0 && selectedTrade" class="sell-preview-box">
+          <div class="preview-title">Verkaufsvorschau:</div>
+
+          <div class="preview-calculation">
+            <span class="preview-math">
+              ({{ sellQuantity | number:'1.2-4' }} × {{ selectedTrade.currentPriceUsd | number:'1.2-2' }} USD)
+              −
+              ({{ sellQuantity | number:'1.2-4' }} × {{ selectedTrade.buyPriceUsd | number:'1.2-2' }} USD)
+              =
+            </span>
+          </div>
+
+          <div
+            class="preview-result-large"
+            [ngClass]="{
+              'preview-result--pos': getSellPreviewProfitLoss() > 0.001,
+              'preview-result--neg': getSellPreviewProfitLoss() < -0.001,
+              'preview-result--zero': Math.abs(getSellPreviewProfitLoss()) <= 0.001
+            }"
+          >
+            <ng-container *ngIf="getSellPreviewProfitLoss() > 0.001">
+              Gewinn: +{{ getSellPreviewProfitLoss() | number:'1.2-2' }} USD
+            </ng-container>
+            <ng-container *ngIf="getSellPreviewProfitLoss() < -0.001">
+              Verlust: {{ getSellPreviewProfitLoss() | number:'1.2-2' }} USD
+            </ng-container>
+            <ng-container *ngIf="Math.abs(getSellPreviewProfitLoss()) <= 0.001">
+              ±0.00 USD
+            </ng-container>
+          </div>
+
+          <div class="preview-total">
+            Erhältst du: {{ getSellTotalValue() | number:'1.2-2' }} USD
+          </div>
+        </div>
+
+        <div *ngIf="sellError" class="modal-error">
+          {{ sellError }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" (click)="closeSellModal()">Abbrechen</button>
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="!canSubmitSell()"
+          (click)="confirmSell()"
+        >
+          {{ isSelling ? 'Wird verkauft…' : 'Verkaufen' }}
         </button>
       </div>
     </div>
