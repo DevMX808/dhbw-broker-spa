@@ -1,14 +1,13 @@
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
-import { MarketStore } from '../store/market.store';
-import { MinuteChartComponent } from '../components/minute-chart/minute-chart.component';
-import { ChartDataService } from '../data-access/chart-data.service';
-import { MinuteChartData } from '../data-access/chart-data.models';
-import { TradeService } from '../../../core/http/trade.service';
-import { PortfolioService } from '../../portfolio/data-access/portfolio.service';
+import {FormsModule} from '@angular/forms';
+import {CommonModule} from '@angular/common';
+import {Component, computed, inject, OnDestroy, OnInit, signal} from '@angular/core';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
+import {Subject, takeUntil} from 'rxjs';
+import {MarketStore} from '../store/market.store';
+import {MinuteChartComponent} from '../components/minute-chart/minute-chart.component';
+import {ChartDataService} from '../data-access/chart-data.service';
+import {MinuteChartData} from '../data-access/chart-data.models';
+import {PortfolioService} from '../../portfolio/data-access/portfolio.service';
 
 @Component({
   standalone: true,
@@ -20,7 +19,6 @@ import { PortfolioService } from '../../portfolio/data-access/portfolio.service'
 export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private tradeService = inject(TradeService);
   private portfolioService = inject(PortfolioService);
   readonly store = inject(MarketStore);
   private chartService = inject(ChartDataService);
@@ -113,9 +111,7 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
 
     if (this.buyMode === 'usd' && this.usdAmount && price) {
       const rawQuantity = this.usdAmount / price;
-      // Runde auf 2 Dezimalstellen (minTradeIncrement = 0.01)
-      const roundedQuantity = Math.floor(rawQuantity * 100) / 100;
-      return roundedQuantity;
+      return Math.floor(rawQuantity * 100) / 100;
     }
 
     return this.quantity;
@@ -135,10 +131,6 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
         side: 'BUY' as const,
         quantity: this.calculatedQuantity
       };
-
-
-
-      const result = await this.tradeService.executeTrade(request).toPromise();
 
       alert(`Erfolgreich ${this.calculatedQuantity.toFixed(4)} ${this.currentSymbol()} gekauft!`);
 

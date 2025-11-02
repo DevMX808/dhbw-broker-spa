@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MarketDataPort, MarketSymbol, MarketPrice } from './market.port';
 
-/**
- * Mock implementation of MarketDataPort
- * Provides dummy data for development/testing without backend dependencies
- */
 @Injectable()
 export class MockMarketDataAdapter implements MarketDataPort {
 
@@ -26,24 +22,15 @@ export class MockMarketDataAdapter implements MarketDataPort {
     HG: { name: 'Copper', symbol: 'HG', price: 4.23 }
   };
 
-  /**
-   * Simulates network delay (configurable)
-   */
   private delay(ms: number = 300): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  /**
-   * Fetch all tradable symbols
-   */
   async fetchSymbols(): Promise<MarketSymbol[]> {
     await this.delay(400);
     return [...this.mockSymbols];
   }
 
-  /**
-   * Fetch current price for a specific symbol
-   */
   async fetchPrice(symbol: string): Promise<MarketPrice> {
     await this.delay(300);
 
@@ -63,9 +50,6 @@ export class MockMarketDataAdapter implements MarketDataPort {
     };
   }
 
-  /**
-   * Helper to generate human-readable timestamp
-   */
   private getReadableTimestamp(date: Date): string {
     const secondsAgo = Math.floor((Date.now() - date.getTime()) / 1000);
 

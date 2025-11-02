@@ -93,7 +93,7 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
         },
         scales: {
           x: {
-            display: false  // X-Achse komplett ausblenden
+            display: false
           },
           y: {
             display: true,
@@ -114,20 +114,16 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
   private updateChart(): void {
     if (!this.chart || !this.chartData) return;
 
-    // Verwende alle verfügbaren Datenpunkte der letzten 6 Stunden (360 Minuten)
     const now = new Date();
     const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
 
-    // Filtere Datenpunkte für die letzten 6 Stunden
     const recentPoints = this.chartData.dataPoints.filter(point => {
       const pointTime = new Date(point.timestamp);
       return pointTime >= sixHoursAgo && pointTime <= now;
     });
 
-    // Sortiere nach Zeit (falls nicht schon sortiert)
     recentPoints.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-    // Erstelle Labels und Daten aus allen verfügbaren Punkten
     const labels = recentPoints.map(point => {
       const date = new Date(point.timestamp);
       return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
@@ -156,6 +152,4 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
 
     this.chart.update('none');
   }
-
-
 }

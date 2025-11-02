@@ -1,4 +1,3 @@
-// src/app/core/auth/token-storage.service.ts
 import { Injectable, signal } from '@angular/core';
 
 const ACCESS_TOKEN_KEY = 'access_token';

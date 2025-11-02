@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { NotFoundComponent } from './pages/error/not-found/not-found.component';
 import { UnauthorizedComponent } from './pages/error/unauthorized/unauthorized.component';
 import { ErrorComponent } from './pages/error/error.component';
-import { AssetsPageComponent } from './features/assets/containers/assets-page.component';
 import { authGuard, authMatchGuard } from './core/auth/auth.guard';
 import { guestGuard, guestMatchGuard } from './core/auth/guest.guard';
 
@@ -46,15 +45,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => import('./features/admin/routes').then(m => m.ADMIN_ROUTES)
   },
-
-  {
-    path: 'assets',
-    canMatch: [authMatchGuard],
-    canActivate: [authGuard],
-    component: AssetsPageComponent,
-    title: 'Meine Assets'
-  },
-
   {
     path: 'unauthorized',
     canActivate: [authGuard],

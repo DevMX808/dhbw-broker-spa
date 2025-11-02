@@ -1,25 +1,17 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
-import { MarketDataPort, MarketSymbol, MarketPrice } from './market.port';
-import { environment } from '../../../../environments/environments';
+import {inject, Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {firstValueFrom} from 'rxjs';
+import {MarketDataPort, MarketPrice, MarketSymbol} from './market.port';
+import {environment} from '../../../../environments/environments';
 
-/**
- * HTTP implementation of MarketDataPort
- * Connects to the real backend API for market data
- */
 @Injectable()
 export class HttpMarketDataAdapter implements MarketDataPort {
   private readonly http = inject(HttpClient);
-  // Always use the Heroku API URL directly
   private readonly baseUrl = `${environment.apiBaseUrl}/api/price`;
 
   constructor() {
   }
 
-  /**
-   * Fetch all tradable symbols from the backend
-   */
   async fetchSymbols(): Promise<MarketSymbol[]> {
     try {
 
@@ -33,9 +25,6 @@ export class HttpMarketDataAdapter implements MarketDataPort {
     }
   }
 
-  /**
-   * Fetch current price for a specific symbol from the backend
-   */
   async fetchPrice(symbol: string): Promise<MarketPrice> {
     try {
 
@@ -50,9 +39,6 @@ export class HttpMarketDataAdapter implements MarketDataPort {
     }
   }
 
-  /**
-   * Map backend DTO to domain model
-   */
   private mapSymbol(dto: MarketSymbolDto): MarketSymbol {
     return {
       name: dto.name,
@@ -60,9 +46,6 @@ export class HttpMarketDataAdapter implements MarketDataPort {
     };
   }
 
-  /**
-   * Map backend price DTO to domain model
-   */
   private mapPrice(dto: MarketPriceDto, priceChange?: string): MarketPrice {
 
     const changePct = dto.changePct
@@ -72,7 +55,7 @@ export class HttpMarketDataAdapter implements MarketDataPort {
                    ?? dto.change
                    ?? undefined;
 
-    const result = {
+    return {
       name: dto.name,
       symbol: dto.symbol,
       price: dto.price,
@@ -81,13 +64,8 @@ export class HttpMarketDataAdapter implements MarketDataPort {
       changePct: changePct,
       priceChange: priceChange
     };
-
-    return result;
   }
 
-  /**
-   * Generate human-readable timestamp if not provided by backend
-   */
   private getReadableTimestamp(isoString: string): string {
     try {
       const date = new Date(isoString);
@@ -110,9 +88,6 @@ export class HttpMarketDataAdapter implements MarketDataPort {
   }
 }
 
-/**
- * Backend DTOs
- */
 interface MarketSymbolDto {
   name: string;
   symbol: string;
@@ -122,15 +97,13 @@ interface MarketPriceDto {
   name: string;
   symbol: string;
   price: number;
-  updatedAt: string; // ISO8601 format
+  updatedAt: string;
   updatedAtReadable?: string;
-  // Verschiedene mögliche Feldnamen für Preisänderungen
-  changePct?: number; // Prozentuale Änderung seit letzter Minute
-  change1mPct?: number; // Alternative Feldname
-  priceChange?: number; // Weitere Alternative
-  percentChange?: number; // Weitere Alternative
-  change?: number; // Weitere Alternative
-  // Alle anderen Felder, die das Backend möglicherweise sendet
+  changePct?: number;
+  change1mPct?: number;
+  priceChange?: number;
+  percentChange?: number;
+  change?: number;
   [key: string]: any;
 }
 

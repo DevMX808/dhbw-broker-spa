@@ -2,7 +2,7 @@ export interface HeldTrade {
   id: number;
   tradeId: number;
   assetSymbol: string;
-  quantity: number;         // BigDecimal kann hier als number in TS
+  quantity: number;
   buyPriceUsd: number;
-  createdAt: string;        // ISO Datumsstring
+  createdAt: string;
 }

@@ -111,7 +111,7 @@ export class MarketStore {
   }
 
   private isCached(symbol: string): boolean {
-    const STALE_THRESHOLD_MS = 60_000; // 60 seconds
+    const STALE_THRESHOLD_MS = 60_000;
     const lastFetch = this.lastFetched[symbol];
 
     if (!lastFetch) return false;
