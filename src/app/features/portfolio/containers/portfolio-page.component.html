@@ -68,26 +68,21 @@
           <tbody>
           <ng-container *ngFor="let trade of heldTrades">
             <tr class="portfolio-row">
-              <!-- Asset Name -->
+
               <td class="asset-cell">
                 {{ trade.assetName || '—' }}
               </td>
 
-              <!-- Symbol -->
               <td class="symbol-cell">
                 <span class="asset-badge">{{ trade.assetSymbol }}</span>
               </td>
 
-              <!-- Menge -->
               <td class="td-num">{{ trade.quantity | number:'1.2-4' }}</td>
 
-              <!-- Kaufpreis pro Stück -->
               <td class="td-num">{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
 
-              <!-- Gesamtkaufpreis -->
               <td class="td-num">{{ getTotalBuyPrice(trade) | number:'1.2-2' }}</td>
 
-              <!-- Aktueller Preis pro Stück -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd; else priceLoading">
                   {{ trade.currentPriceUsd | number:'1.2-2' }}
@@ -107,10 +102,8 @@
                 </ng-container>
               </td>
 
-              <!-- Kaufdatum -->
               <td class="td-date">{{ trade.createdAt | date:'short' }}</td>
 
-              <!-- Gewinn/Verlust Gesamt -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd">
                   <span
@@ -129,7 +122,6 @@
                 </ng-container>
               </td>
 
-              <!-- Verkaufsmenge Input -->
               <td class="td-num">
                 <div class="quantity-controls">
                   <button
@@ -152,14 +144,13 @@
                   <button
                     class="qty-btn qty-btn-inc"
                     (click)="incrementSellQuantity(trade)"
-                    [disabled]="trade.sellQuantity >= trade.quantity"
+                    [disabled]="(trade.sellQuantity ?? 0) >= trade.quantity"
                   >
                     +
                   </button>
                 </div>
               </td>
 
-              <!-- Aktionen -->
               <td class="td-actions">
                 <button
                   class="btn btn-primary btn-sm"
@@ -174,7 +165,6 @@
               </td>
             </tr>
 
-            <!-- Verkaufsvorschau -->
             <tr
               *ngIf="trade.currentPriceUsd && trade.sellQuantity && trade.sellQuantity > 0"
               class="portfolio-row-details"
@@ -222,7 +212,6 @@
     </div>
   </div>
 
-  <!-- Add Funds Modal -->
   <div *ngIf="showAddFundsModal" class="modal-overlay" (click)="closeAddFundsModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
