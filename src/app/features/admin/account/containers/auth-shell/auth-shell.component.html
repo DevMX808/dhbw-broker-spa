@@ -1,11 +1,11 @@
 <div class="page page--center">
   <div class="auth-container" [class.right-panel-active]="rightPanelActive()" id="container">
     <div class="form-container sign-up-container">
-      <app-sign-up [resetTrigger]="signUpReset()" />
+      <app-sign-up *ngIf="rightPanelActive()" [resetTrigger]="signUpReset()" />
     </div>
 
     <div class="form-container sign-in-container">
-      <app-sign-in [resetTrigger]="signInReset()" />
+      <app-sign-in *ngIf="!rightPanelActive()" [resetTrigger]="signInReset()" />
     </div>
 
     <div class="overlay-container">
