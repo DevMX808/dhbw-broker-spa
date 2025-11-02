@@ -68,20 +68,26 @@
           <tbody>
           <ng-container *ngFor="let trade of heldTrades">
             <tr class="portfolio-row">
+              <!-- Asset Name -->
               <td class="asset-cell">
                 {{ trade.assetName || '—' }}
               </td>
 
+              <!-- Symbol -->
               <td class="symbol-cell">
                 <span class="asset-badge">{{ trade.assetSymbol }}</span>
               </td>
 
+              <!-- Menge -->
               <td class="td-num">{{ trade.quantity | number:'1.2-4' }}</td>
 
+              <!-- Kaufpreis pro Stück -->
               <td class="td-num">{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
 
+              <!-- Gesamtkaufpreis -->
               <td class="td-num">{{ getTotalBuyPrice(trade) | number:'1.2-2' }}</td>
 
+              <!-- Aktueller Preis pro Stück -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd; else priceLoading">
                   {{ trade.currentPriceUsd | number:'1.2-2' }}
@@ -91,6 +97,7 @@
                 </ng-template>
               </td>
 
+              <!-- Aktueller Gesamtwert -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd">
                   {{ getCurrentTotalValue(trade) | number:'1.2-2' }}
@@ -100,8 +107,10 @@
                 </ng-container>
               </td>
 
+              <!-- Kaufdatum -->
               <td class="td-date">{{ trade.createdAt | date:'short' }}</td>
 
+              <!-- Gewinn/Verlust Gesamt -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd">
                   <span
@@ -120,6 +129,7 @@
                 </ng-container>
               </td>
 
+              <!-- Verkaufsmenge Input -->
               <td class="td-num">
                 <div class="quantity-controls">
                   <button
@@ -149,6 +159,7 @@
                 </div>
               </td>
 
+              <!-- Aktionen -->
               <td class="td-actions">
                 <button
                   class="btn btn-primary btn-sm"
@@ -163,6 +174,7 @@
               </td>
             </tr>
 
+            <!-- Verkaufsvorschau -->
             <tr
               *ngIf="trade.currentPriceUsd && trade.sellQuantity && trade.sellQuantity > 0"
               class="portfolio-row-details"
@@ -172,34 +184,30 @@
                   <span class="preview-label">Verkaufsvorschau:</span>
 
                   <span class="preview-math">
-                    ({{ trade.sellQuantity }} × {{ trade.currentPriceUsd | number:'1.2-2' }} USD)
+                    ({{ trade.sellQuantity | number:'1.2-4' }} × {{ trade.currentPriceUsd | number:'1.2-2' }} USD)
                     −
-                    ({{ trade.sellQuantity }} × {{ trade.buyPriceUsd | number:'1.2-2' }} USD)
+                    ({{ trade.sellQuantity | number:'1.2-4' }} × {{ trade.buyPriceUsd | number:'1.2-2' }} USD)
                     =
                   </span>
 
-                  <ng-container
-                    *ngIf="trade.currentPriceUsd - trade.buyPriceUsd as diff"
+                  <span
+                    class="preview-result"
+                    [ngClass]="{
+                      'preview-result--pos': ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) > 0.001,
+                      'preview-result--neg': ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) < -0.001,
+                      'preview-result--zero': Math.abs((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) <= 0.001
+                    }"
                   >
-                    <span
-                      class="preview-result"
-                      [ngClass]="{
-                        'preview-result--pos': (diff * trade.sellQuantity) > 0,
-                        'preview-result--neg': (diff * trade.sellQuantity) < 0,
-                        'preview-result--zero': (diff * trade.sellQuantity) === 0
-                      }"
-                    >
-                      <ng-container *ngIf="(diff * trade.sellQuantity) > 0">
-                        Gewinn +{{ (diff * trade.sellQuantity) | number:'1.2-2' }} USD
-                      </ng-container>
-                      <ng-container *ngIf="(diff * trade.sellQuantity) < 0">
-                        Verlust {{ (diff * trade.sellQuantity) | number:'1.2-2' }} USD
-                      </ng-container>
-                      <ng-container *ngIf="(diff * trade.sellQuantity) === 0">
-                        ±0.00 USD
-                      </ng-container>
-                    </span>
-                  </ng-container>
+                    <ng-container *ngIf="((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) > 0.001">
+                      Gewinn +{{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) | number:'1.2-2' }} USD
+                    </ng-container>
+                    <ng-container *ngIf="((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) < -0.001">
+                      Verlust {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) | number:'1.2-2' }} USD
+                    </ng-container>
+                    <ng-container *ngIf="Math.abs((trade.currentPriceUsd - trade.buyPriceUsd) * trade.sellQuantity) <= 0.001">
+                      ±0.00 USD
+                    </ng-container>
+                  </span>
                 </div>
               </td>
             </tr>
@@ -210,6 +218,7 @@
     </div>
   </div>
 
+  <!-- Add Funds Modal -->
   <div *ngIf="showAddFundsModal" class="modal-overlay" (click)="closeAddFundsModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
