@@ -103,7 +103,7 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
- 
+
   get calculatedQuantity(): number | null {
     const priceValue = this.currentPrice();
 
@@ -117,7 +117,7 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
       const roundedQuantity = Math.floor(rawQuantity * 100) / 100;
       return roundedQuantity;
     }
-    
+
     return this.quantity;
   }
 
@@ -139,7 +139,6 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
 
 
       const result = await this.tradeService.executeTrade(request).toPromise();
-      console.log('Trade executed successfully:', result);
 
       alert(`Erfolgreich ${this.calculatedQuantity.toFixed(4)} ${this.currentSymbol()} gekauft!`);
 

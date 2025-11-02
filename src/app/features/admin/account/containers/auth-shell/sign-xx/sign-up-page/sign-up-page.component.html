@@ -1,28 +1,26 @@
 <form (ngSubmit)="onSubmit(signUpForm)" #signUpForm="ngForm" novalidate>
   <h1>Konto erstellen</h1>
-
   @if (authService.error()) {
     <div class="error-message" role="alert" aria-live="polite">
       {{ authService.error() }}
     </div>
   }
-
   <div class="form-group">
     <input
-      id="firstName"
-      type="text"
-      placeholder="Vorname"
-      [(ngModel)]="userData.firstName"
-      name="firstName"
-      required
-      minlength="2"
-      #firstNameInput="ngModel"
-      [class.error]="submitted && firstNameInput.invalid"
-      autocomplete="given-name"
-      aria-describedby="firstName-error" />
-
+      id="signUpFirstName"
+    type="text"
+    placeholder="Vorname"
+    [(ngModel)]="userData.firstName"
+    name="firstName"
+    required
+    minlength="2"
+    #firstNameInput="ngModel"
+    [class.error]="submitted && firstNameInput.invalid"
+    autocomplete="given-name"
+    aria-describedby="signUpFirstName-error" />  <!-- Angepasst -->
     @if (submitted && firstNameInput.invalid) {
-      <div id="firstName-error" class="field-error" role="alert">
+      <div id="signUpFirstName-error" class="field-error" role="alert">
+        <!-- Angepasst -->
         @if (firstNameInput.errors?.['required']) {
           Vorname ist erforderlich
         }
@@ -32,23 +30,21 @@
       </div>
     }
   </div>
-
   <div class="form-group">
     <input
-      id="lastName"
-      type="text"
-      placeholder="Nachname"
-      [(ngModel)]="userData.lastName"
-      name="lastName"
-      required
-      minlength="2"
-      #lastNameInput="ngModel"
-      [class.error]="submitted && lastNameInput.invalid"
-      autocomplete="family-name"
-      aria-describedby="lastName-error" />
-
+      id="signUpLastName"
+    type="text"
+    placeholder="Nachname"
+    [(ngModel)]="userData.lastName"
+    name="lastName"
+    required
+    minlength="2"
+    #lastNameInput="ngModel"
+    [class.error]="submitted && lastNameInput.invalid"
+    autocomplete="family-name"
+    aria-describedby="signUpLastName-error" />
     @if (submitted && lastNameInput.invalid) {
-      <div id="lastName-error" class="field-error" role="alert">
+      <div id="signUpLastName-error" class="field-error" role="alert">
         @if (lastNameInput.errors?.['required']) {
           Nachname ist erforderlich
         }
@@ -58,23 +54,21 @@
       </div>
     }
   </div>
-
   <div class="form-group">
     <input
-      id="email"
-      type="email"
-      placeholder="E-Mail"
-      [(ngModel)]="userData.email"
-      name="email"
-      required
-      email
-      #emailInput="ngModel"
-      [class.error]="submitted && emailInput.invalid"
-      autocomplete="email"
-      aria-describedby="email-error" />
-
+      id="signUpEmail"
+    type="email"
+    placeholder="E-Mail"
+    [(ngModel)]="userData.email"
+    name="email"
+    required
+    email
+    #emailInput="ngModel"
+    [class.error]="submitted && emailInput.invalid"
+    autocomplete="username"
+    aria-describedby="signUpEmail-error" />
     @if (submitted && emailInput.invalid) {
-      <div id="email-error" class="field-error" role="alert">
+      <div id="signUpEmail-error" class="field-error" role="alert">
         @if (emailInput.errors?.['required']) {
           E-Mail ist erforderlich
         }
@@ -84,23 +78,21 @@
       </div>
     }
   </div>
-
   <div class="form-group">
     <input
-      id="password"
-      type="password"
-      placeholder="Passwort"
-      [(ngModel)]="userData.password"
-      name="password"
-      required
-      minlength="6"
-      #passwordInput="ngModel"
-      [class.error]="submitted && passwordInput.invalid"
-      autocomplete="new-password"
-      aria-describedby="password-error" />
-
+      id="signUpPassword"
+    type="password"
+    placeholder="Passwort"
+    [(ngModel)]="userData.password"
+    name="password"
+    required
+    minlength="6"
+    #passwordInput="ngModel"
+    [class.error]="submitted && passwordInput.invalid"
+    autocomplete="new-password"
+    aria-describedby="signUpPassword-error" />
     @if (submitted && passwordInput.invalid) {
-      <div id="password-error" class="field-error" role="alert">
+      <div id="signUpPassword-error" class="field-error" role="alert">
         @if (passwordInput.errors?.['required']) {
           Passwort ist erforderlich
         }

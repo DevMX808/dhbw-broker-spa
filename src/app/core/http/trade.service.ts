@@ -27,7 +27,6 @@ export class TradeService {
   private readonly baseUrl = this.getBaseUrl();
 
   constructor() {
-    console.log('TradeService baseUrl:', this.baseUrl);
   }
 
   private getBaseUrl(): string {
@@ -42,20 +41,16 @@ export class TradeService {
   }
 
   executeTrade(request: TradeRequest): Observable<TradeResponse> {
-    console.log('Executing trade:', request);
-    console.log('Trade URL:', this.baseUrl);
     return this.http.post<TradeResponse>(this.baseUrl, request);
   }
 
   getUserTrades(): Observable<TradeResponse[]> {
     const url = `${this.baseUrl}/user`;
-    console.log('Fetching user trades from:', url);
     return this.http.get<TradeResponse[]>(url);
   }
 
   getUserTradesByAsset(assetSymbol: string): Observable<TradeResponse[]> {
     const url = `${this.baseUrl}/user/${assetSymbol}`;
-    console.log('Fetching user trades for asset:', assetSymbol, 'from:', url);
     return this.http.get<TradeResponse[]>(url);
   }
 }

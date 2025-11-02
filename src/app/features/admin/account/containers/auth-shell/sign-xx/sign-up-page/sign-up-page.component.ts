@@ -2,7 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges, inject } from '@angular/cor
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, SignUpInput } from '../../../../../../core/auth/auth.service';
+import { AuthService, SignUpInput } from '../../../../../../../core/auth/auth.service';
 
 @Component({
   standalone: true,
