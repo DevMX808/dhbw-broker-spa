@@ -257,7 +257,7 @@
             [(ngModel)]="sellQuantity"
             (ngModelChange)="onSellQuantityChange()"
             [min]="0"
-            [max]="selectedTrade?.quantity"
+            [max]="selectedTrade?.quantity ?? 0"
             step="any"
             placeholder="0"
           />
@@ -275,7 +275,7 @@
           type="range"
           class="range-input"
           [min]="0"
-          [max]="selectedTrade?.quantity"
+          [max]="selectedTrade?.quantity ?? 0"
           [step]="getIncrementStep(selectedTrade?.quantity ?? 0)"
           [(ngModel)]="sellQuantity"
           (ngModelChange)="onSellQuantityChange()"
