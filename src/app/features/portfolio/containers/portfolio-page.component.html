@@ -60,34 +60,28 @@
             <th class="th-num th-multiline">Aktueller<br>Preis/Stk.</th>
             <th class="th-num th-multiline">Aktueller<br>Gesamtwert</th>
             <th>Kaufdatum</th>
-            <th class="th-num th-multiline">Gewinn /<br>Verlust</th>
-            <th class="th-num th-multiline">Verkaufs-<br>menge</th>
+            <th class="th-num">Gewinn / Verlust</th>
+            <th class="th-num">Verkaufsmenge</th>
             <th class="th-actions">Aktionen</th>
           </tr>
           </thead>
           <tbody>
           <ng-container *ngFor="let trade of heldTrades">
             <tr class="portfolio-row">
-              <!-- Asset Name -->
               <td class="asset-cell">
                 {{ trade.assetName || '—' }}
               </td>
 
-              <!-- Symbol -->
               <td class="symbol-cell">
                 <span class="asset-badge">{{ trade.assetSymbol }}</span>
               </td>
 
-              <!-- Menge -->
               <td class="td-num">{{ trade.quantity | number:'1.2-4' }}</td>
 
-              <!-- Kaufpreis pro Stück -->
               <td class="td-num">{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
 
-              <!-- Gesamtkaufpreis -->
               <td class="td-num">{{ getTotalBuyPrice(trade) | number:'1.2-2' }}</td>
 
-              <!-- Aktueller Preis pro Stück -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd; else priceLoading">
                   {{ trade.currentPriceUsd | number:'1.2-2' }}
@@ -97,7 +91,6 @@
                 </ng-template>
               </td>
 
-              <!-- Aktueller Gesamtwert -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd">
                   {{ getCurrentTotalValue(trade) | number:'1.2-2' }}
@@ -107,10 +100,8 @@
                 </ng-container>
               </td>
 
-              <!-- Kaufdatum -->
               <td class="td-date">{{ trade.createdAt | date:'short' }}</td>
 
-              <!-- Gewinn/Verlust Gesamt -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd">
                   <span
