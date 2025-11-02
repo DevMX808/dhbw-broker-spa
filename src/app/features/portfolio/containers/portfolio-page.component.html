@@ -55,20 +55,19 @@
             <th>Asset</th>
             <th>Symbol</th>
             <th class="th-num">Menge</th>
-            <th class="th-num">Kaufpreis/Stk.</th>
-            <th class="th-num">Gesamtkaufpreis</th>
-            <th class="th-num">Aktueller Preis/Stk.</th>
-            <th class="th-num">Aktueller Gesamtwert</th>
+            <th class="th-num th-multiline">Kaufpreis<br>/Stk.</th>
+            <th class="th-num th-multiline">Gesamtkauf-<br>preis</th>
+            <th class="th-num th-multiline">Aktueller<br>Preis/Stk.</th>
+            <th class="th-num th-multiline">Aktueller<br>Gesamtwert</th>
             <th>Kaufdatum</th>
-            <th class="th-num">Gewinn / Verlust</th>
-            <th class="th-num">Verkaufsmenge</th>
+            <th class="th-num th-multiline">Gewinn /<br>Verlust</th>
+            <th class="th-num th-multiline">Verkaufs-<br>menge</th>
             <th class="th-actions">Aktionen</th>
           </tr>
           </thead>
           <tbody>
           <ng-container *ngFor="let trade of heldTrades">
             <tr class="portfolio-row">
-
               <td class="asset-cell">
                 {{ trade.assetName || '—' }}
               </td>
@@ -92,7 +91,6 @@
                 </ng-template>
               </td>
 
-              <!-- Aktueller Gesamtwert -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd">
                   {{ getCurrentTotalValue(trade) | number:'1.2-2' }}
