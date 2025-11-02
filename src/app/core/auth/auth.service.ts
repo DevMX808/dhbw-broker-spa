@@ -192,14 +192,31 @@ export class AuthService {
 
     let errorMessage = 'Ein Fehler ist aufgetreten';
 
-    if (error.status === 401) {
-      errorMessage = 'Ungültige Anmeldedaten';
-    } else if (error.status === 409) {
-      errorMessage = 'E-Mail-Adresse bereits registriert';
-    } else if (error.status === 400) {
-      errorMessage = 'Ungültige Eingabedaten';
-    } else if (error.error?.message) {
-      errorMessage = error.error.message;
+    if (error.error) {
+      if (typeof error.error === 'string') {
+        errorMessage = error.error;
+      }
+      else if (error.error.message) {
+        errorMessage = error.error.message;
+      }
+      else if (error.error.error && typeof error.error.error === 'string') {
+        errorMessage = error.error.error;
+      }
+    }
+    else if (error.message && typeof error.message === 'string') {
+      errorMessage = error.message;
+    }
+
+    if (errorMessage === 'Ein Fehler ist aufgetreten') {
+      if (error.status === 401) {
+        errorMessage = 'Ungültige Anmeldedaten';
+      } else if (error.status === 403) {
+        errorMessage = 'Ihr Account wurde gesperrt. Bitte kontaktieren Sie den Administrator.';
+      } else if (error.status === 409) {
+        errorMessage = 'E-Mail-Adresse bereits registriert';
+      } else if (error.status === 400) {
+        errorMessage = 'Ungültige Eingabedaten';
+      }
     }
 
     this.error.set(errorMessage);
