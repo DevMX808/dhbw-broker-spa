@@ -53,83 +53,139 @@
           <thead>
           <tr>
             <th>Asset</th>
+            <th>Symbol</th>
             <th class="th-num">Menge</th>
-            <th class="th-num">Kaufpreis</th>
-            <th class="th-num">Aktueller Preis</th>
-            <th>Gewinn / Verlust</th>
+            <th class="th-num">Kaufpreis/Stk.</th>
+            <th class="th-num">Gesamtkaufpreis</th>
+            <th class="th-num">Aktueller Preis/Stk.</th>
+            <th class="th-num">Aktueller Gesamtwert</th>
             <th>Kaufdatum</th>
+            <th class="th-num">Gewinn / Verlust</th>
+            <th class="th-num">Verkaufsmenge</th>
             <th class="th-actions">Aktionen</th>
           </tr>
           </thead>
           <tbody>
           <ng-container *ngFor="let trade of heldTrades">
             <tr class="portfolio-row">
+              <!-- Asset Name -->
               <td class="asset-cell">
+                {{ trade.assetName || '—' }}
+              </td>
+
+              <!-- Symbol -->
+              <td class="symbol-cell">
                 <span class="asset-badge">{{ trade.assetSymbol }}</span>
               </td>
-              <td class="td-num">{{ trade.quantity }}</td>
+
+              <!-- Menge -->
+              <td class="td-num">{{ trade.quantity | number:'1.2-4' }}</td>
+
+              <!-- Kaufpreis pro Stück -->
               <td class="td-num">{{ trade.buyPriceUsd | number:'1.2-2' }}</td>
+
+              <!-- Gesamtkaufpreis -->
+              <td class="td-num">{{ getTotalBuyPrice(trade) | number:'1.2-2' }}</td>
+
+              <!-- Aktueller Preis pro Stück -->
               <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd; else priceLoading">
                   {{ trade.currentPriceUsd | number:'1.2-2' }}
                 </ng-container>
                 <ng-template #priceLoading>
-                  <span class="muted">–</span>
+                  <span class="muted">—</span>
                 </ng-template>
               </td>
-              <td>
+
+              <!-- Aktueller Gesamtwert -->
+              <td class="td-num">
+                <ng-container *ngIf="trade.currentPriceUsd">
+                  {{ getCurrentTotalValue(trade) | number:'1.2-2' }}
+                </ng-container>
+                <ng-container *ngIf="!trade.currentPriceUsd">
+                  <span class="muted">—</span>
+                </ng-container>
+              </td>
+
+              <!-- Kaufdatum -->
+              <td class="td-date">{{ trade.createdAt | date:'short' }}</td>
+
+              <!-- Gewinn/Verlust Gesamt -->
+              <td class="td-num">
                 <ng-container *ngIf="trade.currentPriceUsd">
                   <span
                     class="gain-badge"
                     [ngClass]="{
-                      'gain-badge--up': trade.currentPriceUsd > trade.buyPriceUsd,
-                      'gain-badge--down': trade.currentPriceUsd < trade.buyPriceUsd
+                      'gain-badge--up': getTotalProfitLoss(trade) > 0,
+                      'gain-badge--down': getTotalProfitLoss(trade) < 0,
+                      'gain-badge--neutral': getTotalProfitLoss(trade) === 0
                     }"
                   >
-                    <span class="arrow" *ngIf="trade.currentPriceUsd > trade.buyPriceUsd">▲</span>
-                    <span class="arrow" *ngIf="trade.currentPriceUsd < trade.buyPriceUsd">▼</span>
-                    {{ ((trade.currentPriceUsd - trade.buyPriceUsd) * trade.quantity) | number:'1.2-2' }} USD
-                    ({{ ((trade.currentPriceUsd - trade.buyPriceUsd) / trade.buyPriceUsd * 100) | number:'1.2-2' }}%)
+                    <span class="arrow" *ngIf="getTotalProfitLoss(trade) > 0">▲</span>
+                    <span class="arrow" *ngIf="getTotalProfitLoss(trade) < 0">▼</span>
+                    {{ getTotalProfitLoss(trade) | number:'1.2-2' }} USD
+                    ({{ (getTotalProfitLoss(trade) / getTotalBuyPrice(trade) * 100) | number:'1.2-2' }}%)
                   </span>
                 </ng-container>
               </td>
-              <td class="td-date">{{ trade.createdAt | date:'short' }}</td>
-              <td class="td-actions">
-                <div class="row-actions">
+
+              <!-- Verkaufsmenge Input -->
+              <td class="td-num">
+                <div class="quantity-controls">
+                  <button
+                    class="qty-btn qty-btn-dec"
+                    (click)="decrementSellQuantity(trade)"
+                    [disabled]="!trade.sellQuantity || trade.sellQuantity <= 0"
+                  >
+                    −
+                  </button>
                   <input
                     type="number"
                     min="0"
                     step="any"
                     [(ngModel)]="trade.sellQuantity"
+                    (ngModelChange)="onSellQuantityChange(trade)"
                     [max]="trade.quantity"
-                    class="form-control quantity-input"
-                    placeholder="Menge"
+                    class="form-control quantity-input-new"
+                    placeholder="0"
                   />
                   <button
-                    class="btn btn-primary btn-sm"
-                    [disabled]="!isValidSellAmount(trade) || trade.isSelling"
-                    (click)="sell(trade)"
+                    class="qty-btn qty-btn-inc"
+                    (click)="incrementSellQuantity(trade)"
+                    [disabled]="trade.sellQuantity >= trade.quantity"
                   >
-                    <ng-container *ngIf="!trade.isSelling">Verkaufen</ng-container>
-                    <ng-container *ngIf="trade.isSelling">
-                      <div class="spinner spinner--inline"></div>
-                    </ng-container>
+                    +
                   </button>
                 </div>
               </td>
+
+              <!-- Aktionen -->
+              <td class="td-actions">
+                <button
+                  class="btn btn-primary btn-sm"
+                  [disabled]="!isValidSellAmount(trade) || trade.isSelling"
+                  (click)="sell(trade)"
+                >
+                  <ng-container *ngIf="!trade.isSelling">Verkaufen</ng-container>
+                  <ng-container *ngIf="trade.isSelling">
+                    <div class="spinner spinner--inline"></div>
+                  </ng-container>
+                </button>
+              </td>
             </tr>
 
+            <!-- Verkaufsvorschau -->
             <tr
               *ngIf="trade.currentPriceUsd && trade.sellQuantity && trade.sellQuantity > 0"
               class="portfolio-row-details"
             >
-              <td colspan="7">
+              <td colspan="11">
                 <div class="sell-preview-row">
-                  <span class="preview-label">Verkaufsvorschau</span>
+                  <span class="preview-label">Verkaufsvorschau:</span>
 
                   <span class="preview-math">
                     ({{ trade.sellQuantity }} × {{ trade.currentPriceUsd | number:'1.2-2' }} USD)
-                    &minus;
+                    −
                     ({{ trade.sellQuantity }} × {{ trade.buyPriceUsd | number:'1.2-2' }} USD)
                     =
                   </span>
@@ -152,7 +208,7 @@
                         Verlust {{ (diff * trade.sellQuantity) | number:'1.2-2' }} USD
                       </ng-container>
                       <ng-container *ngIf="(diff * trade.sellQuantity) === 0">
-                        +/- 0.00 USD
+                        ±0.00 USD
                       </ng-container>
                     </span>
                   </ng-container>
@@ -166,6 +222,7 @@
     </div>
   </div>
 
+  <!-- Add Funds Modal -->
   <div *ngIf="showAddFundsModal" class="modal-overlay" (click)="closeAddFundsModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">

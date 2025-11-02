@@ -60,6 +60,7 @@ export class PortfolioPageComponent implements OnInit {
             this.ngZone.run(() => {
               this.heldTrades = withSell.map((t, i) => ({
                 ...t,
+                assetName: prices[i].name, // Asset-Namen von der API übernehmen
                 currentPriceUsd: prices[i].price
               }));
               this.isLoading = false;
@@ -96,6 +97,76 @@ export class PortfolioPageComponent implements OnInit {
         this.balanceLoading = false;
       }
     });
+  }
+
+  // Berechnet den Gesamtkaufpreis (Kaufpreis * Menge)
+  getTotalBuyPrice(trade: HeldTradeWithPrice): number {
+    return trade.buyPriceUsd * trade.quantity;
+  }
+
+  // Berechnet den aktuellen Gesamtwert (Aktueller Preis * Menge)
+  getCurrentTotalValue(trade: HeldTradeWithPrice): number {
+    if (!trade.currentPriceUsd) return 0;
+    return trade.currentPriceUsd * trade.quantity;
+  }
+
+  // Berechnet Gewinn/Verlust gesamt
+  getTotalProfitLoss(trade: HeldTradeWithPrice): number {
+    if (!trade.currentPriceUsd) return 0;
+    return this.getCurrentTotalValue(trade) - this.getTotalBuyPrice(trade);
+  }
+
+  // Ermittelt den passenden Increment-Step basierend auf der Menge
+  getIncrementStep(quantity: number): number {
+    if (quantity < 0.1) return 0.01;
+    if (quantity < 1) return 0.1;
+    return 1;
+  }
+
+  // Increment-Funktion für Verkaufsmenge
+  incrementSellQuantity(trade: HeldTradeWithPrice): void {
+    const step = this.getIncrementStep(trade.quantity);
+    const currentValue = trade.sellQuantity || 0;
+    let newValue = currentValue + step;
+
+    // Auf max. verfügbare Menge begrenzen
+    if (newValue > trade.quantity) {
+      newValue = trade.quantity;
+    }
+
+    // Auf 2 Dezimalstellen runden
+    trade.sellQuantity = Math.round(newValue * 100) / 100;
+  }
+
+  // Decrement-Funktion für Verkaufsmenge
+  decrementSellQuantity(trade: HeldTradeWithPrice): void {
+    const step = this.getIncrementStep(trade.quantity);
+    const currentValue = trade.sellQuantity || 0;
+    let newValue = currentValue - step;
+
+    // Nicht kleiner als 0
+    if (newValue < 0) {
+      newValue = 0;
+    }
+
+    // Auf 2 Dezimalstellen runden
+    trade.sellQuantity = Math.round(newValue * 100) / 100;
+  }
+
+  // Validierung und Begrenzung bei manueller Eingabe
+  onSellQuantityChange(trade: HeldTradeWithPrice): void {
+    if (trade.sellQuantity === null || trade.sellQuantity === undefined) {
+      trade.sellQuantity = 0;
+      return;
+    }
+
+    // Auf min/max begrenzen
+    if (trade.sellQuantity < 0) {
+      trade.sellQuantity = 0;
+    }
+    if (trade.sellQuantity > trade.quantity) {
+      trade.sellQuantity = trade.quantity;
+    }
   }
 
   openAddFundsModal(): void {
