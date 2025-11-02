@@ -1,7 +1,7 @@
 .admin-page {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1rem;
   padding: 1.5rem 1.25rem 2.5rem;
 }
 
@@ -25,13 +25,13 @@
 .users-table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 0.4rem; /* Beibehalten für Abstand ("Luft") zwischen Zeilen */
-  min-width: 960px; /* Wie in Portfolio */
+  border-spacing: 0 0.4rem;
+  min-width: 960px;
   font-size: 1rem;
 }
 
 .users-table thead tr {
-  background: rgba(0, 0, 0, 0.35); /* Header-Background, nicht abgerundet */
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .users-table th {
@@ -40,7 +40,7 @@
   letter-spacing: 0.04em;
   font-weight: 600;
   color: #e2e8f0;
-  text-align: right; /* Default right, wie in Portfolio */
+  text-align: right;
 }
 
 .users-table th:nth-child(1),
@@ -173,12 +173,6 @@
 .table-scroller {
   width: 100%;
   overflow-x: auto;
-}
-
-.portfolio-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 720px;
 }
 
 .portfolio-table thead th {
@@ -358,7 +352,7 @@
 
 .admin-hint {
   margin-top: 1.25rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.6rem;
