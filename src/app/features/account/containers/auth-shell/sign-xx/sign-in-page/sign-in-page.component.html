@@ -9,7 +9,7 @@
 
   <div class="form-group">
     <input
-      id="email"
+      id="signin-email"
       type="email"
       placeholder="E-Mail"
       [(ngModel)]="credentials.email"
@@ -19,10 +19,10 @@
       #emailInput="ngModel"
       [class.error]="submitted && emailInput.invalid"
       autocomplete="email"
-      aria-describedby="email-error" />
+      aria-describedby="signin-email-error" />
 
     @if (submitted && emailInput.invalid) {
-      <div id="email-error" class="field-error" role="alert">
+      <div id="signin-email-error" class="field-error" role="alert">
         @if (emailInput.errors?.['required']) {
           E-Mail ist erforderlich
         }
@@ -35,7 +35,7 @@
 
   <div class="form-group">
     <input
-      id="password"
+      id="signin-password"
       type="password"
       placeholder="Passwort"
       [(ngModel)]="credentials.password"
@@ -45,10 +45,10 @@
       #passwordInput="ngModel"
       [class.error]="submitted && passwordInput.invalid"
       autocomplete="current-password"
-      aria-describedby="password-error" />
+      aria-describedby="signin-password-error" />
 
     @if (submitted && passwordInput.invalid) {
-      <div id="password-error" class="field-error" role="alert">
+      <div id="signin-password-error" class="field-error" role="alert">
         @if (passwordInput.errors?.['required']) {
           Passwort ist erforderlich
         }
