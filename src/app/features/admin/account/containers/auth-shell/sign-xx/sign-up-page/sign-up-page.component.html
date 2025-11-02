@@ -11,7 +11,7 @@
       type="text"
       placeholder="Vorname"
       [(ngModel)]="userData.firstName"
-      name="firstName"
+      name="signUpFirstName"
       required
       minlength="2"
       #firstNameInput="ngModel"
@@ -35,7 +35,7 @@
       type="text"
       placeholder="Nachname"
       [(ngModel)]="userData.lastName"
-      name="lastName"
+      name="signUpLastName"
       required
       minlength="2"
       #lastNameInput="ngModel"
@@ -59,12 +59,12 @@
       type="email"
       placeholder="E-Mail"
       [(ngModel)]="userData.email"
-      name="email"
+      name="signUpEmail"
       required
       email
       #emailInput="ngModel"
       [class.error]="submitted && emailInput.invalid"
-      autocomplete="username"
+      autocomplete="email"
       aria-describedby="signUpEmail-error" />
     @if (submitted && emailInput.invalid) {
       <div id="signUpEmail-error" class="field-error" role="alert">
@@ -83,7 +83,7 @@
       type="password"
       placeholder="Passwort"
       [(ngModel)]="userData.password"
-      name="password"
+      name="signUpPassword"
       required
       minlength="6"
       #passwordInput="ngModel"
