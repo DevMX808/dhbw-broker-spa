@@ -30,12 +30,7 @@
         Der Chart zeigt die Preisentwicklung der letzten 6 Stunden. Preise werden minütlich aktualisiert.
       </div>
       <div class="hint-market-status" *ngIf="!isMarketOpen && marketStatusText">
-        <span class="status-badge">Markt geschlossen</span>
         {{ marketStatusText }}
-      </div>
-      <div class="hint-countdown" *ngIf="showCountdown">
-        <div class="countdown-label">Markt öffnet {{ nextOpeningDescription }}:</div>
-        <div class="countdown-timer">{{ countdown }}</div>
       </div>
     </div>
   </div>
