@@ -1,6 +1,11 @@
 <div class="admin-page">
   <h1 class="portfolio-title">Benutzerverwaltung</h1>
 
+  <div class="admin-hint">
+    <span class="info-icon">i</span>
+    Übersicht über alle Benutzer. Hier kannst du Status ändern (blockieren/aktivieren) und Guthaben einsehen. Änderungen wirken sofort.
+  </div>
+
   <div *ngIf="loading" class="loading-block">
     <div class="spinner"></div>
     <p>Benutzer werden geladen…</p>
@@ -22,13 +27,13 @@
         <table class="portfolio-table users-table">
           <thead>
           <tr class="table-header">
-            <th class="col-left">Vorname</th>
-            <th class="col-left">Nachname</th>
-            <th class="col-left">E-Mail</th>
-            <th class="col-right">Rolle</th>
-            <th class="col-right">Status</th>
-            <th class="th-num col-right">Guthaben</th>
-            <th class="th-actions col-right">Aktionen</th>
+            <th>Vorname</th>
+            <th>Nachname</th>
+            <th>E-Mail</th>
+            <th>Rolle</th>
+            <th>Status</th>
+            <th class="th-num">Guthaben</th>
+            <th class="th-actions">Aktionen</th>
           </tr>
           </thead>
           <tbody>
