@@ -8,6 +8,7 @@ import {MinuteChartComponent} from '../components/minute-chart/minute-chart.comp
 import {ChartDataService} from '../data-access/chart-data.service';
 import {MinuteChartData} from '../data-access/chart-data.models';
 import {PortfolioService} from '../../portfolio/data-access/portfolio.service';
+import {TradeService} from '../../../core/services/trade.service';
 import {isMarketOpen, getAssetType, AssetType} from '../components/market-card/market-hours.config';
 
 @Component({
@@ -21,6 +22,7 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private portfolioService = inject(PortfolioService);
+  private tradeService = inject(TradeService);
   readonly store = inject(MarketStore);
   private chartService = inject(ChartDataService);
 
@@ -43,6 +45,9 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
 
   walletBalance: number = 0;
   balanceLoading: boolean = false;
+
+  tradeMessage: string = '';
+  tradeMessageType: 'success' | 'error' | null = null;
 
   get isMarketOpen(): boolean {
     const symbol = this.currentSymbol();
@@ -150,32 +155,60 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  private showTradeMessage(message: string, type: 'success' | 'error'): void {
+    this.tradeMessage = message;
+    this.tradeMessageType = type;
+
+    setTimeout(() => {
+      this.tradeMessage = '';
+      this.tradeMessageType = null;
+    }, 5000);
+  }
+
   async buyAsset(): Promise<void> {
     if (!this.currentSymbol() || !this.calculatedQuantity) {
-      alert('Bitte geben Sie eine gültige Menge oder einen USD-Betrag ein.');
+      this.showTradeMessage('Bitte geben Sie eine gültige Menge oder einen USD-Betrag ein.', 'error');
       return;
     }
 
     this.buying = true;
+    this.tradeMessage = '';
+    this.tradeMessageType = null;
 
-    try {
-      const request = {
-        assetSymbol: this.currentSymbol()!,
-        side: 'BUY' as const,
-        quantity: this.calculatedQuantity
-      };
+    const tradeRequest = {
+      assetSymbol: this.currentSymbol()!,
+      side: 'BUY' as const,
+      quantity: this.calculatedQuantity
+    };
 
-      alert(`Erfolgreich ${this.calculatedQuantity.toFixed(4)} ${this.currentSymbol()} gekauft!`);
+    this.tradeService.executeTrade(tradeRequest).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response: any) => {
+        const successMsg = `Erfolgreich ${response.quantity.toFixed(4)} ${response.assetSymbol} für $${response.total.toFixed(2)} gekauft!`;
+        this.showTradeMessage(successMsg, 'success');
 
-      this.quantity = null;
-      this.usdAmount = null;
-      this.loadWalletBalance();
+        this.quantity = null;
+        this.usdAmount = null;
+        this.loadWalletBalance();
+        this.buying = false;
+      },
+      error: (error: any) => {
+        console.error('Trade execution failed:', error);
 
-    } catch (error) {
-      console.error('Trade execution failed:', error);
-      alert('Fehler beim Kauf des Assets.');
-    } finally {
-      this.buying = false;
-    }
+        let errorMessage = 'Fehler beim Kauf des Assets.';
+
+        if (error.status === 400) {
+          errorMessage = error.error || 'Ungültige Anfrage. Bitte überprüfen Sie Ihre Eingaben.';
+        } else if (error.status === 503) {
+          errorMessage = 'Preis konnte nicht abgerufen werden. Bitte versuchen Sie es später erneut.';
+        } else if (error.error && typeof error.error === 'string') {
+          errorMessage = error.error;
+        }
+
+        this.showTradeMessage(errorMessage, 'error');
+        this.buying = false;
+      }
+    });
   }
 }

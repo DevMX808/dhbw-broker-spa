@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MarketStore } from '../store/market.store';
 import { MarketListComponent } from '../components/market-list/market-list.component';
 import { AuthService } from '../../../core/auth/auth.service';
-import { AlexaService, AlexaResponse } from '../../../core/http/alexa.service';
+import { AlexaService, AlexaResponse } from '../../../core/services/alexa.service';
 
 @Component({
   standalone: true,

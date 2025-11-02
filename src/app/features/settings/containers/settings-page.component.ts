@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { UserService } from '../../../core/http/user.service';
+import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 interface ProfileUpdate {

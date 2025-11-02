@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, NgClass, NgForOf, NgIf } from '@angular/common';
-import { AdminService, UserWithBalance } from '../../../core/http/admin.service';
+import { AdminService, UserWithBalance } from '../../../core/services/admin.service';
 
 @Component({
   selector: 'app-admin-users',

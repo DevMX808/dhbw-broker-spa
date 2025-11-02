@@ -61,6 +61,11 @@
   <div class="portfolio-card trade-card">
     <h2 class="card-title">Asset kaufen</h2>
 
+    <div *ngIf="tradeMessage" class="trade-message" [class.trade-message--success]="tradeMessageType === 'success'" [class.trade-message--error]="tradeMessageType === 'error'">
+      <span class="message-icon">{{ tradeMessageType === 'success' ? '✓' : '✕' }}</span>
+      <span class="message-text">{{ tradeMessage }}</span>
+    </div>
+
     <div class="buy-mode-toggle">
       <button
         type="button"
