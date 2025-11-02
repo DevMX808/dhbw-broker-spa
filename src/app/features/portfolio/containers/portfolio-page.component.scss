@@ -191,7 +191,7 @@
 
 .th-actions {
   text-align: center !important;
-  width: 110px;
+  width: auto;
 }
 
 .portfolio-row {
@@ -535,6 +535,10 @@
 .modal-title {
   font-size: 1.1rem;
   font-weight: 600;
+
+  strong {
+    font-weight: 700;
+  }
 }
 
 .modal-close {
@@ -571,20 +575,21 @@
 }
 
 .quick-amounts {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
 }
 
 .chip {
   background: rgba(248, 250, 252, 0.05);
   border: 1px solid rgba(248, 250, 252, 0.15);
   border-radius: 9999px;
-  padding: 0.3rem 0.7rem;
+  padding: 0.4rem 0.7rem;
   color: #fff;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  text-align: center;
 
   &:hover {
     background: rgba(193, 18, 31, 0.4);
@@ -721,8 +726,8 @@
 }
 
 .sell-preview-box {
-  background: rgba(193, 18, 31, 0.08);
-  border: 1px solid rgba(193, 18, 31, 0.25);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.6rem;
   padding: 0.75rem;
   margin-top: 0.5rem;
