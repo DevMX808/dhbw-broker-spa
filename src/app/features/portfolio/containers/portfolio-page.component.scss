@@ -198,6 +198,10 @@
   transition: all 0.15s ease;
 }
 
+.portfolio-row:hover {
+  background: rgba(0, 0, 0, 0.28);
+}
+
 .portfolio-row td:first-child {
   border-top-left-radius: 0.75rem;
   border-bottom-left-radius: 0.75rem;
