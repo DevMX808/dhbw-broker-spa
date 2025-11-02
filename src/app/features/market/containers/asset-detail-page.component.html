@@ -1,14 +1,9 @@
 <div class="asset-detail-page">
-  <div class="back-link-wrapper">
-    <a routerLink="/market" class="back-link">
-      <span class="back-arrow">←</span> Zurück zur Marktübersicht
-    </a>
-  </div>
-
-  <div class="page-header">
+  <div class="page-header-top">
     <div class="asset-title-section">
       <h1 class="asset-title">
         {{ currentSymbol() || 'Asset Details' }}
+        <span class="asset-name-light" *ngIf="assetName">{{ assetName }}</span>
       </h1>
       <div class="asset-price">
         <ng-container *ngIf="currentPrice() && !isLoading()">
@@ -20,14 +15,35 @@
         </ng-container>
       </div>
     </div>
+
+    <div class="back-link-wrapper">
+      <a routerLink="/market" class="back-link">
+        <span class="back-arrow">←</span> Zurück zur Marktübersicht
+      </a>
+    </div>
   </div>
 
-  <div class="asset-hint">
+  <div class="asset-hint" [class.asset-hint--warning]="!isMarketOpen">
     <span class="info-icon">i</span>
-    Der Chart zeigt die Preisentwicklung der letzten 6 Stunden. Preise werden minütlich aktualisiert.
+    <div class="hint-content">
+      <div class="hint-main">
+        Der Chart zeigt die Preisentwicklung der letzten 6 Stunden. Preise werden minütlich aktualisiert.
+      </div>
+      <div class="hint-market-status" *ngIf="!isMarketOpen && marketStatusText">
+        <span class="status-badge">Markt geschlossen</span>
+        {{ marketStatusText }}
+      </div>
+      <div class="hint-countdown" *ngIf="showCountdown">
+        <div class="countdown-label">Markt öffnet {{ nextOpeningDescription }}:</div>
+        <div class="countdown-timer">{{ countdown }}</div>
+      </div>
+    </div>
   </div>
 
-  <app-minute-chart [chartData]="chartData()" [loading]="chartLoading()"></app-minute-chart>
+  <app-minute-chart
+    [chartData]="chartData()"
+    [loading]="chartLoading()"
+    [isMarketOpen]="isMarketOpen"></app-minute-chart>
 
   <div class="portfolio-grid">
     <div class="portfolio-card balance-card">

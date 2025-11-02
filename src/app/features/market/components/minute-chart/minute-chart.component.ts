@@ -18,6 +18,7 @@ export class MinuteChartComponent implements AfterViewInit, OnChanges, OnDestroy
 
   @Input() chartData: MinuteChartData | null = null;
   @Input() loading = false;
+  @Input() isMarketOpen = true;
 
   chart: Chart | null = null;
 

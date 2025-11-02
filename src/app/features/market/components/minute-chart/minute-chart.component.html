@@ -1,9 +1,19 @@
 <div class="chart-card">
   <div class="chart-header">
-    <h3 class="chart-title">Kursverlauf (6 Stunden)</h3>
-    <div *ngIf="loading" class="chart-loading-badge">
-      <div class="spinner-sm"></div>
-      <span>Aktualisiere...</span>
+    <h3 class="chart-title">Kursverlauf</h3>
+    <div class="chart-header-right">
+      <div *ngIf="loading" class="chart-loading-badge">
+        <div class="spinner-sm"></div>
+        <span>Aktualisiere...</span>
+      </div>
+      <div *ngIf="!loading && isMarketOpen" class="market-status-badge market-status-badge--open">
+        <span class="status-dot"></span>
+        Markt geöffnet
+      </div>
+      <div *ngIf="!loading && !isMarketOpen" class="market-status-badge market-status-badge--closed">
+        <span class="status-dot"></span>
+        Markt geschlossen
+      </div>
     </div>
   </div>
   <div class="chart-wrapper">

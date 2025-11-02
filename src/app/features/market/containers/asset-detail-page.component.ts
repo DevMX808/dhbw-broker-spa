@@ -2,12 +2,13 @@ import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {Component, computed, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
-import {Subject, takeUntil} from 'rxjs';
+import {Subject, takeUntil, interval} from 'rxjs';
 import {MarketStore} from '../store/market.store';
 import {MinuteChartComponent} from '../components/minute-chart/minute-chart.component';
 import {ChartDataService} from '../data-access/chart-data.service';
 import {MinuteChartData} from '../data-access/chart-data.models';
 import {PortfolioService} from '../../portfolio/data-access/portfolio.service';
+import {isMarketOpen, getAssetType, AssetType, getNextOpeningTime} from '../components/market-card/market-hours.config';
 
 @Component({
   standalone: true,
@@ -24,6 +25,7 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   private chartService = inject(ChartDataService);
 
   private destroy$ = new Subject<void>();
+  private timerSubscription$ = new Subject<void>();
 
   readonly chartData = signal<MinuteChartData | null>(null);
   readonly chartLoading = signal(false);
@@ -43,6 +45,59 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
   walletBalance: number = 0;
   balanceLoading: boolean = false;
 
+  nextOpeningTime: Date | null = null;
+  nextOpeningDescription: string = '';
+  countdown: string = '';
+  showCountdown: boolean = false;
+
+  get isMarketOpen(): boolean {
+    const symbol = this.currentSymbol();
+    return symbol ? isMarketOpen(symbol) : true;
+  }
+
+  get assetName(): string {
+    const symbols = this.store.symbols();
+    const symbol = this.currentSymbol();
+    if (!symbol) return '';
+    const found = symbols.find(s => s.symbol === symbol);
+    return found?.name || '';
+  }
+
+  get marketStatusText(): string {
+    const symbol = this.currentSymbol();
+    if (!symbol) return '';
+
+    const assetType = getAssetType(symbol);
+    if (assetType === AssetType.CRYPTO) {
+      return '';
+    }
+
+    if (this.isMarketOpen) {
+      return '';
+    }
+
+    if (assetType === AssetType.PRECIOUS_METAL) {
+      return 'Der Edelmetallmarkt ist derzeit geschlossen. Handelszeiten: Sonntag 18:00 EST bis Freitag 17:00 EST (mit täglicher Pause 17:00-18:00 EST). Preise werden fortgeschrieben.';
+    }
+
+    return 'Der Markt ist derzeit geschlossen. Preise werden fortgeschrieben.';
+  }
+
+  get calculatedQuantity(): number | null {
+    const priceValue = this.currentPrice();
+
+    const price = typeof priceValue === 'object' && priceValue !== null
+      ? (priceValue as any).price
+      : priceValue;
+
+    if (this.buyMode === 'usd' && this.usdAmount && price) {
+      const rawQuantity = this.usdAmount / price;
+      return Math.floor(rawQuantity * 10000) / 10000;
+    }
+
+    return this.quantity;
+  }
+
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const symbol = params.get('symbol');
@@ -53,11 +108,75 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
       }
     });
     this.loadWalletBalance();
+    this.startMarketStatusTimer();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.timerSubscription$.next();
+    this.timerSubscription$.complete();
+  }
+
+  private startMarketStatusTimer(): void {
+    this.updateNextOpeningTime();
+
+    interval(1000).pipe(takeUntil(this.timerSubscription$), takeUntil(this.destroy$)).subscribe(() => {
+      this.updateCountdown();
+    });
+
+    interval(60000).pipe(takeUntil(this.timerSubscription$), takeUntil(this.destroy$)).subscribe(() => {
+      this.updateNextOpeningTime();
+    });
+  }
+
+  private updateNextOpeningTime(): void {
+    const symbol = this.currentSymbol();
+    if (!symbol) return;
+
+    const nextOpening = getNextOpeningTime(symbol);
+    if (nextOpening) {
+      this.nextOpeningTime = nextOpening.opensAt;
+      this.nextOpeningDescription = nextOpening.description;
+      this.showCountdown = !this.isMarketOpen && this.nextOpeningTime > new Date();
+    } else {
+      this.nextOpeningTime = null;
+      this.nextOpeningDescription = '';
+      this.showCountdown = false;
+    }
+
+    this.updateCountdown();
+  }
+
+  private updateCountdown(): void {
+    if (!this.nextOpeningTime || this.isMarketOpen) {
+      this.countdown = '';
+      this.showCountdown = false;
+      return;
+    }
+
+    const now = new Date();
+    const diff = this.nextOpeningTime.getTime() - now.getTime();
+
+    if (diff <= 0) {
+      this.countdown = '';
+      this.showCountdown = false;
+      this.updateNextOpeningTime();
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    if (days > 0) {
+      this.countdown = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    } else if (hours > 0) {
+      this.countdown = `${hours}h ${minutes}m ${seconds}s`;
+    } else {
+      this.countdown = `${minutes}m ${seconds}s`;
+    }
   }
 
   private async loadSymbolData(symbol: string): Promise<void> {
@@ -99,21 +218,6 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
         this.balanceLoading = false;
       }
     });
-  }
-
-  get calculatedQuantity(): number | null {
-    const priceValue = this.currentPrice();
-
-    const price = typeof priceValue === 'object' && priceValue !== null
-      ? (priceValue as any).price
-      : priceValue;
-
-    if (this.buyMode === 'usd' && this.usdAmount && price) {
-      const rawQuantity = this.usdAmount / price;
-      return Math.floor(rawQuantity * 10000) / 10000;
-    }
-
-    return this.quantity;
   }
 
   async buyAsset(): Promise<void> {
