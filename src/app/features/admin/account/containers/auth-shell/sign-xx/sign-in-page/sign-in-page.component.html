@@ -11,7 +11,7 @@
       type="email"
       placeholder="E-Mail"
       [(ngModel)]="credentials.email"
-      name="email"
+      name="signInEmail"
       required
       email
       #emailInput="ngModel"
@@ -35,7 +35,7 @@
       type="password"
       placeholder="Passwort"
       [(ngModel)]="credentials.password"
-      name="password"
+      name="signInPassword"
       required
       minlength="6"
       #passwordInput="ngModel"
