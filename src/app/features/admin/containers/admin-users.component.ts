@@ -19,7 +19,6 @@ export class AdminUsersComponent implements OnInit {
   pendingUser: UserWithBalance | null = null;
   pendingStatus: 'ACTIVATED' | 'DEACTIVATED' = 'DEACTIVATED';
 
-  // Message System
   message: string = '';
   messageType: 'success' | 'error' | null = null;
 

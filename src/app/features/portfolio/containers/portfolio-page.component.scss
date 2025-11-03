@@ -416,14 +416,12 @@
   }
 }
 
-// Chrome, Safari, Edge - Entfernt Spinner
 .quantity-input-new::-webkit-outer-spin-button,
 .quantity-input-new::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-// Firefox - Entfernt Spinner
 .quantity-input-new[type=number] {
   -moz-appearance: textfield;
 }

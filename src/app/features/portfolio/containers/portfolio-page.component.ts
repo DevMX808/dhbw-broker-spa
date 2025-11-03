@@ -33,17 +33,14 @@ export class PortfolioPageComponent implements OnInit {
   readonly addFundsMax = 10000;
   addFundsError = '';
 
-  // Verkaufs-Modal State
   showSellModal = false;
   selectedTrade: HeldTradeWithPrice | null = null;
   sellModalQuantity: number | null = null;
   sellModalError = '';
 
-  // Message System
   message: string = '';
   messageType: 'success' | 'error' | null = null;
 
-  // Math für Template verfügbar machen
   Math = Math;
 
   constructor(
