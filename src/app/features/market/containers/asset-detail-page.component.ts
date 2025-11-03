@@ -185,7 +185,11 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (response: any) => {
-        const successMsg = `Erfolgreich ${response.quantity.toFixed(4)} ${response.assetSymbol} für $${response.total.toFixed(2)} gekauft!`;
+        const total = response.total || (response.priceUsd * response.quantity);
+        const quantity = response.quantity || this.calculatedQuantity;
+        const symbol = response.assetSymbol || this.currentSymbol();
+
+        const successMsg = `Erfolgreich ${quantity.toFixed(4)} ${symbol} für $${total.toFixed(2)} gekauft!`;
         this.showTradeMessage(successMsg, 'success');
 
         this.quantity = null;
@@ -199,9 +203,17 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
         let errorMessage = 'Fehler beim Kauf des Assets.';
 
         if (error.status === 400) {
-          errorMessage = error.error || 'Ungültige Anfrage. Bitte überprüfen Sie Ihre Eingaben.';
+          if (typeof error.error === 'string') {
+            errorMessage = error.error;
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
+          } else {
+            errorMessage = 'Ungültige Anfrage. Bitte überprüfen Sie Ihre Eingaben.';
+          }
         } else if (error.status === 503) {
           errorMessage = 'Preis konnte nicht abgerufen werden. Bitte versuchen Sie es später erneut.';
+        } else if (error.status === 401) {
+          errorMessage = 'Sie müssen angemeldet sein, um Trades durchzuführen.';
         } else if (error.error && typeof error.error === 'string') {
           errorMessage = error.error;
         }
