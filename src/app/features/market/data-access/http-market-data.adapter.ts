@@ -42,18 +42,19 @@ export class HttpMarketDataAdapter implements MarketDataPort {
   private mapSymbol(dto: MarketSymbolDto): MarketSymbol {
     return {
       name: dto.name,
-      symbol: dto.symbol
+      symbol: dto.symbol,
+      minTradeIncrement: dto.minTradeIncrement
     };
   }
 
   private mapPrice(dto: MarketPriceDto, priceChange?: string): MarketPrice {
 
     const changePct = dto.changePct
-                   ?? dto.change1mPct
-                   ?? dto.priceChange
-                   ?? dto.percentChange
-                   ?? dto.change
-                   ?? undefined;
+      ?? dto.change1mPct
+      ?? dto.priceChange
+      ?? dto.percentChange
+      ?? dto.change
+      ?? undefined;
 
     return {
       name: dto.name,
@@ -91,6 +92,7 @@ export class HttpMarketDataAdapter implements MarketDataPort {
 interface MarketSymbolDto {
   name: string;
   symbol: string;
+  minTradeIncrement: number;
 }
 
 interface MarketPriceDto {
@@ -106,4 +108,3 @@ interface MarketPriceDto {
   change?: number;
   [key: string]: any;
 }
-
