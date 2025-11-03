@@ -202,20 +202,15 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
 
         let errorMessage = 'Fehler beim Kauf des Assets.';
 
-        if (error.status === 400) {
-          if (typeof error.error === 'string') {
+        if (error.status === 400 || error.status === 503 || error.status === 401 || error.status === 500) {
+          // Backend gibt jetzt ErrorResponse JSON zurück
+          if (error.error && typeof error.error === 'object') {
+            // Neues Format: { error: "...", message: "...", status: 400 }
+            errorMessage = error.error.message || error.error.error || errorMessage;
+          } else if (typeof error.error === 'string') {
+            // Fallback für altes Format (plain string)
             errorMessage = error.error;
-          } else if (error.error?.message) {
-            errorMessage = error.error.message;
-          } else {
-            errorMessage = 'Ungültige Anfrage. Bitte überprüfen Sie Ihre Eingaben.';
           }
-        } else if (error.status === 503) {
-          errorMessage = 'Preis konnte nicht abgerufen werden. Bitte versuchen Sie es später erneut.';
-        } else if (error.status === 401) {
-          errorMessage = 'Sie müssen angemeldet sein, um Trades durchzuführen.';
-        } else if (error.error && typeof error.error === 'string') {
-          errorMessage = error.error;
         }
 
         this.showTradeMessage(errorMessage, 'error');
