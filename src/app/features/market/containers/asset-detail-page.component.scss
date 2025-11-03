@@ -357,6 +357,23 @@
   -moz-appearance: textfield;
 }
 
+.input-hint {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  text-align: center;
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: rgba(156, 163, 175, 0.1);
+  border-radius: 0.375rem;
+  border: 1px solid rgba(156, 163, 175, 0.2);
+
+  &--warning {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.3);
+  }
+}
+
 .calculated-info {
   font-size: 0.95rem;
   color: #9ca3af;

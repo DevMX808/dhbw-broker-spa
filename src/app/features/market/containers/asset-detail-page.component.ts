@@ -62,6 +62,14 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     return found?.name || '';
   }
 
+  get minTradeIncrement(): number {
+    const symbols = this.store.symbols();
+    const symbol = this.currentSymbol();
+    if (!symbol) return 0.0001;
+    const found = symbols.find(s => s.symbol === symbol);
+    return found?.minTradeIncrement || 0.0001;
+  }
+
   get marketStatusText(): string {
     const symbol = this.currentSymbol();
     if (!symbol) return '';
@@ -82,6 +90,11 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
     return 'Der Markt ist derzeit geschlossen. Preise werden fortgeschrieben.';
   }
 
+  private roundToIncrement(value: number, increment: number): number {
+    if (increment <= 0) return value;
+    return Math.floor(value / increment) * increment;
+  }
+
   get calculatedQuantity(): number | null {
     const priceValue = this.currentPrice();
 
@@ -89,12 +102,33 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
       ? (priceValue as any).price
       : priceValue;
 
-    if (this.buyMode === 'usd' && this.usdAmount && price) {
-      const rawQuantity = this.usdAmount / price;
-      return Math.floor(rawQuantity * 10000) / 10000;
+    if (!price || price <= 0) {
+      return null;
     }
 
-    return this.quantity;
+    const increment = this.minTradeIncrement;
+
+    if (this.buyMode === 'usd') {
+      if (!this.usdAmount || this.usdAmount <= 0) {
+        return null;
+      }
+
+      const rawQuantity = this.usdAmount / price;
+
+      const roundedQuantity = this.roundToIncrement(rawQuantity, increment);
+
+      if (roundedQuantity <= 0) {
+        return null;
+      }
+
+      return roundedQuantity;
+    }
+
+    if (this.quantity !== null && this.quantity > 0) {
+      return this.roundToIncrement(this.quantity, increment);
+    }
+
+    return null;
   }
 
   ngOnInit(): void {
@@ -203,12 +237,9 @@ export class AssetDetailPageComponent implements OnInit, OnDestroy {
         let errorMessage = 'Fehler beim Kauf des Assets.';
 
         if (error.status === 400 || error.status === 503 || error.status === 401 || error.status === 500) {
-          // Backend gibt jetzt ErrorResponse JSON zurück
           if (error.error && typeof error.error === 'object') {
-            // Neues Format: { error: "...", message: "...", status: 400 }
             errorMessage = error.error.message || error.error.error || errorMessage;
           } else if (typeof error.error === 'string') {
-            // Fallback für altes Format (plain string)
             errorMessage = error.error;
           }
         }

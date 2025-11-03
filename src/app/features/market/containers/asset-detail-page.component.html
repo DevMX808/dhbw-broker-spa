@@ -58,13 +58,14 @@
     </div>
   </div>
 
+  <!-- Trade Message moved here - above the trade card -->
+  <div *ngIf="tradeMessage" class="trade-message" [class.trade-message--success]="tradeMessageType === 'success'" [class.trade-message--error]="tradeMessageType === 'error'">
+    <span class="message-icon">{{ tradeMessageType === 'success' ? '✓' : '✕' }}</span>
+    <span class="message-text">{{ tradeMessage }}</span>
+  </div>
+
   <div class="portfolio-card trade-card">
     <h2 class="card-title">Asset kaufen</h2>
-
-    <div *ngIf="tradeMessage" class="trade-message" [class.trade-message--success]="tradeMessageType === 'success'" [class.trade-message--error]="tradeMessageType === 'error'">
-      <span class="message-icon">{{ tradeMessageType === 'success' ? '✓' : '✕' }}</span>
-      <span class="message-text">{{ tradeMessage }}</span>
-    </div>
 
     <div class="buy-mode-toggle">
       <button
@@ -90,9 +91,12 @@
           type="number"
           class="form-control trade-input"
           [(ngModel)]="quantity"
-          min="0.0001"
-          step="0.0001"
+          [step]="minTradeIncrement"
+          [min]="minTradeIncrement"
           placeholder="0.0000" />
+        <div class="input-hint">
+          Mindestmenge: {{ minTradeIncrement }} {{ currentSymbol() }}
+        </div>
       </ng-container>
 
       <ng-container *ngIf="buyMode === 'usd'">
@@ -102,10 +106,13 @@
           class="form-control trade-input"
           [(ngModel)]="usdAmount"
           min="1"
-          step="0.01"
+          step="1"
           placeholder="0.00" />
         <div *ngIf="calculatedQuantity" class="calculated-info">
           ≈ {{ calculatedQuantity | number:'1.4-4' }} {{ currentSymbol() }}
+        </div>
+        <div *ngIf="usdAmount && !calculatedQuantity" class="input-hint input-hint--warning">
+          Der eingegebene Betrag ist zu gering für eine gültige Kaufmenge.
         </div>
       </ng-container>
     </div>

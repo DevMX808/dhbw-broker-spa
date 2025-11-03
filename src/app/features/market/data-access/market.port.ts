@@ -3,6 +3,7 @@ import { InjectionToken } from '@angular/core';
 export interface MarketSymbol {
   name: string;
   symbol: string;
+  minTradeIncrement: number;
 }
 
 export interface MarketPrice {
@@ -21,4 +22,3 @@ export interface MarketDataPort {
 }
 
 export const MARKET_DATA_PORT = new InjectionToken<MarketDataPort>('MarketDataPort');
-
