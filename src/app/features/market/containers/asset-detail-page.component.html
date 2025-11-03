@@ -58,7 +58,6 @@
     </div>
   </div>
 
-  <!-- Trade Message moved here - above the trade card -->
   <div *ngIf="tradeMessage" class="trade-message" [class.trade-message--success]="tradeMessageType === 'success'" [class.trade-message--error]="tradeMessageType === 'error'">
     <span class="message-icon">{{ tradeMessageType === 'success' ? '✓' : '✕' }}</span>
     <span class="message-text">{{ tradeMessage }}</span>

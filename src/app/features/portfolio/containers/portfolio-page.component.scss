@@ -191,7 +191,7 @@
 
 .th-actions {
   text-align: center !important;
-  width: auto;
+  width: 110px;
 }
 
 .portfolio-row {
@@ -242,11 +242,13 @@
 
 .asset-badge {
   display: inline-block;
-  border: 1px solid rgba(255, 255, 255, 1);
+  background: rgba(193, 18, 31, 0.15);
+  border: 1px solid rgba(193, 18, 31, 0.3);
   border-radius: 0.4rem;
   padding: 0.25rem 0.5rem;
   font-size: 0.85rem;
   font-weight: 600;
+  color: #fca5a5;
   letter-spacing: 0.05em;
 }
 
@@ -490,6 +492,68 @@
   font-size: 1rem;
 }
 
+.trade-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+
+  &--success {
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #22c55e;
+
+    .message-icon {
+      background: rgba(34, 197, 94, 0.3);
+      border: 1px solid rgba(34, 197, 94, 0.6);
+    }
+  }
+
+  &--error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+
+    .message-icon {
+      background: rgba(239, 68, 68, 0.3);
+      border: 1px solid rgba(239, 68, 68, 0.6);
+    }
+  }
+}
+
+.message-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.message-text {
+  flex: 1;
+  line-height: 1.5;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -535,10 +599,6 @@
 .modal-title {
   font-size: 1.1rem;
   font-weight: 600;
-
-  strong {
-    font-weight: 700;
-  }
 }
 
 .modal-close {
@@ -575,21 +635,20 @@
 }
 
 .quick-amounts {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
 }
 
 .chip {
   background: rgba(248, 250, 252, 0.05);
   border: 1px solid rgba(248, 250, 252, 0.15);
   border-radius: 9999px;
-  padding: 0.4rem 0.7rem;
+  padding: 0.3rem 0.7rem;
   color: #fff;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-align: center;
 
   &:hover {
     background: rgba(193, 18, 31, 0.4);
@@ -611,169 +670,94 @@
   color: #fee2e2;
 }
 
-// ========== Sell Modal Styles ==========
-
-.asset-info-box {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 0.6rem;
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.95rem;
-}
-
-.info-label {
-  color: #9ca3af;
-  font-weight: 500;
-}
-
-.info-value {
-  color: #e5e7eb;
-  font-weight: 600;
-}
-
 .modal-label {
   font-size: 0.95rem;
   font-weight: 500;
   color: #e5e7eb;
-  margin-bottom: 0.3rem;
-  display: block;
+  margin-bottom: 0.25rem;
 }
 
-.quantity-controls-modal {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  justify-content: center;
+.sell-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
 }
 
-.qty-btn-modal {
-  width: 40px;
-  height: 42px;
+.sell-info-item {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: 1.3rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.7rem;
+}
+
+.sell-info-label {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sell-info-value {
+  font-size: 1rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
-  line-height: 1;
-
-  &:hover:not(:disabled) {
-    background: rgba(193, 18, 31, 0.3);
-    border-color: rgba(193, 18, 31, 0.5);
-  }
-
-  &:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-}
-
-.qty-btn-modal.qty-btn-dec {
-  border-top-left-radius: 0.5rem;
-  border-bottom-left-radius: 0.5rem;
-  border-right: none;
-}
-
-.qty-btn-modal.qty-btn-inc {
-  border-top-right-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
-  border-left: none;
-}
-
-.quantity-controls-modal .form-control {
-  flex: 1;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0;
-  padding: 0.5rem;
-  font-size: 1.05rem;
-  height: 42px;
-  border-left: none;
-  border-right: none;
-
-  &:focus {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-    outline: none;
-  }
-}
-
-// Chrome, Safari, Edge - Entfernt Spinner im Modal
-.quantity-controls-modal .form-control::-webkit-outer-spin-button,
-.quantity-controls-modal .form-control::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-// Firefox - Entfernt Spinner im Modal
-.quantity-controls-modal .form-control[type=number] {
-  -moz-appearance: textfield;
+  color: #fff;
 }
 
 .sell-preview-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.6rem;
-  padding: 0.75rem;
+  padding: 0.8rem;
   margin-top: 0.5rem;
+}
+
+.preview-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.preview-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: #e5e7eb;
-  margin-bottom: 0.2rem;
-}
-
-.preview-calculation {
-  color: rgba(209, 213, 219, 0.75);
-  font-size: 0.9rem;
-  margin-bottom: 0.3rem;
-}
-
-.preview-result-large {
-  font-weight: 700;
-  font-size: 1.15rem;
+  justify-content: space-between;
+  align-items: center;
   padding: 0.4rem 0;
 }
 
-.preview-result-large.preview-result--pos {
+.preview-row-result {
+  padding-top: 0.6rem;
+}
+
+.preview-label-bold {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #d1d5db;
+}
+
+.preview-value {
+  font-size: 0.95rem;
+  color: #e5e7eb;
+}
+
+.preview-value-large {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.preview-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.4rem 0;
+}
+
+.text-green {
   color: #22c55e;
 }
 
-.preview-result-large.preview-result--neg {
+.text-red {
   color: #f43f5e;
 }
 
-.preview-result-large.preview-result--zero {
+.text-neutral {
   color: #9ca3af;
-}
-
-.preview-total {
-  font-size: 0.95rem;
-  color: #cbd5e0;
-  font-weight: 500;
-  margin-top: 0.2rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @keyframes spin {

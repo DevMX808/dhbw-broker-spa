@@ -16,8 +16,9 @@
     <button type="button" class="btn btn-secondary" (click)="loadUsers()">Erneut versuchen</button>
   </div>
 
-  <div *ngIf="successMessage" class="alert alert-success">
-    {{ successMessage }}
+  <div *ngIf="message" class="trade-message" [class.trade-message--success]="messageType === 'success'" [class.trade-message--error]="messageType === 'error'">
+    <span class="message-icon">{{ messageType === 'success' ? '✓' : '✕' }}</span>
+    <span class="message-text">{{ message }}</span>
   </div>
 
   <div *ngIf="!loading && !error" class="portfolio-table-wrapper">

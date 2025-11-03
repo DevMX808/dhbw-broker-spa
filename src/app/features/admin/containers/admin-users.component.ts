@@ -13,12 +13,15 @@ export class AdminUsersComponent implements OnInit {
   users: UserWithBalance[] = [];
   loading = false;
   error = '';
-  successMessage = '';
   updatingUserId: string | null = null;
 
   showConfirmDialog = false;
   pendingUser: UserWithBalance | null = null;
   pendingStatus: 'ACTIVATED' | 'DEACTIVATED' = 'DEACTIVATED';
+
+  // Message System
+  message: string = '';
+  messageType: 'success' | 'error' | null = null;
 
   constructor(private adminService: AdminService) {}
 
@@ -59,6 +62,16 @@ export class AdminUsersComponent implements OnInit {
       : 'status-badge status-badge--active';
   }
 
+  private showMessage(msg: string, type: 'success' | 'error'): void {
+    this.message = msg;
+    this.messageType = type;
+
+    setTimeout(() => {
+      this.message = '';
+      this.messageType = null;
+    }, 5000);
+  }
+
   confirmStatusChange(user: UserWithBalance, status: 'ACTIVATED' | 'DEACTIVATED'): void {
     this.pendingUser = user;
     this.pendingStatus = status;
@@ -84,15 +97,16 @@ export class AdminUsersComponent implements OnInit {
       next: () => {
         user.status = status;
         this.updatingUserId = null;
-        this.successMessage = status === 'DEACTIVATED'
-          ? 'Benutzer wurde blockiert.'
-          : 'Benutzer wurde aktiviert.';
-        setTimeout(() => (this.successMessage = ''), 4000);
+
+        const msg = status === 'DEACTIVATED'
+          ? `Benutzer ${user.firstName} ${user.lastName} wurde blockiert.`
+          : `Benutzer ${user.firstName} ${user.lastName} wurde aktiviert.`;
+        this.showMessage(msg, 'success');
       },
       error: (err: any) => {
         console.error(err);
         this.updatingUserId = null;
-        this.error = 'Änderung konnte nicht gespeichert werden.';
+        this.showMessage('Änderung konnte nicht gespeichert werden.', 'error');
       },
     });
   }
